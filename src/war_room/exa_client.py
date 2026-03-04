@@ -1,11 +1,7 @@
 """Exa search wrapper with retry, budget guard, and normalized output.
 
 All network calls in the war room go through this single wrapper.
-Assumptions about exa-py (introspected from exa_py 1.x):
-- Exa(api_key) constructor
-- Exa.search(query, num_results=, include_domains=, start_published_date=, contents=)
-- contents=ContentsOptions(text={"max_characters": N}) to inline text
-- Results have: url, title, score, published_date, text, summary, highlights
+It supports both older and newer exa-py APIs for `contents` options.
 """
 
 from __future__ import annotations
@@ -15,7 +11,6 @@ import time
 from typing import Any
 
 from exa_py import Exa
-from exa_py.api import ContentsOptions
 
 
 class BudgetExhausted(Exception):
@@ -58,7 +53,7 @@ class ExaClient:
 
         kwargs: dict[str, Any] = {
             "num_results": k,
-            "contents": ContentsOptions(text={"max_characters": max_chars}),
+            "contents": _build_contents_options(max_chars),
         }
         # Exa only allows one of include_domains or exclude_domains
         if include_domains:
@@ -66,8 +61,8 @@ class ExaClient:
         elif exclude_domains:
             kwargs["exclude_domains"] = exclude_domains
         if recency_days is not None:
-            from datetime import datetime, timedelta
-            start = (datetime.utcnow() - timedelta(days=recency_days)).strftime("%Y-%m-%d")
+            from datetime import UTC, datetime, timedelta
+            start = (datetime.now(UTC) - timedelta(days=recency_days)).strftime("%Y-%m-%d")
             kwargs["start_published_date"] = start
 
         response = self._search_with_retry(query, kwargs)
@@ -120,3 +115,17 @@ class ExaClient:
     @property
     def budget_remaining(self) -> int:
         return max(0, self.max_search_calls - self.search_count)
+
+
+def _build_contents_options(max_chars: int) -> dict[str, Any]:
+    """Build a version-safe contents options payload for exa-py.
+
+    Older exa-py versions expose `ContentsOptions` in `exa_py.api`.
+    Newer versions accept a plain dict and do not export that symbol.
+    """
+    try:
+        from exa_py.api import ContentsOptions  # type: ignore
+
+        return ContentsOptions(text={"max_characters": max_chars})
+    except Exception:
+        return {"text": {"max_characters": max_chars}}

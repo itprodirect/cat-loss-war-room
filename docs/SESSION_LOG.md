@@ -137,3 +137,110 @@ Firm Memory Lite (Cell 7), pre-seed demo cache with real Exa results for Milton/
 Cache all 3 fact patterns, test graceful degradation, dry-run the 5-minute script, generate sample PDF export.
 
 ---
+
+## Session 7 â€” V2 Deep Dive + Rebuild Planning
+**Date:** 2026-03-04
+**Agent:** Codex (GPT-5)
+**Branch:** `feat/live-eval`
+**Status:** âœ… Complete
+
+### Goal
+Perform deep-dive repo audit, define V2 rebuild blueprint, and create a concrete GitHub roadmap with execution-ready issues.
+
+### Findings Snapshot
+- Strong demo foundation: cache-first pattern, safety disclaimers, module decomposition.
+- Critical stability gap: Exa SDK compatibility/import issue breaks test collection in current environment.
+- UX gap: notebook-centric flow remains technical and not ideal for legal end users.
+- Quality gap: caselaw/citation/weather extraction still has noise and edge-case brittleness.
+- Process gap: live-eval intake template schema does not match canonical `CaseIntake`.
+
+### Outputs Produced
+- Added `docs/V2_BLUEPRINT.md`:
+  - Current-state assessment (`works well / ok / bad / unknown`)
+  - Ground-up V2 architecture and product strategy
+  - AI integration boundaries and security/reliability posture
+  - Detailed testing + edge-case strategy
+  - 30/60/90-day roadmap and success metrics
+- Added and updated `docs/V2_ISSUE_MAP.md`:
+  - Phase-by-phase roadmap mapped to concrete GitHub issues
+- Created roadmap label taxonomy and full V2 issue backlog on GitHub:
+  - Epic + implementation tracks + testing/reliability/security/pilot
+  - Issues: #3 through #19
+
+### Notes
+- This session focused on planning and execution scaffolding; no runtime code changes were made to core modules.
+- Dependency compatibility fix and schema alignment are now explicitly tracked as highest-priority V2 issues.
+
+---
+
+## Session 8 — V2 P0 Start: Exa Compatibility + Reproducible Baseline
+**Date:** 2026-03-04
+**Agent:** Codex (GPT-5)
+**Branch:** `feat/live-eval`
+**Status:** ? Complete
+
+### Goal
+Start V2 issue #4 by restoring reproducible test stability and exa-py compatibility.
+
+### Changes
+- `src/war_room/exa_client.py`
+  - Removed import-time dependency on `exa_py.api.ContentsOptions`.
+  - Added `_build_contents_options(max_chars)` fallback helper:
+    - uses `ContentsOptions` when available,
+    - falls back to plain dict payload for newer exa-py versions.
+- `tests/test_exa_client.py`
+  - Added compatibility/kwargs regression tests:
+    - include_domains precedence,
+    - max_chars contents payload,
+    - contents payload shape helper.
+- `requirements.txt`
+  - Pinned tested dependency versions for reproducibility.
+- `README.md`
+  - Added dependency compatibility notes for Exa integration.
+
+### Verification
+- `pytest -q` -> 78 passed.
+
+### Notes
+- This unblocks local test collection/runtime in environments where exa-py no longer exports `ContentsOptions`.
+- Remaining follow-up for #4 can include optional multi-version CI matrix if desired.
+
+---
+
+## Session 9 — V2 Issue #4 Execution: CI Gate, Matrix, and Adapter Contracts
+**Date:** 2026-03-04
+**Agent:** Codex (GPT-5)
+**Branch:** `feat/live-eval`
+**Status:** ? Complete
+
+### Goal
+Execute the first three stabilization actions for V2 #4 in logical order:
+1) fresh-env CI gate,
+2) exa compatibility matrix,
+3) live adapter kwargs smoke-contract tests.
+
+### Changes
+- Added `.github/workflows/ci.yml`
+  - Fresh Python 3.12 environment
+  - `pip install -r requirements.txt`
+  - `pytest -q`
+- Added `.github/workflows/exa-compat-matrix.yml`
+  - Matrix over `exa-py==2.0.2` and `exa-py<2`
+  - Installs pinned non-Exa deps + matrix Exa version
+  - Runs full test suite
+- Added `tests/test_exa_adapter_contract.py`
+  - Search kwargs forwarding contract checks
+  - include/exclude domain behavior checks
+  - `get_contents` kwargs forwarding checks
+- Updated `src/war_room/exa_client.py`
+  - Recency date uses timezone-aware UTC (`datetime.now(UTC)`) to avoid deprecation warning.
+
+### Verification
+- Local test suite: `81 passed`.
+
+### Commit checkpoints
+- `bd18a97` — CI fresh-env gate
+- `f9fc570` — Exa compatibility matrix
+- `<pending>` — adapter contract smoke tests + UTC deprecation cleanup
+
+---

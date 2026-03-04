@@ -1,4 +1,4 @@
-python-dotenv
-nbformat
-exa-py
-pytest
+python-dotenv==1.0.1
+nbformat==5.10.4
+exa-py==2.0.2
+pytest==8.3.4

@@ -28,6 +28,15 @@ pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```
 
+## Dependency Compatibility
+
+This repo currently pins a tested dependency set in `requirements.txt`
+for reproducible behavior, including `exa-py==2.0.2`.
+
+`src/war_room/exa_client.py` also includes a version-safe `contents`
+payload builder so Exa calls keep working across older/newer `exa-py`
+APIs.
+
 ## What it does
 
 Given a catastrophic loss case (hurricane, hail, etc.), the war room notebook:
