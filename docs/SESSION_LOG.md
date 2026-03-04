@@ -70,3 +70,14 @@ Status: Complete
 - Updated `docs/V2_BLUEPRINT.md` and `docs/V2_ISSUE_MAP.md` to reflect completed #4 and next priorities.
 - Replaced legacy prompt/checklist docs with current, execution-focused versions.
 - Verified repository test suite remains green (`81 passed`).
+
+## Session 8 - Eval Lane Formalization
+Date: 2026-03-04
+Status: Complete
+
+- Formalized the `eval/` workspace as a tracked project surface.
+- Added `eval/README.md` with clear usage and data rules.
+- Added a CaseIntake-aligned starter template at `eval/intakes/_template_case_intake.json`.
+- Updated `eval/results/README.md` and `.gitignore` behavior for local eval artifacts.
+- Linked the live eval lane from README and HANDOFF docs.
+- Verification: `pytest -q` -> 81 passed.

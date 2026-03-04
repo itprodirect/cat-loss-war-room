@@ -1,0 +1,22 @@
+{
+  "event_name": "Hurricane Milton",
+  "event_date": "2024-10-09",
+  "state": "FL",
+  "county": "Pinellas",
+  "carrier": "Citizens Property Insurance",
+  "policy_type": "HO-3 Dwelling",
+  "posture": [
+    "denial",
+    "bad_faith"
+  ],
+  "key_facts": [
+    "Category 3 at landfall near Siesta Key",
+    "Roof damage and water intrusion reported within 48 hours",
+    "Claim denied citing pre-existing conditions"
+  ],
+  "coverage_issues": [
+    "wind vs water causation",
+    "anti-concurrent causation clause",
+    "duty to investigate"
+  ]
+}

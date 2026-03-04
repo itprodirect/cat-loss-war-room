@@ -88,3 +88,4 @@ Core implementation lives in `src/war_room/`.
 - [SESSION_LOG.md](SESSION_LOG.md): build history
 - [METHOD.md](METHOD.md): module behavior and methodology
 - [SAFETY_GUARDRAILS.md](SAFETY_GUARDRAILS.md): safety boundaries
+- [eval/README.md](../eval/README.md): live eval lane rules and intake template

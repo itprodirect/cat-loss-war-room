@@ -11,3 +11,9 @@ build/
 .ipynb_checkpoints/
 .claude/
 docs/prompt-review.md
+
+# Live eval artifacts
+.exa_cache_live/
+runs/
+eval/results/*
+!eval/results/README.md

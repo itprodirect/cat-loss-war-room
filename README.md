@@ -84,6 +84,13 @@ Issue `#4` (Exa compatibility + reproducible dependency baseline) is complete an
 - Read the plain-language roadmap: [docs/ROADMAP.md](docs/ROADMAP.md)
 - See issue-by-issue mapping: [docs/V2_ISSUE_MAP.md](docs/V2_ISSUE_MAP.md)
 
+## Live Eval Lane
+
+For public/redacted scenario validation:
+
+- Intake rules and schema: [eval/README.md](eval/README.md)
+- Starter intake template: [eval/intakes/_template_case_intake.json](eval/intakes/_template_case_intake.json)
+
 ## Project Structure
 
 See [CLAUDE.md](CLAUDE.md) for full repo layout and conventions.
