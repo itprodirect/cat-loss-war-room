@@ -61,8 +61,8 @@ class ExaClient:
         elif exclude_domains:
             kwargs["exclude_domains"] = exclude_domains
         if recency_days is not None:
-            from datetime import datetime, timedelta
-            start = (datetime.utcnow() - timedelta(days=recency_days)).strftime("%Y-%m-%d")
+            from datetime import UTC, datetime, timedelta
+            start = (datetime.now(UTC) - timedelta(days=recency_days)).strftime("%Y-%m-%d")
             kwargs["start_published_date"] = start
 
         response = self._search_with_retry(query, kwargs)

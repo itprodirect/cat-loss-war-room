@@ -206,3 +206,41 @@ Start V2 issue #4 by restoring reproducible test stability and exa-py compatibil
 - Remaining follow-up for #4 can include optional multi-version CI matrix if desired.
 
 ---
+
+## Session 9 — V2 Issue #4 Execution: CI Gate, Matrix, and Adapter Contracts
+**Date:** 2026-03-04
+**Agent:** Codex (GPT-5)
+**Branch:** `feat/live-eval`
+**Status:** ? Complete
+
+### Goal
+Execute the first three stabilization actions for V2 #4 in logical order:
+1) fresh-env CI gate,
+2) exa compatibility matrix,
+3) live adapter kwargs smoke-contract tests.
+
+### Changes
+- Added `.github/workflows/ci.yml`
+  - Fresh Python 3.12 environment
+  - `pip install -r requirements.txt`
+  - `pytest -q`
+- Added `.github/workflows/exa-compat-matrix.yml`
+  - Matrix over `exa-py==2.0.2` and `exa-py<2`
+  - Installs pinned non-Exa deps + matrix Exa version
+  - Runs full test suite
+- Added `tests/test_exa_adapter_contract.py`
+  - Search kwargs forwarding contract checks
+  - include/exclude domain behavior checks
+  - `get_contents` kwargs forwarding checks
+- Updated `src/war_room/exa_client.py`
+  - Recency date uses timezone-aware UTC (`datetime.now(UTC)`) to avoid deprecation warning.
+
+### Verification
+- Local test suite: `81 passed`.
+
+### Commit checkpoints
+- `bd18a97` — CI fresh-env gate
+- `f9fc570` — Exa compatibility matrix
+- `<pending>` — adapter contract smoke tests + UTC deprecation cleanup
+
+---
