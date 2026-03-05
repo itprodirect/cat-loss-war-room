@@ -6,74 +6,175 @@ organized by module: weather, carrier_docs, caselaw.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Optional
+import datetime as dt
+import json
+import re
+from pathlib import Path
+from typing import Any, Mapping
+
+from war_room.models import CaseIntake, QuerySpec
+
+CASE_INTAKE_REQUIRED_FIELDS = (
+    "event_name",
+    "event_date",
+    "state",
+    "county",
+    "carrier",
+    "policy_type",
+)
+CASE_INTAKE_OPTIONAL_FIELDS = (
+    "posture",
+    "key_facts",
+    "coverage_issues",
+)
+CASE_INTAKE_ALLOWED_FIELDS = CASE_INTAKE_REQUIRED_FIELDS + CASE_INTAKE_OPTIONAL_FIELDS
+POSTURE_VALUE_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 
 
-@dataclass
-class CaseIntake:
-    """Structured case intake for a CAT loss matter."""
+class IntakeValidationError(ValueError):
+    """Raised when an intake payload fails strict schema validation."""
 
-    event_name: str               # e.g. "Hurricane Milton"
-    event_date: str               # e.g. "2024-10-09"
-    state: str                    # e.g. "FL"
-    county: str                   # e.g. "Pinellas"
-    carrier: str                  # e.g. "Citizens Property Insurance"
-    policy_type: str              # e.g. "HO-3 Dwelling"
-    posture: list[str] = field(default_factory=lambda: ["denial"])
-    key_facts: list[str] = field(default_factory=list)
-    coverage_issues: list[str] = field(default_factory=list)
 
-    def summary(self) -> str:
-        """One-line case summary."""
-        return (
-            f"{self.event_name} | {self.carrier} | "
-            f"{self.county} County, {self.state} | "
-            f"{self.policy_type} | Posture: {', '.join(self.posture)}"
+def _require_non_empty_string(value: Any, field_name: str) -> str:
+    """Validate and normalize required string fields."""
+    if not isinstance(value, str):
+        raise IntakeValidationError(f"Field '{field_name}' must be a non-empty string.")
+    normalized = value.strip()
+    if not normalized:
+        raise IntakeValidationError(f"Field '{field_name}' must be a non-empty string.")
+    return normalized
+
+
+def _validate_event_date(value: Any) -> str:
+    """Validate date shape to keep intake payloads deterministic."""
+    event_date = _require_non_empty_string(value, "event_date")
+    try:
+        dt.date.fromisoformat(event_date)
+    except ValueError as exc:
+        raise IntakeValidationError(
+            "Field 'event_date' must be a valid date in YYYY-MM-DD format."
+        ) from exc
+    return event_date
+
+
+def _validate_string_list(
+    value: Any,
+    field_name: str,
+    *,
+    allow_empty: bool,
+    enforce_posture_tokens: bool = False,
+) -> list[str]:
+    """Validate list[str] fields with strict, actionable errors."""
+    if not isinstance(value, list):
+        raise IntakeValidationError(
+            f"Field '{field_name}' must be a list of non-empty strings."
         )
 
-    def format_card(self) -> str:
-        """Multi-line formatted intake card for display."""
-        lines = [
-            "=" * 60,
-            "CASE INTAKE",
-            "=" * 60,
-            f"  Event:       {self.event_name} ({self.event_date})",
-            f"  Location:    {self.county} County, {self.state}",
-            f"  Carrier:     {self.carrier}",
-            f"  Policy:      {self.policy_type}",
-            f"  Posture:     {', '.join(self.posture)}",
-        ]
-        if self.key_facts:
-            lines.append(f"  Key Facts:   {'; '.join(self.key_facts)}")
-        if self.coverage_issues:
-            lines.append(f"  Issues:      {'; '.join(self.coverage_issues)}")
-        lines.append("=" * 60)
-        return "\n".join(lines)
+    normalized: list[str] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, str):
+            raise IntakeValidationError(
+                f"Field '{field_name}[{index}]' must be a non-empty string."
+            )
+
+        cleaned = item.strip()
+        if not cleaned:
+            raise IntakeValidationError(
+                f"Field '{field_name}[{index}]' must be a non-empty string."
+            )
+
+        if enforce_posture_tokens and not POSTURE_VALUE_PATTERN.fullmatch(cleaned):
+            raise IntakeValidationError(
+                f"Field '{field_name}[{index}]' must use snake_case tokens "
+                f"like 'bad_faith', got '{item}'."
+            )
+
+        normalized.append(cleaned)
+
+    if not allow_empty and not normalized:
+        raise IntakeValidationError(f"Field '{field_name}' must contain at least one value.")
+
+    return normalized
 
 
-@dataclass
-class QuerySpec:
-    """A single search query specification."""
+def validate_case_intake_payload(payload: Mapping[str, Any]) -> CaseIntake:
+    """Validate and normalize a JSON-like intake payload into CaseIntake."""
+    if not isinstance(payload, Mapping):
+        raise IntakeValidationError(
+            "Intake payload must be a JSON object with named fields."
+        )
 
-    module: str                   # "weather" | "carrier_docs" | "caselaw"
-    query: str                    # The search query text
-    category: str                 # Sub-category within the module
-    date_start: Optional[str] = None
-    date_end: Optional[str] = None
-    preferred_domains: list[str] = field(default_factory=list)
+    missing_fields = [field for field in CASE_INTAKE_REQUIRED_FIELDS if field not in payload]
+    if missing_fields:
+        required = ", ".join(CASE_INTAKE_REQUIRED_FIELDS)
+        missing = ", ".join(missing_fields)
+        raise IntakeValidationError(
+            f"Missing required field(s): {missing}. Required fields: {required}."
+        )
 
-    def format_row(self) -> str:
-        """Format as a display row."""
-        date_range = ""
-        if self.date_start and self.date_end:
-            date_range = f" [{self.date_start} → {self.date_end}]"
-        elif self.date_start:
-            date_range = f" [from {self.date_start}]"
-        domains = ""
-        if self.preferred_domains:
-            domains = f" (prefer: {', '.join(self.preferred_domains)})"
-        return f"  [{self.category}] {self.query}{date_range}{domains}"
+    unknown_fields = [
+        str(field)
+        for field in payload.keys()
+        if field not in CASE_INTAKE_ALLOWED_FIELDS
+    ]
+    if unknown_fields:
+        allowed = ", ".join(CASE_INTAKE_ALLOWED_FIELDS)
+        unknown = ", ".join(sorted(unknown_fields))
+        raise IntakeValidationError(
+            f"Unexpected field(s): {unknown}. Allowed fields: {allowed}."
+        )
+
+    posture: list[str]
+    if "posture" in payload:
+        posture = _validate_string_list(
+            payload["posture"],
+            "posture",
+            allow_empty=False,
+            enforce_posture_tokens=True,
+        )
+    else:
+        posture = ["denial"]
+
+    key_facts = _validate_string_list(
+        payload.get("key_facts", []),
+        "key_facts",
+        allow_empty=True,
+    )
+    coverage_issues = _validate_string_list(
+        payload.get("coverage_issues", []),
+        "coverage_issues",
+        allow_empty=True,
+    )
+
+    return CaseIntake(
+        event_name=_require_non_empty_string(payload["event_name"], "event_name"),
+        event_date=_validate_event_date(payload["event_date"]),
+        state=_require_non_empty_string(payload["state"], "state"),
+        county=_require_non_empty_string(payload["county"], "county"),
+        carrier=_require_non_empty_string(payload["carrier"], "carrier"),
+        policy_type=_require_non_empty_string(payload["policy_type"], "policy_type"),
+        posture=posture,
+        key_facts=key_facts,
+        coverage_issues=coverage_issues,
+    )
+
+
+def load_case_intake(path: str | Path) -> CaseIntake:
+    """Load and strictly validate a case intake JSON file."""
+    intake_path = Path(path)
+    try:
+        raw_payload = json.loads(intake_path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise IntakeValidationError(f"Intake file not found: {intake_path}") from exc
+    except json.JSONDecodeError as exc:
+        raise IntakeValidationError(
+            f"Invalid JSON in intake file '{intake_path}' "
+            f"(line {exc.lineno}, column {exc.colno})."
+        ) from exc
+    except OSError as exc:
+        raise IntakeValidationError(f"Could not read intake file '{intake_path}': {exc}") from exc
+
+    return validate_case_intake_payload(raw_payload)
 
 
 def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
@@ -83,7 +184,6 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
     """
     queries: list[QuerySpec] = []
 
-    # --- WEATHER MODULE (4-6 queries) ---
     queries.append(QuerySpec(
         module="weather",
         query=f"{intake.event_name} {intake.county} County {intake.state} damage report",
@@ -119,7 +219,6 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
         date_start=intake.event_date,
     ))
 
-    # --- CARRIER DOCS MODULE (4-6 queries) ---
     queries.append(QuerySpec(
         module="carrier_docs",
         query=f"{intake.carrier} {intake.event_name} claim denial {intake.state}",
@@ -149,7 +248,6 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
         category="bad_faith_history",
     ))
 
-    # --- CASELAW MODULE (4-6 queries) ---
     _posture_str = " ".join(intake.posture)
     queries.append(QuerySpec(
         module="caselaw",
@@ -174,7 +272,6 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
         category="bad_faith_precedent",
     ))
 
-    # Dynamic: add coverage-issue-specific queries
     for issue in intake.coverage_issues:
         queries.append(QuerySpec(
             module="caselaw",
@@ -182,7 +279,6 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
             category="coverage_issue",
         ))
 
-    # Dynamic: add posture-specific queries
     if "bad_faith" in intake.posture:
         queries.append(QuerySpec(
             module="caselaw",

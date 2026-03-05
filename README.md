@@ -73,11 +73,11 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 ## Current Status
 
-**V2 kickoff underway:** Core demo pipeline is stable, `81` tests are passing, and CI now enforces:
+**V2 kickoff underway:** Core demo pipeline is stable, `109` tests are passing, and CI now enforces:
 - Fresh environment install + full test run
 - `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`)
 
-Issue `#4` (Exa compatibility + reproducible dependency baseline) is complete and closed.
+Issues `#4` and `#5` are complete, and issue `#6` is underway with slices 1-3 (typed intake/query, module pack adapters, and citation/export contracts).
 
 ## Roadmap (Simple)
 

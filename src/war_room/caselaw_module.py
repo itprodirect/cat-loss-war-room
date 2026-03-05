@@ -1,4 +1,4 @@
-﻿"""Case law search module.
+"""Case law search module.
 
 Runs caselaw queries via Exa. Organizes results by legal issue.
 Prefers CourtListener / official courts / scholar.google.com.
@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 
 from war_room.cache_io import cache_get, cached_call
 from war_room.exa_client import ExaClient
+from war_room.models import caselaw_pack_to_payload
 from war_room.query_plan import CaseIntake, generate_query_plan
 from war_room.source_scoring import PAYWALLED_DOMAINS, score_url
 
@@ -119,12 +120,12 @@ def build_caselaw_pack(
 
 def _empty_caselaw_pack(reason: str) -> dict[str, Any]:
     """Return a structured empty caselaw payload when live retrieval is unavailable."""
-    return {
+    return caselaw_pack_to_payload({
         "module": "caselaw",
         "issues": [],
         "sources": [],
         "warnings": [reason],
-    }
+    })
 
 
 def _assemble_pack(
@@ -199,11 +200,11 @@ def _assemble_pack(
             "reason": score["label"],
         })
 
-    return {
+    return caselaw_pack_to_payload({
         "module": "caselaw",
         "issues": issues,
         "sources": sources,
-    }
+    })
 
 
 def _extract_case_info(result: dict) -> dict[str, Any]:

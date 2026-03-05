@@ -1,14 +1,14 @@
-"""Tests for citation_verify module — no network calls."""
+"""Tests for citation_verify module - no network calls."""
 
 import sys
+import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from war_room.citation_verify import spot_check_citations, _do_check, MAX_CHECKS
+from war_room.citation_verify import MAX_CHECKS, _do_check, spot_check_citations
 from war_room.exa_client import BudgetExhausted
-from unittest.mock import MagicMock, patch
-import tempfile
 
 
 def _mock_client_with_hits(hits_list):
@@ -21,14 +21,16 @@ def _mock_client_with_hits(hits_list):
 def test_skips_blank_citations():
     """Cases with blank citations should not be checked."""
     pack = {
-        "issues": [{
-            "issue": "Coverage",
-            "cases": [
-                {"name": "Smith v. Jones", "citation": ""},
-                {"name": "Doe v. Ins Co", "citation": "   "},
-                {"name": "Real v. Case", "citation": "123 So. 3d 456"},
-            ],
-        }],
+        "issues": [
+            {
+                "issue": "Coverage",
+                "cases": [
+                    {"name": "Smith v. Jones", "citation": ""},
+                    {"name": "Doe v. Ins Co", "citation": "   "},
+                    {"name": "Real v. Case", "citation": "123 So. 3d 456"},
+                ],
+            }
+        ],
     }
     client = _mock_client_with_hits([
         {"url": "https://scholar.google.com/case", "title": "Result"},
@@ -36,13 +38,13 @@ def test_skips_blank_citations():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         result = spot_check_citations(
-            pack, client,
+            pack,
+            client,
             use_cache=False,
             cache_dir=tmpdir,
             cache_samples_dir=tmpdir,
         )
 
-    # Only the case with a real citation should be checked
     assert result["summary"]["total"] == 1
     assert len(result["checks"]) == 1
     assert result["checks"][0]["case_name"] == "Real v. Case"
@@ -61,7 +63,8 @@ def test_max_checks_cap():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         result = spot_check_citations(
-            pack, client,
+            pack,
+            client,
             use_cache=False,
             cache_dir=tmpdir,
             cache_samples_dir=tmpdir,
@@ -72,11 +75,13 @@ def test_max_checks_cap():
 
 def test_prefers_official_source_among_hits():
     """When multiple hits exist, pick the best-tier one."""
-    client = _mock_client_with_hits([
-        {"url": "https://random-blog.com/article", "title": "Blog"},
-        {"url": "https://www.flcourts.gov/case/123", "title": "FL Courts"},
-        {"url": "https://insurancejournal.com/article", "title": "Journal"},
-    ])
+    client = _mock_client_with_hits(
+        [
+            {"url": "https://random-blog.com/article", "title": "Blog"},
+            {"url": "https://www.flcourts.gov/case/123", "title": "FL Courts"},
+            {"url": "https://insurancejournal.com/article", "title": "Journal"},
+        ]
+    )
 
     result = _do_check("Smith v. Jones 123 So. 3d 456", client)
     assert result["status"] == "verified"
@@ -84,26 +89,26 @@ def test_prefers_official_source_among_hits():
 
 
 def test_professional_source_is_uncertain():
-    """Professional-only hits → uncertain."""
-    client = _mock_client_with_hits([
-        {"url": "https://insurancejournal.com/article", "title": "Article"},
-    ])
+    """Professional-only hits -> uncertain."""
+    client = _mock_client_with_hits(
+        [{"url": "https://insurancejournal.com/article", "title": "Article"}]
+    )
 
     result = _do_check("Doe v. Carrier 456 F.3d 789", client)
     assert result["status"] == "uncertain"
-    assert result["badge"] == "⚠️"
+    assert result["badge"] == "warning"
 
 
 def test_no_hits_is_not_found():
-    """Zero hits → not_found."""
+    """Zero hits -> not_found."""
     client = _mock_client_with_hits([])
     result = _do_check("Nonexistent v. Case", client)
     assert result["status"] == "not_found"
-    assert result["badge"] == "❌"
+    assert result["badge"] == "not_found"
 
 
 def test_budget_exhausted_is_uncertain():
-    """Budget exhaustion → uncertain, not not_found."""
+    """Budget exhaustion -> uncertain, not not_found."""
     client = MagicMock()
     client.search.side_effect = BudgetExhausted("out of budget")
 
@@ -113,7 +118,7 @@ def test_budget_exhausted_is_uncertain():
 
 
 def test_search_error_is_uncertain():
-    """General exception → uncertain with error note."""
+    """General exception -> uncertain with error note."""
     client = MagicMock()
     client.search.side_effect = ConnectionError("network down")
 

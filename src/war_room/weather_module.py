@@ -1,4 +1,4 @@
-﻿"""Weather data gathering module.
+"""Weather data gathering module.
 
 Runs weather queries from the query plan via Exa, preferring .gov sources.
 Extracts metrics only when present in retrieved content.
@@ -11,6 +11,7 @@ from typing import Any
 
 from war_room.cache_io import cache_get, cached_call
 from war_room.exa_client import ExaClient
+from war_room.models import weather_brief_to_payload
 from war_room.query_plan import CaseIntake, generate_query_plan
 from war_room.source_scoring import score_url
 
@@ -74,7 +75,7 @@ def build_weather_brief(
 
 def _empty_weather_brief(intake: CaseIntake, reason: str) -> dict[str, Any]:
     """Return a structured empty weather payload when live retrieval is unavailable."""
-    return {
+    return weather_brief_to_payload({
         "module": "weather",
         "event_summary": (
             f"{intake.event_name} - {intake.county} County, {intake.state} "
@@ -88,7 +89,7 @@ def _empty_weather_brief(intake: CaseIntake, reason: str) -> dict[str, Any]:
         },
         "sources": [],
         "warnings": [reason],
-    }
+    })
 
 
 def _assemble_brief(
@@ -134,7 +135,7 @@ def _assemble_brief(
             "reason": score["label"],
         })
 
-    return {
+    return weather_brief_to_payload({
         "module": "weather",
         "event_summary": (
             f"{intake.event_name} - {intake.county} County, {intake.state} "
@@ -143,7 +144,7 @@ def _assemble_brief(
         "key_observations": observations[:8],
         "metrics": metrics,
         "sources": sources,
-    }
+    })
 
 
 def _extract_metrics(text: str) -> dict[str, Any]:

@@ -1,4 +1,4 @@
-﻿"""Carrier playbook intel module.
+"""Carrier playbook intel module.
 
 Runs carrier_docs queries via Exa. Builds a document pack with
 denial patterns, regulatory signals, and rebuttal angles.
@@ -10,6 +10,7 @@ from typing import Any
 
 from war_room.cache_io import cache_get, cached_call
 from war_room.exa_client import ExaClient
+from war_room.models import carrier_doc_pack_to_payload
 from war_room.query_plan import CaseIntake, generate_query_plan
 from war_room.source_scoring import score_url
 
@@ -65,7 +66,7 @@ def build_carrier_doc_pack(
 
 def _empty_carrier_pack(intake: CaseIntake, reason: str) -> dict[str, Any]:
     """Return a structured empty carrier payload when live retrieval is unavailable."""
-    return {
+    return carrier_doc_pack_to_payload({
         "module": "carrier",
         "carrier_snapshot": {
             "name": intake.carrier,
@@ -78,7 +79,7 @@ def _empty_carrier_pack(intake: CaseIntake, reason: str) -> dict[str, Any]:
         "rebuttal_angles": [],
         "sources": [],
         "warnings": [reason],
-    }
+    })
 
 
 def _assemble_pack(
@@ -141,7 +142,7 @@ def _assemble_pack(
             "reason": score["label"],
         })
 
-    return {
+    return carrier_doc_pack_to_payload({
         "module": "carrier",
         "carrier_snapshot": {
             "name": intake.carrier,
@@ -153,7 +154,7 @@ def _assemble_pack(
         "common_defenses": common_defenses,
         "rebuttal_angles": rebuttal_angles,
         "sources": sources,
-    }
+    })
 
 
 def _why_it_matters(category: str, result: dict, intake: CaseIntake) -> str:
