@@ -15,15 +15,16 @@ Given a case intake, it assembles:
 
 This is research acceleration, not legal advice.
 
-## 2) Current status (as of March 4, 2026)
+## 2) Current status (as of March 5, 2026)
 
 | Item | Status |
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 81 passing, no network calls in tests |
+| Tests | 96 passing, no network calls in tests |
 | CI | Fresh-env test gate + exa-py compatibility matrix |
 | Exa compatibility hardening (`#4`) | Complete and closed |
+| Intake schema alignment (`#5`) | Implemented; ready to close |
 | Cache samples | Milton/Citizens/Pinellas committed |
 
 ## 3) What changed recently
@@ -33,6 +34,7 @@ This is research acceleration, not legal advice.
 - CI now blocks merges if fresh-env tests fail.
 - CI also runs an `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`).
 - Adapter smoke tests were added for kwargs forwarding contracts.
+- Intake JSON now has strict schema validation and file-loading helpers.
 
 ## 4) Quick run
 
@@ -60,7 +62,6 @@ Core implementation lives in `src/war_room/`.
 ## 7) Roadmap summary
 
 ### Now
-- #5 schema alignment for eval intake
 - #6 typed domain contracts
 - #7 retrieval provider abstraction and contracts
 - #8 multi-jurisdiction fixtures and snapshots

@@ -1,4 +1,4 @@
-﻿# CAT-Loss War Room - Session Log
+# CAT-Loss War Room - Session Log
 
 This is the concise, current session timeline.
 
@@ -95,3 +95,23 @@ Status: Complete
 - Added regression tests for all fallback and filter hardening behavior.
 - Updated V2 blueprint note to reference `_template_case_intake.json`.
 - Verification: `pytest -q` -> 85 passed.
+
+## Session 10 - Issue #5 Intake Validation and Schema Lock
+Date: 2026-03-05
+Status: Complete
+
+- Added strict intake ingestion helpers in `src/war_room/query_plan.py`:
+  - `validate_case_intake_payload(payload)`
+  - `load_case_intake(path)`
+  - `IntakeValidationError`
+- Enforced canonical schema boundaries:
+  - required fields must exist,
+  - unknown fields are rejected,
+  - no type coercion,
+  - `event_date` must be valid `YYYY-MM-DD`,
+  - `posture` must be a non-empty list of snake_case tokens.
+- Exported intake validation API and schema constants from `war_room.__init__`.
+- Added coverage in `tests/test_intake_validation.py` for valid/invalid payloads and JSON ingest errors.
+- Updated `eval/README.md` with explicit required/optional fields for both demo and live-eval lanes plus strict validation behavior.
+- Updated build checklist to reflect issue #5 completion.
+- Verification: `pytest -q` -> 96 passed.
