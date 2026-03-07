@@ -454,6 +454,7 @@ Exit criteria:
 - Treat provenance as a first-order product feature, not an appendix detail.
 - Keep the canonical evidence graph clustered by durable identifiers such as normalized URLs and case citations, not only flat memo rows.
 - Carry those cluster identifiers through memo claims so review, export, and later UI surfaces can address grouped support directly.
+- Carry those same cluster identifiers through review events so the audit trail does not fall back to module-only warning context.
 - Do not ship "AI magic" before scorecards, evidence links, and human review are real.
 - Do not start firm memory until review workflow, provenance, and security baseline are underway.
 

@@ -41,6 +41,7 @@ This is research acceleration, not legal advice.
 - Typed domain contracts now cover intake/query, weather/carrier/caselaw packs, and citation/export memo contracts.
 - Audit snapshots now cluster evidence by citation and normalized URL so the export can group related support instead of listing only flat records.
 - Memo claims now carry cluster references directly so review and export layers can point to grouped evidence instead of only raw evidence IDs.
+- Review events now carry cluster references too, so warnings and citation failures can land on grouped evidence instead of only module-scoped evidence rows.
 - The repo now installs as an editable package and uses shared bootstrap/settings helpers instead of per-file `sys.path` mutation in tests and scripts.
 - Runtime environment lanes and artifact boundaries are documented in `docs/FOUNDATION.md`.
 - V2 planning was expanded with a deeper rebuild blueprint plus new GitHub issues `#22` through `#27` covering product foundation, UX IA, provenance schema, AI guardrails, human review, and release scorecards.

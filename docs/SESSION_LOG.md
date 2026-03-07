@@ -406,3 +406,17 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; python -m pytest -q tests/test_export.py tests/test_memo_contracts.py` -> `15 passed`
   - `$env:PYTHONPATH="src"; python -m pytest -q` -> `144 passed`
+
+## Session 28 - Review Event Cluster Trace Slice
+Date: 2026-03-07
+Status: Complete
+
+- Extended `ReviewEvent` in `src/war_room/models.py` so audit events now carry `related_cluster_ids` alongside `related_evidence_ids`.
+- Wired review-event assembly to resolve grouped evidence references from the canonical evidence-cluster map.
+- Updated markdown export in `src/war_room/export_md.py` so the review log now prints the related evidence clusters for each warning or citation issue.
+- Expanded regression coverage in:
+  - `tests/test_export.py`
+  - `tests/test_memo_contracts.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; python -m pytest -q tests/test_export.py tests/test_memo_contracts.py` -> `15 passed`
+  - `$env:PYTHONPATH="src"; python -m pytest -q` -> `144 passed`

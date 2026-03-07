@@ -89,6 +89,7 @@ Goal: trust, polish, and real-world adoption readiness.
 - Trust: every key statement in output can be traced to sources.
 - Evidence shape: related evidence records cluster cleanly by citation or URL before memo/export rendering.
 - Reviewability: memo claims should resolve to stable evidence-group references, not only item-level rows.
+- Auditability: review events should point at those same grouped evidence references so warnings and citation failures stay traceable.
 - Usability: non-technical users can run intake-to-memo with minimal guidance.
 - Quality: fewer noisy results, better case law precision, clearer citation confidence.
 - Readiness: releases are scored against the same benchmark rubric used in pilot validation.
