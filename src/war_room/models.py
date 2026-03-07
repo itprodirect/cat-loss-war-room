@@ -282,6 +282,21 @@ class EvidenceItem(BaseModel):
     review_required: bool = False
 
 
+class EvidenceCluster(BaseModel):
+    """Normalized evidence grouping keyed by citation or URL."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    cluster_id: str = Field(min_length=1)
+    cluster_type: Literal["citation", "url", "derived"]
+    label: str = Field(min_length=1)
+    evidence_ids: list[str] = Field(default_factory=list)
+    modules: list[str] = Field(default_factory=list)
+    citation: str | None = None
+    url: str | None = None
+    review_required: bool = False
+
+
 class MemoClaim(BaseModel):
     """Evidence-linked memo assertion for audit purposes."""
 
@@ -339,6 +354,7 @@ class RunAuditSnapshot(BaseModel):
     intake: CaseIntake
     query_plan: list[QuerySpec] = Field(default_factory=list)
     evidence_items: list[EvidenceItem] = Field(default_factory=list)
+    evidence_clusters: list[EvidenceCluster] = Field(default_factory=list)
     memo_claims: list[MemoClaim] = Field(default_factory=list)
     review_events: list[ReviewEvent] = Field(default_factory=list)
     export_artifact: ExportArtifact
@@ -414,7 +430,6 @@ def memo_render_input_from_parts(
     )
 
 
-
 def adapt_run_audit_snapshot(
     payload: Mapping[str, Any] | RunAuditSnapshot,
 ) -> RunAuditSnapshot:
@@ -442,7 +457,11 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
     weather_observations = weather_payload.get("key_observations", [])
     for index, source in enumerate(weather_payload.get("sources", []), 1):
         evidence_id = f"weather-source-{index}"
-        summary = weather_observations[index - 1] if index <= len(weather_observations) else weather_payload.get("event_summary", "")
+        summary = (
+            weather_observations[index - 1]
+            if index <= len(weather_observations)
+            else weather_payload.get("event_summary", "")
+        )
         evidence_items.append(
             EvidenceItem(
                 evidence_id=evidence_id,
@@ -520,6 +539,8 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         )
         evidence_ids_by_module["citation_verify"].append(evidence_id)
 
+    evidence_clusters = _build_evidence_clusters(evidence_items)
+
     review_events: list[ReviewEvent] = []
     for module_key, module_label, payload in (
         ("weather", "Weather", weather_payload),
@@ -571,28 +592,40 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
             section="Weather Corroboration",
             text=weather_payload.get("event_summary", "Weather evidence assembled."),
             evidence_ids=evidence_ids_by_module["weather"],
-            status=_claim_status(evidence_ids_by_module["weather"], "weather" in review_modules),
+            status=_claim_status(
+                evidence_ids_by_module["weather"],
+                "weather" in review_modules,
+            ),
         ),
         MemoClaim(
             claim_id="carrier-positioning",
             section="Carrier Document Pack",
             text=_carrier_claim_text(carrier_payload),
             evidence_ids=evidence_ids_by_module["carrier"],
-            status=_claim_status(evidence_ids_by_module["carrier"], "carrier" in review_modules),
+            status=_claim_status(
+                evidence_ids_by_module["carrier"],
+                "carrier" in review_modules,
+            ),
         ),
         MemoClaim(
             claim_id="case-law-support",
             section="Case Law",
             text=_caselaw_claim_text(caselaw_payload),
             evidence_ids=evidence_ids_by_module["caselaw"],
-            status=_claim_status(evidence_ids_by_module["caselaw"], "caselaw" in review_modules or bool(uncertain or not_found)),
+            status=_claim_status(
+                evidence_ids_by_module["caselaw"],
+                "caselaw" in review_modules or bool(uncertain or not_found),
+            ),
         ),
         MemoClaim(
             claim_id="citation-check-status",
             section="Citation Spot-Check",
             text=citecheck_payload.get("disclaimer", "Citation spot-check completed."),
             evidence_ids=evidence_ids_by_module["citation_verify"],
-            status=_claim_status(evidence_ids_by_module["citation_verify"], bool(uncertain or not_found)),
+            status=_claim_status(
+                evidence_ids_by_module["citation_verify"],
+                bool(uncertain or not_found),
+            ),
         ),
     ]
 
@@ -603,17 +636,19 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         "Carrier Document Pack",
         "Case Law",
         "Appendix: Query Plan",
+        "Appendix: Evidence Clusters",
         "Appendix: Evidence Index",
         "Appendix: All Sources",
         "Methodology & Limitations",
     ]
     if review_events:
-        section_titles.insert(7, "Appendix: Review Log")
+        section_titles.insert(8, "Appendix: Review Log")
 
     return RunAuditSnapshot(
         intake=memo_input.intake,
         query_plan=memo_input.query_plan,
         evidence_items=evidence_items,
+        evidence_clusters=evidence_clusters,
         memo_claims=memo_claims,
         review_events=review_events,
         export_artifact=ExportArtifact(
@@ -636,6 +671,53 @@ def run_audit_snapshot_from_parts(
     return run_audit_snapshot_from_memo_input(
         memo_render_input_from_parts(intake, weather, carrier, caselaw, citecheck, query_plan)
     )
+
+
+def _build_evidence_clusters(evidence_items: list[EvidenceItem]) -> list[EvidenceCluster]:
+    """Group evidence by citation first, then URL, then a derived fallback key."""
+    grouped: dict[tuple[str, str], list[EvidenceItem]] = {}
+    ordered_keys: list[tuple[str, str]] = []
+
+    for item in evidence_items:
+        cluster_key = _cluster_key_for_item(item)
+        if cluster_key not in grouped:
+            grouped[cluster_key] = []
+            ordered_keys.append(cluster_key)
+        grouped[cluster_key].append(item)
+
+    clusters: list[EvidenceCluster] = []
+    for index, cluster_key in enumerate(ordered_keys, 1):
+        items = grouped[cluster_key]
+        first = items[0]
+        modules = list(dict.fromkeys(item.module for item in items))
+        label = first.citation or first.title or first.summary or first.evidence_type
+        clusters.append(
+            EvidenceCluster(
+                cluster_id=f"cluster-{index}",
+                cluster_type=cluster_key[0],
+                label=label,
+                evidence_ids=[item.evidence_id for item in items],
+                modules=modules,
+                citation=first.citation,
+                url=first.url,
+                review_required=any(item.review_required for item in items),
+            )
+        )
+
+    return clusters
+
+
+def _cluster_key_for_item(item: EvidenceItem) -> tuple[str, str]:
+    if item.citation:
+        return ("citation", item.citation.lower())
+    if item.url:
+        return ("url", _normalize_cluster_url(item.url))
+    fallback = "|".join([item.module, item.evidence_type, item.title.lower()])
+    return ("derived", fallback)
+
+
+def _normalize_cluster_url(url: str) -> str:
+    return url.strip().rstrip("/").lower()
 
 
 def _claim_status(evidence_ids: list[str], has_review_event: bool) -> str:
@@ -672,6 +754,7 @@ def _caselaw_claim_text(caselaw_payload: dict[str, Any]) -> str:
         return first_case[0]["one_liner"]
 
     return f"Case-law authorities identified across {len(issues)} issue buckets."
+
 
 def _model_to_payload(model: BaseModel) -> dict[str, Any]:
     """Dump model while preserving legacy omission of `warnings` when empty."""

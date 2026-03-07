@@ -116,6 +116,7 @@ def test_render_contains_all_sections():
     assert "Case Law" in md
     assert "Citation Spot-Check" in md
     assert "Query Plan" in md
+    assert "Evidence Clusters" in md
     assert "Evidence Index" in md
     assert "All Sources" in md
     assert "Methodology" in md
@@ -148,6 +149,15 @@ def test_render_surfaces_review_flags_when_present():
     assert "Citation review: 1 uncertain and 0 not found entries require manual verification." in md
     assert "Appendix: Review Log" in md
     assert "Citation review required" in md
+
+
+def test_render_includes_evidence_clusters():
+    md = render_markdown_memo(*_sample_data())
+
+    assert "cluster-1" in md
+    assert "cluster-2" in md
+    assert "cluster-3" in md
+    assert "citation | 123 So.3d 456" in md
 
 
 def test_render_includes_canonical_evidence_index_rows():

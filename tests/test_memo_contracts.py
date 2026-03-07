@@ -115,9 +115,7 @@ def _sample_payloads():
         "summary": {"total": 1, "verified": 1, "uncertain": 0, "not_found": 0},
     }
 
-    query_plan = [
-        QuerySpec(module="weather", query="test query", category="test"),
-    ]
+    query_plan = [QuerySpec(module="weather", query="test query", category="test")]
 
     return intake, weather, carrier, caselaw, citecheck, query_plan
 
@@ -171,10 +169,14 @@ def test_run_audit_snapshot_builds_canonical_entities():
     payload = run_audit_snapshot_to_payload(snapshot)
 
     assert len(snapshot.evidence_items) == 4
+    assert len(snapshot.evidence_clusters) == 3
     assert len(snapshot.memo_claims) == 4
     assert snapshot.export_artifact.artifact_type == "markdown_memo"
+    assert "Appendix: Evidence Clusters" in snapshot.export_artifact.section_titles
     assert "Appendix: Evidence Index" in snapshot.export_artifact.section_titles
     assert payload["evidence_items"][0]["evidence_id"] == "weather-source-1"
+    assert payload["evidence_clusters"][0]["cluster_id"] == "cluster-1"
+    assert payload["evidence_clusters"][2]["cluster_type"] == "citation"
 
 
 def test_run_audit_snapshot_tracks_review_events_and_claim_status():
@@ -193,8 +195,14 @@ def test_run_audit_snapshot_tracks_review_events_and_claim_status():
     )
 
     assert {event.event_type for event in snapshot.review_events} == {"warning", "citation_uncertain"}
-    assert any(claim.claim_id == "weather-corroboration" and claim.status == "review_required" for claim in snapshot.memo_claims)
-    assert any(claim.claim_id == "citation-check-status" and claim.status == "review_required" for claim in snapshot.memo_claims)
+    assert any(
+        claim.claim_id == "weather-corroboration" and claim.status == "review_required"
+        for claim in snapshot.memo_claims
+    )
+    assert any(
+        claim.claim_id == "citation-check-status" and claim.status == "review_required"
+        for claim in snapshot.memo_claims
+    )
 
 
 def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():
@@ -213,4 +221,5 @@ def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():
     assert "Citation Spot-Check" in markdown
     assert "Citation Confidence" in markdown
     assert "Trust Snapshot" in markdown
+    assert "Evidence Clusters" in markdown
     assert "Evidence Index" in markdown

@@ -238,6 +238,10 @@ def render_markdown_memo(
     lines.append("")
 
     # --- 7. Evidence Appendix ---
+    lines.append("## Appendix: Evidence Clusters")
+    lines.append("")
+    _append_evidence_clusters(lines, audit_snapshot.evidence_clusters)
+
     lines.append("## Appendix: Evidence Index")
     lines.append("")
     _append_evidence_index(lines, audit_snapshot.evidence_items)
@@ -293,6 +297,23 @@ def write_markdown(output_dir: str | Path, case_key: str, md: str) -> Path:
     path = out / filename
     path.write_text(md, encoding="utf-8")
     return path
+
+
+def _append_evidence_clusters(lines: list[str], evidence_clusters: list[Any]) -> None:
+    """Append normalized evidence clusters from the audit snapshot."""
+    if not evidence_clusters:
+        lines.append("No evidence clusters captured.")
+        lines.append("")
+        return
+
+    lines.append("| Cluster | Type | Label | Modules | Evidence IDs |")
+    lines.append("|---------|------|-------|---------|--------------|")
+    for cluster in evidence_clusters:
+        lines.append(
+            f"| {cluster.cluster_id} | {cluster.cluster_type} | {cluster.label[:50]} | "
+            f"{', '.join(cluster.modules)} | {', '.join(cluster.evidence_ids)} |"
+        )
+    lines.append("")
 
 
 def _append_evidence_index(lines: list[str], evidence_items: list[Any]) -> None:
