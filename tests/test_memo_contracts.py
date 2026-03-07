@@ -169,4 +169,5 @@ def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():
 
     assert "Case Intake" in markdown
     assert "Citation Spot-Check" in markdown
-    assert "Summary:" in markdown
+    assert "Citation Confidence" in markdown
+    assert "Trust Snapshot" in markdown

@@ -58,6 +58,34 @@ def render_markdown_memo(
     lines.append("---")
     lines.append("")
 
+    review_flags = _build_review_flags(
+        weather_payload=weather_payload,
+        carrier_payload=carrier_payload,
+        caselaw_payload=caselaw_payload,
+        citecheck_payload=citecheck_payload,
+    )
+
+    lines.append("## Trust Snapshot")
+    lines.append("")
+    for item in _trust_snapshot_lines(
+        weather_payload=weather_payload,
+        carrier_payload=carrier_payload,
+        caselaw_payload=caselaw_payload,
+        citecheck_payload=citecheck_payload,
+    ):
+        lines.append(f"- {item}")
+    lines.append("")
+
+    if review_flags:
+        lines.append("### Review Required")
+        lines.append("")
+        for flag in review_flags:
+            lines.append(f"- {flag}")
+        lines.append("")
+
+    lines.append("---")
+    lines.append("")
+
     # --- 2. Case Intake ---
     lines.append("## Case Intake")
     lines.append("")
@@ -79,6 +107,7 @@ def render_markdown_memo(
     lines.append("")
     lines.append(f"**{weather_payload.get('event_summary', '')}**")
     lines.append("")
+    _append_warnings(lines, weather_payload.get("warnings", []), "Weather review flags")
     metrics = weather_payload.get("metrics", {})
     if any(value is not None for value in metrics.values()):
         lines.append("### Metrics Extracted")
@@ -110,14 +139,15 @@ def render_markdown_memo(
         f"{snap.get('state', '')} - {snap.get('policy_type', '')}"
     )
     lines.append("")
+    _append_warnings(lines, carrier_payload.get("warnings", []), "Carrier review flags")
 
     docs = carrier_payload.get("document_pack", [])
     if docs:
-        lines.append("### Documents")
+        lines.append("### Highest-Value Documents")
         lines.append("")
         lines.append("| # | Type | Title | Badge | Why It Matters |")
         lines.append("|---|------|-------|-------|----------------|")
-        for i, document in enumerate(docs[:10], 1):
+        for i, document in enumerate(docs[:8], 1):
             title = document.get("title", "")[:60]
             lines.append(
                 f"| {i} | {document.get('doc_type', '')} | "
@@ -147,6 +177,9 @@ def render_markdown_memo(
     # --- 5. Case Law Pack + Citation Check ---
     lines.append("## Case Law")
     lines.append("")
+    _append_warnings(lines, caselaw_payload.get("warnings", []), "Case-law review flags")
+    _append_citation_summary(lines, citecheck_payload)
+
     issues = caselaw_payload.get("issues", [])
     for issue in issues:
         lines.append(f"### {issue.get('issue', '')}")
@@ -173,6 +206,7 @@ def render_markdown_memo(
         lines.append("### Citation Spot-Check")
         lines.append("")
         lines.append(f"> {citecheck_payload.get('disclaimer', '')}")
+        lines.append("> Use this as a routing signal for review, not as verification.")
         lines.append("")
         lines.append("| Badge | Case | Citation | Note |")
         lines.append("|-------|------|----------|------|")
@@ -181,13 +215,6 @@ def render_markdown_memo(
                 f"| {check.get('badge', '')} | {check.get('case_name', '')[:40]} | "
                 f"{check.get('citation', '')} | {check.get('note', '')[:60]} |"
             )
-        lines.append("")
-        summary = citecheck_payload.get("summary", {})
-        lines.append(
-            f"**Summary:** {summary.get('verified', 0)} verified, "
-            f"{summary.get('uncertain', 0)} uncertain, "
-            f"{summary.get('not_found', 0)} not found"
-        )
         lines.append("")
 
     _append_sources(lines, caselaw_payload.get("sources", []), "Case Law")
@@ -206,7 +233,7 @@ def render_markdown_memo(
     # --- 7. Source Appendix (deduplicated) ---
     lines.append("## Appendix: All Sources")
     lines.append("")
-    all_sources: list[dict] = []
+    all_sources: list[dict[str, Any]] = []
     seen_urls: set[str] = set()
     for module_data in [weather_payload, carrier_payload, caselaw_payload]:
         for src in module_data.get("sources", []):
@@ -251,7 +278,7 @@ def write_markdown(output_dir: str | Path, case_key: str, md: str) -> Path:
     return path
 
 
-def _append_sources(lines: list[str], sources: list[dict], label: str) -> None:
+def _append_sources(lines: list[str], sources: list[dict[str, Any]], label: str) -> None:
     """Append a sources sub-section."""
     if not sources:
         return
@@ -260,5 +287,84 @@ def _append_sources(lines: list[str], sources: list[dict], label: str) -> None:
     for src in sources[:8]:
         lines.append(
             f"- {src.get('badge', '')} [{src.get('title', '')[:60]}]({src.get('url', '')})"
+            f" - {src.get('reason', '')}"
         )
     lines.append("")
+
+
+def _append_warnings(lines: list[str], warnings: list[str] | None, heading: str) -> None:
+    """Append a compact warning block when a module emitted warnings."""
+    if not warnings:
+        return
+    lines.append(f"### {heading}")
+    lines.append("")
+    for warning in warnings:
+        lines.append(f"- {warning}")
+    lines.append("")
+
+
+def _append_citation_summary(lines: list[str], citecheck_payload: dict[str, Any]) -> None:
+    """Append a compact citation confidence summary ahead of case detail."""
+    summary = citecheck_payload.get("summary", {})
+    total = summary.get("total", 0)
+    if total == 0:
+        return
+
+    lines.append("### Citation Confidence")
+    lines.append("")
+    lines.append(f"- Verified: {summary.get('verified', 0)}")
+    lines.append(f"- Uncertain: {summary.get('uncertain', 0)}")
+    lines.append(f"- Not Found: {summary.get('not_found', 0)}")
+    lines.append("")
+
+
+def _trust_snapshot_lines(
+    *,
+    weather_payload: dict[str, Any],
+    carrier_payload: dict[str, Any],
+    caselaw_payload: dict[str, Any],
+    citecheck_payload: dict[str, Any],
+) -> list[str]:
+    """Build the top-of-memo trust snapshot."""
+    total_cases = sum(len(issue.get("cases", [])) for issue in caselaw_payload.get("issues", []))
+    citation_summary = citecheck_payload.get("summary", {})
+    return [
+        f"Weather sources: {len(weather_payload.get('sources', []))}",
+        f"Carrier documents: {len(carrier_payload.get('document_pack', []))}",
+        f"Case authorities: {total_cases}",
+        (
+            "Citation spot-checks: "
+            f"{citation_summary.get('verified', 0)} verified / "
+            f"{citation_summary.get('uncertain', 0)} uncertain / "
+            f"{citation_summary.get('not_found', 0)} not found"
+        ),
+    ]
+
+
+def _build_review_flags(
+    *,
+    weather_payload: dict[str, Any],
+    carrier_payload: dict[str, Any],
+    caselaw_payload: dict[str, Any],
+    citecheck_payload: dict[str, Any],
+) -> list[str]:
+    """Collect top-level review flags from module warnings and citation status."""
+    flags: list[str] = []
+    for module_label, payload in (
+        ("Weather", weather_payload),
+        ("Carrier", carrier_payload),
+        ("Case law", caselaw_payload),
+    ):
+        for warning in payload.get("warnings", []) or []:
+            flags.append(f"{module_label}: {warning}")
+
+    summary = citecheck_payload.get("summary", {})
+    uncertain = summary.get("uncertain", 0)
+    not_found = summary.get("not_found", 0)
+    if uncertain or not_found:
+        flags.append(
+            "Citation review: "
+            f"{uncertain} uncertain and {not_found} not found entries require manual verification."
+        )
+
+    return flags
