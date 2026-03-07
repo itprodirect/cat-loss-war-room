@@ -56,7 +56,7 @@ Status: Complete
 Date: 2026-03-06
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 128 passing.
+- Test status: 130 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
 - Issues #4, #5, and #22 complete. Issue #6 slices 1-3 merged.
 - V2 foundation issues #22-#27 created and documented.
@@ -296,5 +296,25 @@ Status: Complete
 - Curated the committed weather fixture so the offline demo lane reflects the higher relevance bar.
 - Verification:
   - `.venv\Scripts\python -m pytest tests/test_weather.py tests/test_citation_verify.py tests/test_offline_demo_pack.py -q` -> `34 passed`
-  - `.venv\Scripts\python -m pytest -q` -> `128 passed`
+  - `.venv\Scripts\python -m pytest -q` -> `130 passed`
+
+
+
+## Session 22 - Memo Export Trust-Signal Pass
+Date: 2026-03-07
+Status: Complete
+
+- Reworked markdown export structure to surface trust signals earlier in the memo.
+- Added a top-of-memo trust snapshot with source counts, case counts, and citation-check summary.
+- Added review-required flags so module warnings and citation uncertainty are visible before the appendix.
+- Tightened section presentation:
+  - carrier docs now render as highest-value documents,
+  - citation confidence is summarized ahead of case detail,
+  - source lists now include source-tier reasons.
+- Added regression coverage in:
+  - `tests/test_export.py`
+  - `tests/test_memo_contracts.py`
+- Verification:
+  - `.venv\Scripts\python -m pytest tests/test_export.py tests/test_memo_contracts.py -q` -> `9 passed`
+  - `.venv\Scripts\python -m pytest -q` -> `130 passed`
 

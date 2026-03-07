@@ -27,7 +27,7 @@ Do **not** rebuild this as a distributed microservice maze. The right V2 is a di
 
 | Dimension | Verdict | Why |
 |---|---|---|
-| Demo reliability | Strong | Offline cache lane, committed fixtures, and `128` passing tests make the demo dependable. |
+| Demo reliability | Strong | Offline cache lane, committed fixtures, and `130` passing tests make the demo dependable. |
 | End-user usability | Weak | The primary interface is still Jupyter plus environment setup and kernel selection. |
 | Evidence quality | Mixed | Good source gathering intent, but normalization and extraction are still brittle. |
 | Legal trust posture | Promising | Guardrails and disclaimers are strong; provenance and review workflow are not yet product-grade. |
@@ -47,7 +47,7 @@ Do **not** rebuild this as a distributed microservice maze. The right V2 is a di
 - Module boundaries are understandable.
   - Weather, carrier, case law, citation checks, and export are separated in a way a new engineer can follow.
 - Test coverage is respectable for a prototype.
-  - `128` tests is enough to trust refactors more than usual at this stage.
+  - `130` tests is enough to trust refactors more than usual at this stage.
 - Documentation is better than the average internal prototype.
   - Handoff, method, safety, demo script, and roadmap docs reduce tribal knowledge.
 
@@ -461,5 +461,6 @@ Exit criteria:
 2. Use completed [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) as the bootstrap baseline, then push [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23), [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24), and [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) before major V2 implementation.
 3. Use the current notebook plus fixture lane as the regression harness while API and web surfaces come online.
 4. Only introduce AI into V2 through the guardrailed path defined in [#25](https://github.com/itprodirect/cat-loss-war-room-demo/issues/25).
+
 
 
