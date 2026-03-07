@@ -7,7 +7,7 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 139 tests are passing.
+- 142 tests are passing.
 - CI has a fresh-environment gate, editable-package install, and `exa-py` compatibility matrix.
 - A deeper V2 foundation layer is now tracked in issues `#22` through `#27`.
 - Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is complete.

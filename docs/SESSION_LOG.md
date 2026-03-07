@@ -56,7 +56,7 @@ Status: Complete
 Date: 2026-03-07
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 139 passing.
+- Test status: 142 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
 - Issues #4, #5, and #22 complete. Issue #6 slices 1-3 merged.
 - V2 foundation issues #22-#27 created and documented.
@@ -352,4 +352,24 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; python -m pytest -q tests/test_models.py tests/test_query_plan.py tests/test_export.py tests/test_memo_contracts.py tests/test_weather.py tests/test_carrier.py tests/test_caselaw.py` -> `48 passed`
   - `$env:PYTHONPATH="src"; python -m pytest -q` -> `139 passed`
+## Session 25 - Evidence and Audit Schema Slice
+Date: 2026-03-07
+Status: Complete
+
+- Added canonical evidence/audit entities in `src/war_room/models.py`:
+  - `EvidenceItem`
+  - `MemoClaim`
+  - `ReviewEvent`
+  - `ExportArtifact`
+  - `RunAuditSnapshot`
+- Added deterministic audit builders so the current V0 memo flow now emits a typed audit snapshot from existing module packs instead of introducing a parallel runtime.
+- Wired markdown export to surface the new schema in output:
+  - `Appendix: Evidence Index`
+  - `Appendix: Review Log` when review events exist
+- Added regression coverage in:
+  - `tests/test_export.py`
+  - `tests/test_memo_contracts.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; python -m pytest -q tests/test_models.py tests/test_export.py tests/test_memo_contracts.py` -> `20 passed`
+  - `$env:PYTHONPATH="src"; python -m pytest -q` -> `142 passed`
 

@@ -21,7 +21,7 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 139 passing, package-installed, no network calls in tests |
+| Tests | 142 passing, package-installed, no network calls in tests |
 | CI | Fresh-env test gate + exa-py compatibility matrix, both using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
