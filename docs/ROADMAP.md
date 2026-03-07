@@ -88,6 +88,7 @@ Goal: trust, polish, and real-world adoption readiness.
 - Reliability: tests and CI stay green on every PR.
 - Trust: every key statement in output can be traced to sources.
 - Evidence shape: related evidence records cluster cleanly by citation or URL before memo/export rendering.
+- Reviewability: memo claims should resolve to stable evidence-group references, not only item-level rows.
 - Usability: non-technical users can run intake-to-memo with minimal guidance.
 - Quality: fewer noisy results, better case law precision, clearer citation confidence.
 - Readiness: releases are scored against the same benchmark rubric used in pilot validation.

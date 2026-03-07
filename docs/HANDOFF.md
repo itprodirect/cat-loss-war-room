@@ -21,7 +21,7 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 143 passing, package-installed, no network calls in tests |
+| Tests | 144 passing, package-installed, no network calls in tests |
 | CI | Fresh-env test gate + exa-py compatibility matrix, both using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -40,6 +40,7 @@ This is research acceleration, not legal advice.
 - Intake JSON now has strict schema validation and file-loading helpers.
 - Typed domain contracts now cover intake/query, weather/carrier/caselaw packs, and citation/export memo contracts.
 - Audit snapshots now cluster evidence by citation and normalized URL so the export can group related support instead of listing only flat records.
+- Memo claims now carry cluster references directly so review and export layers can point to grouped evidence instead of only raw evidence IDs.
 - The repo now installs as an editable package and uses shared bootstrap/settings helpers instead of per-file `sys.path` mutation in tests and scripts.
 - Runtime environment lanes and artifact boundaries are documented in `docs/FOUNDATION.md`.
 - V2 planning was expanded with a deeper rebuild blueprint plus new GitHub issues `#22` through `#27` covering product foundation, UX IA, provenance schema, AI guardrails, human review, and release scorecards.

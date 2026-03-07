@@ -56,7 +56,7 @@ Status: Complete
 Date: 2026-03-07
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 143 passing.
+- Test status: 144 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
 - Issues #4, #5, and #22 complete. Issue #6 slices 1-3 merged.
 - V2 foundation issues #22-#27 created and documented.
@@ -371,7 +371,7 @@ Status: Complete
   - `tests/test_memo_contracts.py`
 - Verification:
   - `$env:PYTHONPATH="src"; python -m pytest -q tests/test_models.py tests/test_export.py tests/test_memo_contracts.py` -> `20 passed`
-  - `$env:PYTHONPATH="src"; python -m pytest -q` -> `143 passed`
+  - `$env:PYTHONPATH="src"; python -m pytest -q` -> `142 passed`
 
 ## Session 26 - Evidence Cluster Normalization Slice
 Date: 2026-03-07
@@ -392,3 +392,17 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; python -m pytest -q tests/test_export.py tests/test_memo_contracts.py` -> `14 passed`
   - `$env:PYTHONPATH="src"; python -m pytest -q` -> `143 passed`
+
+## Session 27 - Claim Cluster Trace Slice
+Date: 2026-03-07
+Status: Complete
+
+- Extended `MemoClaim` in `src/war_room/models.py` so each claim now carries `cluster_ids` in addition to raw `evidence_ids`.
+- Wired audit assembly to resolve claim-level cluster references from the canonical evidence-cluster map.
+- Updated markdown export in `src/war_room/export_md.py` to surface claim status plus evidence-cluster references within the memo sections.
+- Expanded regression coverage in:
+  - `tests/test_export.py`
+  - `tests/test_memo_contracts.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; python -m pytest -q tests/test_export.py tests/test_memo_contracts.py` -> `15 passed`
+  - `$env:PYTHONPATH="src"; python -m pytest -q` -> `144 passed`
