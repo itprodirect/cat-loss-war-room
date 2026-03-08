@@ -10,7 +10,13 @@ import re
 from typing import Any
 
 from war_room.cache_io import cache_get, cached_call
-from war_room.retrieval import RetrievalProvider
+from war_room.retrieval import (
+    RetrievalProvider,
+    RetrievalSearchRequest,
+    execute_retrieval_task,
+    notebook_run_id_from_intake,
+    query_spec_to_retrieval_task,
+)
 from war_room.models import CaseIntake, weather_brief_to_payload
 from war_room.query_plan import generate_query_plan
 from war_room.source_scoring import score_url
@@ -81,18 +87,42 @@ def build_weather_brief(
     def _fetch() -> dict[str, Any]:
         queries = [q for q in generate_query_plan(intake) if q.module == "weather"]
         all_results: list[dict] = []
+        retrieval_tasks = []
+        run_events = []
+        warnings: list[str] = []
+        run_id = notebook_run_id_from_intake(intake)
+        stage_id = f"{run_id}:weather"
 
-        for q in queries:
-            hits = client.search(
-                q.query,
-                k=5,
-                include_domains=q.preferred_domains or None,
+        for index, q in enumerate(queries, 1):
+            task = query_spec_to_retrieval_task(
+                q,
+                run_id=run_id,
+                stage_id=stage_id,
+                provider=client.provider_name,
+                retrieval_task_id=f"{stage_id}:{q.category}:{index}",
             )
-            for h in hits:
-                h["category"] = q.category
-            all_results.extend(hits)
+            execution = execute_retrieval_task(
+                client,
+                RetrievalSearchRequest(
+                    task=task,
+                    k=5,
+                    include_domains=q.preferred_domains,
+                ),
+            )
+            retrieval_tasks.append(execution.task)
+            run_events.extend(execution.run_events)
+            if execution.warning:
+                warnings.append(execution.warning)
+            for hit in execution.hits:
+                hit["category"] = q.category
+            all_results.extend(execution.hits)
 
-        return _assemble_brief(intake, all_results)
+        payload = _assemble_brief(intake, all_results)
+        if warnings:
+            payload["warnings"] = list(dict.fromkeys((payload.get("warnings") or []) + warnings))
+        payload["retrieval_tasks"] = retrieval_tasks
+        payload["run_events"] = run_events
+        return weather_brief_to_payload(payload)
 
     return cached_call(
         case_key,

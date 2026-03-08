@@ -12,7 +12,13 @@ from typing import Any
 from urllib.parse import urlparse
 
 from war_room.cache_io import cache_get, cached_call
-from war_room.retrieval import RetrievalProvider
+from war_room.retrieval import (
+    RetrievalProvider,
+    RetrievalSearchRequest,
+    execute_retrieval_task,
+    notebook_run_id_from_intake,
+    query_spec_to_retrieval_task,
+)
 from war_room.models import CaseIntake, caselaw_pack_to_payload
 from war_room.query_plan import generate_query_plan
 from war_room.source_scoring import PAYWALLED_DOMAINS, score_url
@@ -120,19 +126,43 @@ def build_caselaw_pack(
     def _fetch() -> dict[str, Any]:
         queries = [q for q in generate_query_plan(intake) if q.module == "caselaw"]
         all_results: list[dict] = []
+        retrieval_tasks = []
+        run_events = []
+        warnings: list[str] = []
+        run_id = notebook_run_id_from_intake(intake)
+        stage_id = f"{run_id}:caselaw"
 
-        for query in queries:
-            hits = client.search(
-                query.query,
-                k=5,
-                include_domains=query.preferred_domains or None,
-                exclude_domains=CASELAW_EXCLUDE_DOMAINS,
+        for index, query in enumerate(queries, 1):
+            task = query_spec_to_retrieval_task(
+                query,
+                run_id=run_id,
+                stage_id=stage_id,
+                provider=client.provider_name,
+                retrieval_task_id=f"{stage_id}:{query.category}:{index}",
             )
-            for hit in hits:
+            execution = execute_retrieval_task(
+                client,
+                RetrievalSearchRequest(
+                    task=task,
+                    k=5,
+                    include_domains=query.preferred_domains,
+                    exclude_domains=CASELAW_EXCLUDE_DOMAINS,
+                ),
+            )
+            retrieval_tasks.append(execution.task)
+            run_events.extend(execution.run_events)
+            if execution.warning:
+                warnings.append(execution.warning)
+            for hit in execution.hits:
                 hit["category"] = query.category
-            all_results.extend(hits)
+            all_results.extend(execution.hits)
 
-        return _assemble_pack(intake, all_results)
+        payload = _assemble_pack(intake, all_results)
+        if warnings:
+            payload["warnings"] = list(dict.fromkeys((payload.get("warnings") or []) + warnings))
+        payload["retrieval_tasks"] = retrieval_tasks
+        payload["run_events"] = run_events
+        return caselaw_pack_to_payload(payload)
 
     return cached_call(
         case_key,

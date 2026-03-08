@@ -142,6 +142,40 @@ def test_weather_drops_navigation_heavy_observations() -> None:
     assert any("Pinellas County" in observation for observation in brief["key_observations"])
 
 
+
+
+class _WeatherProvider:
+    provider_name = "exa"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def search(self, query: str, **kwargs: object) -> list[dict[str, object]]:
+        self.calls += 1
+        return [{
+            "url": f"https://weather.gov/report/{self.calls}",
+            "title": "NWS Report",
+            "snippet": "Pinellas County observed 105 mph wind gusts.",
+            "text": "Pinellas County observed 105 mph wind gusts and 8 ft storm surge.",
+        }]
+
+    def get_contents(self, urls: list[str], **kwargs: object) -> list[dict[str, object]]:
+        return []
+
+
+def test_build_weather_brief_emits_retrieval_state() -> None:
+    brief = build_weather_brief(
+        _sample_intake(),
+        client=_WeatherProvider(),
+        use_cache=False,
+    )
+
+    assert brief["retrieval_tasks"]
+    assert all(task["status"] == "completed" for task in brief["retrieval_tasks"])
+    assert all(task["stage_id"].endswith(":weather") for task in brief["retrieval_tasks"])
+    assert len(brief["run_events"]) == len(brief["retrieval_tasks"]) * 2
+    assert {event["event_type"] for event in brief["run_events"]} == {"retrieval_started", "retrieval_completed"}
+
 def test_build_weather_brief_without_client_returns_structured_fallback() -> None:
     intake = _sample_intake()
     with tempfile.TemporaryDirectory() as cache_dir, tempfile.TemporaryDirectory() as samples_dir:

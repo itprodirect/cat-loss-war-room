@@ -71,10 +71,13 @@ from war_room.query_plan import (
 )
 from war_room.retrieval import (
     RetrievalContentsRequest,
+    RetrievalExecutionResult,
     RetrievalProvider,
     RetrievalSearchRequest,
     execute_retrieval_search,
+    execute_retrieval_task,
     fetch_retrieval_contents,
+    notebook_run_id_from_intake,
     query_spec_to_retrieval_task,
 )
 from war_room.settings import FeatureFlags, RuntimeEnvironment, WarRoomSettings, load_settings
@@ -154,9 +157,12 @@ __all__ = [
     "memo_render_input_from_parts",
     "WarRoomSettings",
     "RetrievalContentsRequest",
+    "RetrievalExecutionResult",
     "RetrievalProvider",
     "RetrievalSearchRequest",
     "execute_retrieval_search",
+    "execute_retrieval_task",
     "fetch_retrieval_contents",
+    "notebook_run_id_from_intake",
     "query_spec_to_retrieval_task",
 ]

@@ -261,3 +261,76 @@ def test_run_audit_snapshot_preserves_schema_version_override():
 
     assert snapshot.schema_version == "v2alpha2"
     assert payload["schema_version"] == "v2alpha2"
+
+def test_run_audit_snapshot_aggregates_retrieval_state_from_module_payloads():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    weather["retrieval_tasks"] = [
+        {
+            "retrieval_task_id": "run-weather-1",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:weather",
+            "provider": "exa",
+            "query_text": "milton weather",
+            "status": "completed",
+            "attempt_count": 1,
+            "review_required": False,
+            "raw_artifact_refs": [],
+            "requested_at": None,
+            "completed_at": None,
+        }
+    ]
+    weather["run_events"] = [
+        {
+            "run_event_id": "run-weather-1:completed",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:weather",
+            "event_type": "retrieval_completed",
+            "severity": "info",
+            "message": "exa returned 1 hit.",
+            "created_at": None,
+            "artifact_refs": [],
+        }
+    ]
+    carrier["retrieval_tasks"] = [
+        {
+            "retrieval_task_id": "run-carrier-1",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:carrier",
+            "provider": "exa",
+            "query_text": "citizens claims manual",
+            "status": "completed",
+            "attempt_count": 1,
+            "review_required": False,
+            "raw_artifact_refs": [],
+            "requested_at": None,
+            "completed_at": None,
+        }
+    ]
+    carrier["run_events"] = [
+        {
+            "run_event_id": "run-carrier-1:completed",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:carrier",
+            "event_type": "retrieval_completed",
+            "severity": "info",
+            "message": "exa returned 1 hit.",
+            "created_at": None,
+            "artifact_refs": [],
+        }
+    ]
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+    payload = run_audit_snapshot_to_payload(snapshot)
+
+    assert len(snapshot.retrieval_tasks) == 2
+    assert len(snapshot.run_events) == 2
+    assert payload["retrieval_tasks"][0]["retrieval_task_id"] == "run-weather-1"
+    assert payload["run_events"][1]["stage_id"] == "run-milton:carrier"
+

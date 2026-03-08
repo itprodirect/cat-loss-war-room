@@ -92,6 +92,40 @@ def test_pack_excludes_commentary_titles_from_cases() -> None:
     assert all("JD Supra" not in name for name in case_names)
 
 
+
+
+class _CaselawProvider:
+    provider_name = "exa"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def search(self, query: str, **kwargs: object) -> list[dict[str, object]]:
+        self.calls += 1
+        return [{
+            "url": f"https://scholar.google.com/case{self.calls}",
+            "title": f"Carrier v. Insured {self.calls}",
+            "snippet": "Coverage dispute involving wind damage.",
+            "text": f"Carrier v. Insured {self.calls}, 123 So. 3d {450 + self.calls} (Fla. App. 2024).",
+        }]
+
+    def get_contents(self, urls: list[str], **kwargs: object) -> list[dict[str, object]]:
+        return []
+
+
+def test_build_caselaw_pack_emits_retrieval_state() -> None:
+    pack = build_caselaw_pack(
+        _sample_intake(),
+        client=_CaselawProvider(),
+        use_cache=False,
+    )
+
+    assert pack["retrieval_tasks"]
+    assert all(task["status"] == "completed" for task in pack["retrieval_tasks"])
+    assert all(task["stage_id"].endswith(":caselaw") for task in pack["retrieval_tasks"])
+    assert len(pack["run_events"]) == len(pack["retrieval_tasks"]) * 2
+    assert {event["event_type"] for event in pack["run_events"]} == {"retrieval_started", "retrieval_completed"}
+
 def test_build_caselaw_pack_without_client_returns_structured_fallback() -> None:
     intake = _sample_intake()
     with tempfile.TemporaryDirectory() as cache_dir, tempfile.TemporaryDirectory() as samples_dir:

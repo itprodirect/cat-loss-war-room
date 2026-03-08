@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import datetime as dt
+import re
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
-from war_room.models import QuerySpec, RetrievalTask
+from war_room.models import CaseIntake, QuerySpec, RetrievalTask, RunEvent
 
 
 class RetrievalProvider(Protocol):
@@ -55,6 +57,16 @@ class RetrievalContentsRequest:
     max_chars: int = 6000
 
 
+@dataclass(slots=True)
+class RetrievalExecutionResult:
+    """Normalized result of executing one retrieval task attempt."""
+
+    task: RetrievalTask
+    hits: list[dict[str, Any]]
+    run_events: list[RunEvent]
+    warning: str | None = None
+
+
 def query_spec_to_retrieval_task(
     query_spec: QuerySpec,
     *,
@@ -93,6 +105,114 @@ def execute_retrieval_search(
     )
 
 
+def execute_retrieval_task(
+    provider: RetrievalProvider,
+    request: RetrievalSearchRequest,
+    *,
+    now: dt.datetime | None = None,
+) -> RetrievalExecutionResult:
+    """Execute a retrieval task and emit attempt metadata for notebook-era flows."""
+
+    started_at = now or dt.datetime.now(dt.UTC)
+    attempt_count = request.task.attempt_count + 1
+    requested_at = request.task.requested_at or started_at
+    running_task = request.task.model_copy(
+        update={
+            "attempt_count": attempt_count,
+            "requested_at": requested_at,
+            "status": "running",
+        }
+    )
+    run_events = [
+        RunEvent(
+            run_event_id=f"{request.task.retrieval_task_id}:attempt-{attempt_count}:started",
+            run_id=request.task.run_id,
+            stage_id=request.task.stage_id,
+            event_type="retrieval_started",
+            severity="info",
+            message=f"{provider.provider_name} retrieval attempt {attempt_count} started.",
+            created_at=started_at,
+        )
+    ]
+
+    try:
+        hits = execute_retrieval_search(provider, request)
+    except Exception as exc:
+        completed_at = dt.datetime.now(dt.UTC)
+        warning = (
+            f"{provider.provider_name} retrieval failed for '{request.task.query_text}': "
+            f"{type(exc).__name__}."
+        )
+        failed_task = running_task.model_copy(
+            update={
+                "completed_at": completed_at,
+                "review_required": True,
+                "status": "failed",
+            }
+        )
+        run_events.append(
+            RunEvent(
+                run_event_id=f"{request.task.retrieval_task_id}:attempt-{attempt_count}:failed",
+                run_id=request.task.run_id,
+                stage_id=request.task.stage_id,
+                event_type="retrieval_failed",
+                severity="error",
+                message=warning,
+                created_at=completed_at,
+            )
+        )
+        return RetrievalExecutionResult(
+            task=failed_task,
+            hits=[],
+            run_events=run_events,
+            warning=warning,
+        )
+
+    completed_at = dt.datetime.now(dt.UTC)
+    if hits:
+        final_task = running_task.model_copy(
+            update={
+                "completed_at": completed_at,
+                "status": "completed",
+            }
+        )
+        final_event = RunEvent(
+            run_event_id=f"{request.task.retrieval_task_id}:attempt-{attempt_count}:completed",
+            run_id=request.task.run_id,
+            stage_id=request.task.stage_id,
+            event_type="retrieval_completed",
+            severity="info",
+            message=f"{provider.provider_name} returned {len(hits)} hit(s).",
+            created_at=completed_at,
+        )
+        warning = None
+    else:
+        warning = f"{provider.provider_name} returned no results for '{request.task.query_text}'."
+        final_task = running_task.model_copy(
+            update={
+                "completed_at": completed_at,
+                "review_required": True,
+                "status": "degraded",
+            }
+        )
+        final_event = RunEvent(
+            run_event_id=f"{request.task.retrieval_task_id}:attempt-{attempt_count}:empty",
+            run_id=request.task.run_id,
+            stage_id=request.task.stage_id,
+            event_type="retrieval_empty",
+            severity="warning",
+            message=warning,
+            created_at=completed_at,
+        )
+    run_events.append(final_event)
+    return RetrievalExecutionResult(
+        task=final_task,
+        hits=hits,
+        run_events=run_events,
+        warning=warning,
+    )
+
+
 def fetch_retrieval_contents(
     provider: RetrievalProvider,
     request: RetrievalContentsRequest,
@@ -104,9 +224,27 @@ def fetch_retrieval_contents(
     return provider.get_contents(request.urls, max_chars=request.max_chars)
 
 
+def notebook_run_id_from_intake(intake: CaseIntake) -> str:
+    """Derive a deterministic notebook-era run identifier from intake fields."""
+
+    parts = (
+        intake.event_name,
+        intake.state,
+        intake.county,
+        intake.carrier,
+    )
+    slug = "-".join(_slug_token(part) for part in parts if part.strip())
+    return f"run-notebook-{slug}"
+
+
 def _validate_provider_match(provider: RetrievalProvider, task: RetrievalTask) -> None:
     if task.provider != provider.provider_name:
         raise ValueError(
             f"RetrievalTask provider '{task.provider}' does not match "
             f"adapter '{provider.provider_name}'."
         )
+
+
+def _slug_token(value: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "-", value.lower())
+    return normalized.strip("-")

@@ -120,6 +120,40 @@ def test_build_rebuttals_bad_faith() -> None:
     assert any("bad-faith" in rebuttal.lower() for rebuttal in rebuttals)
 
 
+
+
+class _CarrierProvider:
+    provider_name = "exa"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def search(self, query: str, **kwargs: object) -> list[dict[str, object]]:
+        self.calls += 1
+        return [{
+            "url": f"https://example.com/carrier/{self.calls}",
+            "title": "Claims Manual",
+            "snippet": "Citizens denial pattern context.",
+            "text": "Citizens has denied claims citing pre-existing damage.",
+        }]
+
+    def get_contents(self, urls: list[str], **kwargs: object) -> list[dict[str, object]]:
+        return []
+
+
+def test_build_carrier_pack_emits_retrieval_state() -> None:
+    pack = build_carrier_doc_pack(
+        _sample_intake(),
+        client=_CarrierProvider(),
+        use_cache=False,
+    )
+
+    assert pack["retrieval_tasks"]
+    assert all(task["status"] == "completed" for task in pack["retrieval_tasks"])
+    assert all(task["stage_id"].endswith(":carrier") for task in pack["retrieval_tasks"])
+    assert len(pack["run_events"]) == len(pack["retrieval_tasks"]) * 2
+    assert {event["event_type"] for event in pack["run_events"]} == {"retrieval_started", "retrieval_completed"}
+
 def test_build_carrier_pack_without_client_returns_structured_fallback() -> None:
     intake = _sample_intake()
     with tempfile.TemporaryDirectory() as cache_dir, tempfile.TemporaryDirectory() as samples_dir:

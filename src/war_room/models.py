@@ -309,6 +309,8 @@ class WeatherBrief(BaseModel):
     metrics: WeatherMetrics
     sources: list[SourceReference] = Field(default_factory=list)
     warnings: list[str] | None = None
+    retrieval_tasks: list[RetrievalTask] = Field(default_factory=list)
+    run_events: list[RunEvent] = Field(default_factory=list)
 
 
 class CarrierSnapshot(BaseModel):
@@ -346,6 +348,8 @@ class CarrierDocPack(BaseModel):
     rebuttal_angles: list[str] = Field(default_factory=list)
     sources: list[SourceReference] = Field(default_factory=list)
     warnings: list[str] | None = None
+    retrieval_tasks: list[RetrievalTask] = Field(default_factory=list)
+    run_events: list[RunEvent] = Field(default_factory=list)
 
 
 class CaseEntry(BaseModel):
@@ -381,6 +385,8 @@ class CaseLawPack(BaseModel):
     issues: list[CaseIssue] = Field(default_factory=list)
     sources: list[SourceReference] = Field(default_factory=list)
     warnings: list[str] | None = None
+    retrieval_tasks: list[RetrievalTask] = Field(default_factory=list)
+    run_events: list[RunEvent] = Field(default_factory=list)
 
 
 class LegalIssue(BaseModel):
@@ -560,6 +566,8 @@ class RunAuditSnapshot(BaseModel):
     schema_version: str = SCHEMA_VERSION_DEFAULT
     intake: CaseIntake
     query_plan: list[QuerySpec] = Field(default_factory=list)
+    retrieval_tasks: list[RetrievalTask] = Field(default_factory=list)
+    run_events: list[RunEvent] = Field(default_factory=list)
     evidence_items: list[EvidenceItem] = Field(default_factory=list)
     evidence_clusters: list[EvidenceCluster] = Field(default_factory=list)
     memo_claims: list[MemoClaim] = Field(default_factory=list)
@@ -818,6 +826,16 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         for evidence_id in cluster.evidence_ids
     }
 
+    retrieval_tasks = [
+        *memo_input.weather.retrieval_tasks,
+        *memo_input.carrier.retrieval_tasks,
+        *memo_input.caselaw.retrieval_tasks,
+    ]
+    run_events = [
+        *memo_input.weather.run_events,
+        *memo_input.carrier.run_events,
+        *memo_input.caselaw.run_events,
+    ]
     review_events: list[ReviewEvent] = []
     for module_key, module_label, payload in (
         ("weather", "Weather", weather_payload),
@@ -953,6 +971,8 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         schema_version=memo_input.schema_version,
         intake=memo_input.intake,
         query_plan=memo_input.query_plan,
+        retrieval_tasks=retrieval_tasks,
+        run_events=run_events,
         evidence_items=evidence_items,
         evidence_clusters=evidence_clusters,
         memo_claims=memo_claims,
@@ -1089,6 +1109,10 @@ def _model_to_payload(model: BaseModel) -> dict[str, Any]:
     data = model.model_dump()
     if data.get("warnings") is None:
         data.pop("warnings", None)
+    if not data.get("retrieval_tasks"):
+        data.pop("retrieval_tasks", None)
+    if not data.get("run_events"):
+        data.pop("run_events", None)
     return data
 
 

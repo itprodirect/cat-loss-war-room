@@ -56,9 +56,9 @@ Status: Complete
 Date: 2026-03-07
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 159 passing.
+- Test status: 167 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
-- Issues #4, #5, and #22 complete. Issue #6 slices 1-6 landed. Issue #7 provider-contract slice landed.
+- Issues #4, #5, and #22 complete. Issue #6 slices 1-6 landed. Issue #7 provider and notebook retrieval-state slices landed.
 - V2 foundation issues #22-#27 created and documented.
 - Next priority: start #23, continue #24 and #27 framing, and finish #6 remaining scope.
 
@@ -548,3 +548,26 @@ Status: Complete
   - `$env:PYTHONPATH="src"; pytest -q tests/test_retrieval_contracts.py tests/test_exa_adapter_contract.py tests/test_exa_client.py tests/test_weather.py tests/test_carrier.py tests/test_caselaw.py tests/test_citation_verify.py tests/test_models.py tests/test_memo_contracts.py` -> `69 passed`
   - `python -m compileall src/war_room` -> success
   - `$env:PYTHONPATH="src"; pytest -q` -> `159 passed`
+
+
+## Session 35 - Notebook Retrieval State Slice
+Date: 2026-03-08
+Status: Complete
+
+- Extended the `#7` retrieval seam so notebook-era module loops now construct canonical `RetrievalTask` records per query-plan row and emit `RunEvent` attempt metadata.
+- Added notebook-oriented retrieval helpers in `src/war_room/retrieval.py` for:
+  - deterministic notebook run IDs
+  - task execution with completion/degraded/failed state
+  - per-attempt run-event emission
+- Updated weather, carrier, and caselaw module payloads to carry `retrieval_tasks` and `run_events` without breaking legacy omission of empty fields.
+- Extended `RunAuditSnapshot` aggregation to preserve retrieval-task and run-event state from module payloads.
+- Expanded regression coverage in:
+  - `tests/test_retrieval_contracts.py`
+  - `tests/test_weather.py`
+  - `tests/test_carrier.py`
+  - `tests/test_caselaw.py`
+  - `tests/test_memo_contracts.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_retrieval_contracts.py tests/test_weather.py tests/test_carrier.py tests/test_caselaw.py tests/test_memo_contracts.py tests/test_pack_adapters.py tests/test_exa_adapter_contract.py tests/test_models.py` -> `65 passed`
+  - `python -m compileall src/war_room` -> success
+  - `$env:PYTHONPATH="src"; pytest -q` -> `167 passed`
