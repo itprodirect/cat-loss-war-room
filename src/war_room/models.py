@@ -24,6 +24,7 @@ RunStageKey = Literal[
     "export",
 ]
 MemoSectionStatus = Literal["draft", "review_required", "ready"]
+LegalIssueStatus = Literal["open", "review_required", "resolved"]
 
 
 def _validate_schema_version(value: str) -> str:
@@ -337,6 +338,44 @@ class CaseLawPack(BaseModel):
     warnings: list[str] | None = None
 
 
+class LegalIssue(BaseModel):
+    """Canonical issue-oriented analysis node for a run."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    issue_id: str = Field(min_length=1)
+    run_id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    summary: str = ""
+    status: LegalIssueStatus = "open"
+    evidence_cluster_ids: list[str] = Field(default_factory=list)
+    case_candidate_ids: list[str] = Field(default_factory=list)
+    review_required: bool = False
+
+    @field_validator("evidence_cluster_ids", "case_candidate_ids")
+    @classmethod
+    def _validate_string_lists(cls, value: list[str], info: Any) -> list[str]:
+        return _validate_non_empty_string_list(value, info.field_name)
+
+
+class CaseCandidate(BaseModel):
+    """Canonical case-authority record attached to a legal issue."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    case_candidate_id: str = Field(min_length=1)
+    run_id: str = Field(min_length=1)
+    issue_id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    citation: str = ""
+    court: str = ""
+    year: str = ""
+    url: str = Field(min_length=1)
+    source_tier: str = Field(min_length=1)
+    summary: str = ""
+    review_required: bool = False
+
+
 class CitationCheck(BaseModel):
     """Single citation spot-check outcome."""
 
@@ -556,6 +595,20 @@ def adapt_caselaw_pack(payload: Mapping[str, Any] | CaseLawPack) -> CaseLawPack:
     if isinstance(payload, CaseLawPack):
         return payload
     return CaseLawPack.model_validate(payload)
+
+
+def adapt_legal_issue(payload: Mapping[str, Any] | LegalIssue) -> LegalIssue:
+    """Validate/coerce legal-issue payload into typed model."""
+    if isinstance(payload, LegalIssue):
+        return payload
+    return LegalIssue.model_validate(payload)
+
+
+def adapt_case_candidate(payload: Mapping[str, Any] | CaseCandidate) -> CaseCandidate:
+    """Validate/coerce case-candidate payload into typed model."""
+    if isinstance(payload, CaseCandidate):
+        return payload
+    return CaseCandidate.model_validate(payload)
 
 
 def adapt_citation_verify_pack(
@@ -1007,6 +1060,18 @@ def research_plan_to_payload(
 ) -> dict[str, Any]:
     """Return a research plan normalized against the typed contract."""
     return _model_to_payload(adapt_research_plan(payload))
+
+
+def legal_issue_to_payload(payload: Mapping[str, Any] | LegalIssue) -> dict[str, Any]:
+    """Return a legal issue normalized against the typed contract."""
+    return _model_to_payload(adapt_legal_issue(payload))
+
+
+def case_candidate_to_payload(
+    payload: Mapping[str, Any] | CaseCandidate,
+) -> dict[str, Any]:
+    """Return a case candidate normalized against the typed contract."""
+    return _model_to_payload(adapt_case_candidate(payload))
 
 
 def run_to_payload(payload: Mapping[str, Any] | Run) -> dict[str, Any]:

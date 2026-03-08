@@ -20,7 +20,7 @@ Simple execution checklist aligned with the live GitHub roadmap.
 ## In Progress / Next
 
 - [x] [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) intake schema alignment
-- [ ] [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) typed domain models (slices 1-4 complete: intake/query + module packs + citation/export contracts + graph/version envelopes)
+- [ ] [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) typed domain models (slices 1-5 complete: intake/query + module packs + citation/export contracts + graph/version envelopes + issue/authority contracts)
 - [ ] [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) retrieval contracts
 - [ ] [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) scenario fixtures + snapshots
 - [ ] [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) expanded CI gates

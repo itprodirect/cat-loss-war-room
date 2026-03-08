@@ -21,11 +21,11 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 149 passing, package-installed, no network calls in tests |
+| Tests | 151 passing, package-installed, no network calls in tests |
 | CI | Fresh-env test gate + exa-py compatibility matrix, both using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
-| Typed domain contracts (#6) | Slices 1-4 complete (intake/query + packs + citation/export contracts + graph/version envelopes) |
+| Typed domain contracts (#6) | Slices 1-5 complete (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts) |
 | Product foundation (`#22`) | Complete: packaging/bootstrap lane implemented |
 | V2 foundation planning (#23-#27) | Created and documented |
 | Cache samples | Milton/Citizens/Pinellas committed |

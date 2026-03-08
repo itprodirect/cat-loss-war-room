@@ -4,14 +4,18 @@ import pytest
 from pydantic import ValidationError
 
 from war_room.models import (
+    CaseCandidate,
     CaseIntake,
+    LegalIssue,
     MemoSection,
     QuerySpec,
     ResearchPlan,
     Run,
     RunStage,
     adapt_query_plan,
+    case_candidate_to_payload,
     case_intake_to_payload,
+    legal_issue_to_payload,
     memo_section_to_payload,
     query_plan_to_payloads,
     query_spec_to_payload,
@@ -184,3 +188,47 @@ def test_run_stage_and_memo_section_payload_helpers_validate_contracts():
     assert stage_payload["status"] == "degraded"
     assert section_payload["status"] == "review_required"
     assert section_payload["issue_ids"] == ["issue-wind"]
+
+
+
+def test_legal_issue_and_case_candidate_payload_helpers_validate_contracts():
+    issue = LegalIssue(
+        issue_id="issue-wind",
+        run_id="run-milton",
+        label="Wind vs. water causation",
+        summary="Need county-specific wind evidence and matching authority.",
+        status="review_required",
+        evidence_cluster_ids=["cluster-weather", "cluster-case"],
+        case_candidate_ids=["case-doe"],
+        review_required=True,
+    )
+    candidate = CaseCandidate(
+        case_candidate_id="case-doe",
+        run_id="run-milton",
+        issue_id="issue-wind",
+        name="Doe v. Ins",
+        citation="123 So.3d 456",
+        court="Fla. App.",
+        year="2023",
+        url="https://example.com/case",
+        source_tier="professional",
+        summary="Coverage upheld where wind damage evidence was specific.",
+    )
+
+    issue_payload = legal_issue_to_payload(issue)
+    candidate_payload = case_candidate_to_payload(candidate)
+
+    assert issue_payload["status"] == "review_required"
+    assert issue_payload["evidence_cluster_ids"] == ["cluster-weather", "cluster-case"]
+    assert candidate_payload["case_candidate_id"] == "case-doe"
+    assert candidate_payload["source_tier"] == "professional"
+
+
+def test_legal_issue_rejects_blank_related_ids():
+    with pytest.raises(ValidationError, match="evidence_cluster_ids"):
+        LegalIssue(
+            issue_id="issue-wind",
+            run_id="run-milton",
+            label="Wind vs. water causation",
+            evidence_cluster_ids=[""],
+        )
