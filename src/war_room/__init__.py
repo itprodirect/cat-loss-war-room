@@ -69,6 +69,14 @@ from war_room.query_plan import (
     load_case_intake,
     validate_case_intake_payload,
 )
+from war_room.retrieval import (
+    RetrievalContentsRequest,
+    RetrievalProvider,
+    RetrievalSearchRequest,
+    execute_retrieval_search,
+    fetch_retrieval_contents,
+    query_spec_to_retrieval_task,
+)
 from war_room.settings import FeatureFlags, RuntimeEnvironment, WarRoomSettings, load_settings
 from war_room.source_scoring import score_url
 
@@ -145,4 +153,10 @@ __all__ = [
     "legal_issue_to_payload",
     "memo_render_input_from_parts",
     "WarRoomSettings",
+    "RetrievalContentsRequest",
+    "RetrievalProvider",
+    "RetrievalSearchRequest",
+    "execute_retrieval_search",
+    "fetch_retrieval_contents",
+    "query_spec_to_retrieval_task",
 ]

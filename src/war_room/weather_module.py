@@ -10,7 +10,7 @@ import re
 from typing import Any
 
 from war_room.cache_io import cache_get, cached_call
-from war_room.exa_client import ExaClient
+from war_room.retrieval import RetrievalProvider
 from war_room.models import CaseIntake, weather_brief_to_payload
 from war_room.query_plan import generate_query_plan
 from war_room.source_scoring import score_url
@@ -53,7 +53,7 @@ _NAVIGATION_MARKERS = (
 
 def build_weather_brief(
     intake: CaseIntake,
-    client: ExaClient | None,
+    client: RetrievalProvider | None,
     *,
     use_cache: bool = True,
     cache_dir: str = "cache",

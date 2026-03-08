@@ -13,7 +13,8 @@ from typing import Any
 from urllib.parse import urlparse
 
 from war_room.cache_io import cached_call
-from war_room.exa_client import BudgetExhausted, ExaClient
+from war_room.exa_client import BudgetExhausted
+from war_room.retrieval import RetrievalProvider
 from war_room.models import citation_verify_pack_to_payload
 from war_room.source_scoring import score_url
 
@@ -69,7 +70,7 @@ def _extract_cases(caselaw_pack: Any) -> list[dict[str, str]]:
 
 def spot_check_citations(
     caselaw_pack: dict[str, Any],
-    client: ExaClient,
+    client: RetrievalProvider,
     *,
     use_cache: bool = True,
     cache_dir: str = "cache",
@@ -131,7 +132,7 @@ _TIER_RANK = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
 
 def _do_check(
     query: str,
-    client: ExaClient,
+    client: RetrievalProvider,
     *,
     case_name: str | None = None,
     citation: str | None = None,

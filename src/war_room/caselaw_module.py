@@ -12,7 +12,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from war_room.cache_io import cache_get, cached_call
-from war_room.exa_client import ExaClient
+from war_room.retrieval import RetrievalProvider
 from war_room.models import CaseIntake, caselaw_pack_to_payload
 from war_room.query_plan import generate_query_plan
 from war_room.source_scoring import PAYWALLED_DOMAINS, score_url
@@ -96,7 +96,7 @@ def _is_case_like(result: dict) -> bool:
 
 def build_caselaw_pack(
     intake: CaseIntake,
-    client: ExaClient | None,
+    client: RetrievalProvider | None,
     *,
     use_cache: bool = True,
     cache_dir: str = "cache",

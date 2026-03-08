@@ -27,7 +27,7 @@ Do **not** rebuild this as a distributed microservice maze. The right V2 is a di
 
 | Dimension | Verdict | Why |
 |---|---|---|
-| Demo reliability | Strong | Offline cache lane, committed fixtures, and `154` passing tests make the demo dependable. |
+| Demo reliability | Strong | Offline cache lane, committed fixtures, and `159` passing tests make the demo dependable. |
 | End-user usability | Weak | The primary interface is still Jupyter plus environment setup and kernel selection. |
 | Evidence quality | Mixed | Good source gathering intent, but normalization and extraction are still brittle. |
 | Legal trust posture | Promising | Guardrails and disclaimers are strong; provenance and review workflow are not yet product-grade. |
@@ -47,7 +47,7 @@ Do **not** rebuild this as a distributed microservice maze. The right V2 is a di
 - Module boundaries are understandable.
   - Weather, carrier, case law, citation checks, and export are separated in a way a new engineer can follow.
 - Test coverage is respectable for a prototype.
-  - `154` tests is enough to trust refactors more than usual at this stage.
+  - `159` tests is enough to trust refactors more than usual at this stage.
 - Documentation is better than the average internal prototype.
   - Handoff, method, safety, demo script, and roadmap docs reduce tribal knowledge.
 

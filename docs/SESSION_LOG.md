@@ -56,9 +56,9 @@ Status: Complete
 Date: 2026-03-07
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 154 passing.
+- Test status: 159 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
-- Issues #4, #5, and #22 complete. Issue #6 slices 1-6 landed.
+- Issues #4, #5, and #22 complete. Issue #6 slices 1-6 landed. Issue #7 provider-contract slice landed.
 - V2 foundation issues #22-#27 created and documented.
 - Next priority: start #23, continue #24 and #27 framing, and finish #6 remaining scope.
 
@@ -525,3 +525,26 @@ Status: Complete
   - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `23 passed`
   - `python -m compileall src/war_room` -> success
   - `$env:PYTHONPATH="src"; pytest -q` -> `154 passed`
+
+
+## Session 34 - Retrieval Provider Contract Slice
+Date: 2026-03-08
+Status: Complete
+
+- Added `src/war_room/retrieval.py` as the first `#7` boundary layer for retrieval providers.
+- Introduced:
+  - `RetrievalProvider` protocol
+  - `RetrievalSearchRequest`
+  - `RetrievalContentsRequest`
+  - `query_spec_to_retrieval_task()`
+  - `execute_retrieval_search()`
+  - `fetch_retrieval_contents()`
+- Marked `ExaClient` as the current `provider_name="exa"` adapter and added Exa-backed compatibility coverage.
+- Updated weather, carrier, caselaw, and citation-verification module type boundaries to accept the provider protocol instead of a concrete Exa client.
+- Expanded regression coverage in:
+  - `tests/test_retrieval_contracts.py`
+  - `tests/test_exa_adapter_contract.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_retrieval_contracts.py tests/test_exa_adapter_contract.py tests/test_exa_client.py tests/test_weather.py tests/test_carrier.py tests/test_caselaw.py tests/test_citation_verify.py tests/test_models.py tests/test_memo_contracts.py` -> `69 passed`
+  - `python -m compileall src/war_room` -> success
+  - `$env:PYTHONPATH="src"; pytest -q` -> `159 passed`
