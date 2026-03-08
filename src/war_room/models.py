@@ -25,6 +25,8 @@ RunStageKey = Literal[
 ]
 MemoSectionStatus = Literal["draft", "review_required", "ready"]
 LegalIssueStatus = Literal["open", "review_required", "resolved"]
+RunEventSeverity = Literal["info", "warning", "error"]
+RetrievalTaskStatus = Literal["queued", "running", "completed", "failed", "degraded", "cancelled"]
 
 
 def _validate_schema_version(value: str) -> str:
@@ -211,6 +213,49 @@ class RunStage(BaseModel):
     completed_at: dt.datetime | None = None
     summary: str = ""
     error_summary: str = ""
+
+
+class RunEvent(BaseModel):
+    """Append-only operational event for a run."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    run_event_id: str = Field(min_length=1)
+    run_id: str = Field(min_length=1)
+    stage_id: str | None = None
+    event_type: str = Field(min_length=1)
+    severity: RunEventSeverity = "info"
+    message: str = Field(min_length=1)
+    created_at: dt.datetime | None = None
+    artifact_refs: list[str] = Field(default_factory=list)
+
+    @field_validator("artifact_refs")
+    @classmethod
+    def _validate_artifact_refs(cls, value: list[str]) -> list[str]:
+        return _validate_non_empty_string_list(value, "artifact_refs")
+
+
+class RetrievalTask(BaseModel):
+    """Provider-facing retrieval work unit for a run."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    retrieval_task_id: str = Field(min_length=1)
+    run_id: str = Field(min_length=1)
+    stage_id: str = Field(min_length=1)
+    provider: str = Field(min_length=1)
+    query_text: str = Field(min_length=1)
+    status: RetrievalTaskStatus = "queued"
+    attempt_count: int = Field(default=0, ge=0)
+    requested_at: dt.datetime | None = None
+    completed_at: dt.datetime | None = None
+    raw_artifact_refs: list[str] = Field(default_factory=list)
+    review_required: bool = False
+
+    @field_validator("raw_artifact_refs")
+    @classmethod
+    def _validate_raw_artifact_refs(cls, value: list[str]) -> list[str]:
+        return _validate_non_empty_string_list(value, "raw_artifact_refs")
 
 
 class MemoSection(BaseModel):
@@ -567,6 +612,20 @@ def adapt_run_stage(payload: Mapping[str, Any] | RunStage) -> RunStage:
     if isinstance(payload, RunStage):
         return payload
     return RunStage.model_validate(payload)
+
+
+def adapt_run_event(payload: Mapping[str, Any] | RunEvent) -> RunEvent:
+    """Validate/coerce run-event payload into typed model."""
+    if isinstance(payload, RunEvent):
+        return payload
+    return RunEvent.model_validate(payload)
+
+
+def adapt_retrieval_task(payload: Mapping[str, Any] | RetrievalTask) -> RetrievalTask:
+    """Validate/coerce retrieval-task payload into typed model."""
+    if isinstance(payload, RetrievalTask):
+        return payload
+    return RetrievalTask.model_validate(payload)
 
 
 def adapt_memo_section(payload: Mapping[str, Any] | MemoSection) -> MemoSection:
@@ -1077,6 +1136,18 @@ def case_candidate_to_payload(
 def run_to_payload(payload: Mapping[str, Any] | Run) -> dict[str, Any]:
     """Return a run normalized against the typed contract."""
     return _model_to_payload(adapt_run(payload))
+
+
+def run_event_to_payload(payload: Mapping[str, Any] | RunEvent) -> dict[str, Any]:
+    """Return a run event normalized against the typed contract."""
+    return _model_to_payload(adapt_run_event(payload))
+
+
+def retrieval_task_to_payload(
+    payload: Mapping[str, Any] | RetrievalTask,
+) -> dict[str, Any]:
+    """Return a retrieval task normalized against the typed contract."""
+    return _model_to_payload(adapt_retrieval_task(payload))
 
 
 def run_stage_to_payload(payload: Mapping[str, Any] | RunStage) -> dict[str, Any]:

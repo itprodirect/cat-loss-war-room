@@ -56,9 +56,9 @@ Status: Complete
 Date: 2026-03-07
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 151 passing.
+- Test status: 154 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
-- Issues #4, #5, and #22 complete. Issue #6 slices 1-5 landed.
+- Issues #4, #5, and #22 complete. Issue #6 slices 1-6 landed.
 - V2 foundation issues #22-#27 created and documented.
 - Next priority: start #23, continue #24 and #27 framing, and finish #6 remaining scope.
 
@@ -349,12 +349,7 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `20 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `151 passed`
-  - `tests/test_query_plan.py`
-  - `tests/test_export.py`
-  - refreshed module tests to use the canonical model import path.
-- Verification:
-  - `$env:PYTHONPATH="src"; python -m pytest -q tests/test_models.py tests/test_query_plan.py tests/test_export.py tests/test_memo_contracts.py tests/test_weather.py tests/test_carrier.py tests/test_caselaw.py` -> `48 passed`
-  - `$env:PYTHONPATH="src"; python -m pytest -q` -> `139 passed`
+
 ## Session 25 - Evidence and Audit Schema Slice
 Date: 2026-03-07
 Status: Complete
@@ -510,3 +505,23 @@ Status: Complete
 - Kept the current `CaseIssue` / `CaseEntry` export-facing shapes intact while introducing the canonical V2 issue/workspace contracts in parallel.
 - Expanded regression coverage in:
   - `tests/test_models.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `20 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `151 passed`
+
+
+## Session 33 - Run Lifecycle Contract Slice
+Date: 2026-03-08
+Status: Complete
+
+- Extended `src/war_room/models.py` with the next `#6` typed-contract slice for run lifecycle and retrieval work.
+- Added canonical typed entities for:
+  - `RunEvent`
+  - `RetrievalTask`
+- Added typed adapter and payload helpers for those entities and exported them through `war_room.__init__`.
+- Expanded regression coverage in:
+  - `tests/test_models.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `23 passed`
+  - `python -m compileall src/war_room` -> success
+  - `$env:PYTHONPATH="src"; pytest -q` -> `154 passed`

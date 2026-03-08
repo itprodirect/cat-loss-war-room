@@ -10,7 +10,9 @@ from war_room.models import (
     MemoSection,
     QuerySpec,
     ResearchPlan,
+    RetrievalTask,
     Run,
+    RunEvent,
     RunStage,
     adapt_query_plan,
     case_candidate_to_payload,
@@ -19,7 +21,9 @@ from war_room.models import (
     memo_section_to_payload,
     query_plan_to_payloads,
     query_spec_to_payload,
+    retrieval_task_to_payload,
     research_plan_to_payload,
+    run_event_to_payload,
     run_stage_to_payload,
     run_to_payload,
 )
@@ -190,7 +194,6 @@ def test_run_stage_and_memo_section_payload_helpers_validate_contracts():
     assert section_payload["issue_ids"] == ["issue-wind"]
 
 
-
 def test_legal_issue_and_case_candidate_payload_helpers_validate_contracts():
     issue = LegalIssue(
         issue_id="issue-wind",
@@ -231,4 +234,58 @@ def test_legal_issue_rejects_blank_related_ids():
             run_id="run-milton",
             label="Wind vs. water causation",
             evidence_cluster_ids=[""],
+        )
+
+
+def test_run_event_and_retrieval_task_payload_helpers_validate_contracts():
+    event = RunEvent(
+        run_event_id="event-1",
+        run_id="run-milton",
+        stage_id="run-milton:weather",
+        event_type="retry_scheduled",
+        severity="warning",
+        message="Weather retrieval retried after timeout.",
+        artifact_refs=["artifact-log-1"],
+    )
+    task = RetrievalTask(
+        retrieval_task_id="task-weather-1",
+        run_id="run-milton",
+        stage_id="run-milton:weather",
+        provider="exa",
+        query_text="milton pinellas weather.gov",
+        status="degraded",
+        attempt_count=2,
+        raw_artifact_refs=["raw-search-1"],
+        review_required=True,
+    )
+
+    event_payload = run_event_to_payload(event)
+    task_payload = retrieval_task_to_payload(task)
+
+    assert event_payload["severity"] == "warning"
+    assert event_payload["artifact_refs"] == ["artifact-log-1"]
+    assert task_payload["status"] == "degraded"
+    assert task_payload["raw_artifact_refs"] == ["raw-search-1"]
+
+
+def test_run_event_rejects_blank_artifact_refs():
+    with pytest.raises(ValidationError, match="artifact_refs"):
+        RunEvent(
+            run_event_id="event-1",
+            run_id="run-milton",
+            event_type="retry_scheduled",
+            message="Weather retrieval retried after timeout.",
+            artifact_refs=[""],
+        )
+
+
+def test_retrieval_task_rejects_blank_artifact_refs():
+    with pytest.raises(ValidationError, match="raw_artifact_refs"):
+        RetrievalTask(
+            retrieval_task_id="task-weather-1",
+            run_id="run-milton",
+            stage_id="run-milton:weather",
+            provider="exa",
+            query_text="milton pinellas weather.gov",
+            raw_artifact_refs=[""],
         )

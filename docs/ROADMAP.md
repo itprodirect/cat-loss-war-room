@@ -7,13 +7,13 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 151 tests are passing.
+- 154 tests are passing.
 - CI has a fresh-environment gate, editable-package install, and `exa-py` compatibility matrix.
 - A deeper V2 foundation layer is now tracked in issues `#22` through `#27`.
 - Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is complete.
 - Issue [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) is complete and closed.
 - Issue [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) is complete.
-- Issue [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) is in progress (slices 1-5 landed locally; issue/authority contract slice now added).
+- Issue [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) is in progress (slices 1-6 landed locally; run/retrieval lifecycle contract slice now added).
 - Test expectations assume the documented bootstrap flow: editable package install or equivalent `PYTHONPATH=src`, not a raw-checkout `pytest -q`.
 
 ## Active Priority Rank
