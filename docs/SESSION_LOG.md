@@ -56,9 +56,9 @@ Status: Complete
 Date: 2026-03-07
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 167 passing.
+- Test status: 168 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
-- Issues #4, #5, and #22 complete. Issue #6 slices 1-6 landed. Issue #7 provider and notebook retrieval-state slices landed.
+- Issues #4, #5, and #22 complete. Issue #6 slices 1-6 landed. Issue #7 provider, notebook retrieval-state, and citation-verify slices landed.
 - V2 foundation issues #22-#27 created and documented.
 - Next priority: start #23, continue #24 and #27 framing, and finish #6 remaining scope.
 
@@ -571,3 +571,19 @@ Status: Complete
   - `$env:PYTHONPATH="src"; pytest -q tests/test_retrieval_contracts.py tests/test_weather.py tests/test_carrier.py tests/test_caselaw.py tests/test_memo_contracts.py tests/test_pack_adapters.py tests/test_exa_adapter_contract.py tests/test_models.py` -> `65 passed`
   - `python -m compileall src/war_room` -> success
   - `$env:PYTHONPATH="src"; pytest -q` -> `167 passed`
+
+
+## Session 36 - Citation Verify Retrieval State Slice
+Date: 2026-03-08
+Status: Complete
+
+- Extended the `#7` retrieval-state path into `src/war_room/citation_verify.py` so citation checks now construct canonical `RetrievalTask` records and emit `RunEvent` attempt metadata.
+- Added retrieval-state support to `CitationVerifyPack` and extended `RunAuditSnapshot` aggregation to include citation-verify retrieval tasks and run events.
+- Populated `raw_artifact_refs` from returned hit URLs during retrieval-task execution so successful attempts retain lightweight artifact linkage.
+- Expanded regression coverage in:
+  - `tests/test_citation_verify.py`
+  - `tests/test_retrieval_contracts.py`
+  - `tests/test_memo_contracts.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_citation_verify.py tests/test_memo_contracts.py tests/test_retrieval_contracts.py tests/test_pack_adapters.py` -> `31 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `168 passed`

@@ -7,7 +7,7 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 167 tests are passing.
+- 168 tests are passing.
 - CI has a fresh-environment gate, editable-package install, and `exa-py` compatibility matrix.
 - A deeper V2 foundation layer is now tracked in issues `#22` through `#27`.
 - Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is complete.
@@ -25,7 +25,7 @@ Issue [#3](https://github.com/itprodirect/cat-loss-war-room-demo/issues/3) remai
 2. [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) Define canonical evidence graph and audit schema
 3. [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) Define quality rubric and release scorecard
 4. [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) Complete remaining typed domain contracts
-5. [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) Retrieval provider abstraction + contract tests (two slices landed)
+5. [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) Retrieval provider abstraction + contract tests (three slices landed)
 6. [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) Multi-jurisdiction fixture suite + snapshots
 7. [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) Expand CI quality gates
 8. [#10](https://github.com/itprodirect/cat-loss-war-room-demo/issues/10) API orchestrator with graceful degradation
@@ -58,7 +58,7 @@ Goal: lock the shape of V2 and finish the technical foundation.
 - [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) Define canonical evidence graph and audit schema
 - [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) Define quality rubric and release scorecard
 - [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) Complete remaining typed domain contracts
-- [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) Retrieval provider abstraction + contract tests (provider seam + notebook retrieval-state slice landed)
+- [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) Retrieval provider abstraction + contract tests (provider seam + notebook retrieval-state + citation-verify slice landed)
 - [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) Multi-jurisdiction fixture suite + snapshots
 - [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) Expand CI quality gates
 

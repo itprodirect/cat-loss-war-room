@@ -24,7 +24,7 @@ This file maps V2 phases to GitHub issues so planning and execution stay aligned
 | Focus | Issue | Notes |
 |---|---|---|
 | Typed domain models | [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) | In progress; should align with the canonical schema in #24 |
-| Retrieval adapter contract tests | [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) | In progress: provider seam, task-bound helpers, Exa compatibility tests, and notebook retrieval-state emission landed |
+| Retrieval adapter contract tests | [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) | In progress: provider seam, notebook retrieval-state emission, citation-verify tracking, and Exa compatibility tests landed |
 | Scenario fixture suite | [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) | Multi-jurisdiction quality baseline feeding #27 |
 | CI quality gate pipeline | [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) | Unit + component + integration + security |
 

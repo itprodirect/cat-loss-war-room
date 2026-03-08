@@ -10,6 +10,7 @@ from war_room.exa_client import BudgetExhausted
 def _mock_client_with_hits(hits_list):
     """Create a mock ExaClient that returns given hits."""
     client = MagicMock()
+    client.provider_name = "exa"
     client.search.return_value = hits_list
     return client
 
@@ -189,3 +190,52 @@ def test_search_error_is_uncertain():
     result = _do_check("Smith v. Jones", client)
     assert result["status"] == "uncertain"
     assert "ConnectionError" in result["note"]
+
+def test_spot_check_citations_emits_retrieval_state_and_artifact_refs():
+    pack = {
+        "retrieval_tasks": [
+            {
+                "retrieval_task_id": "run-milton:caselaw:carrier_precedent:1",
+                "run_id": "run-milton",
+                "stage_id": "run-milton:caselaw",
+                "provider": "exa",
+                "query_text": "Doe v. Ins 123 So.3d 456",
+                "status": "completed",
+                "attempt_count": 1,
+                "review_required": False,
+                "raw_artifact_refs": [],
+                "requested_at": None,
+                "completed_at": None,
+            }
+        ],
+        "issues": [
+            {
+                "issue": "Coverage",
+                "cases": [
+                    {"name": "Doe v. Ins", "citation": "123 So.3d 456"}
+                ],
+            }
+        ],
+    }
+    client = _mock_client_with_hits([
+        {
+            "url": "https://www.flcourts.gov/case/123",
+            "title": "FL Courts",
+            "text": "Doe v. Ins 123 So.3d 456",
+        }
+    ])
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = spot_check_citations(
+            pack,
+            client,
+            use_cache=False,
+            cache_dir=tmpdir,
+            cache_samples_dir=tmpdir,
+        )
+
+    assert result["retrieval_tasks"]
+    assert result["retrieval_tasks"][0]["stage_id"] == "run-milton:citation_verify"
+    assert result["retrieval_tasks"][0]["raw_artifact_refs"] == ["https://www.flcourts.gov/case/123"]
+    assert {event["event_type"] for event in result["run_events"]} == {"retrieval_started", "retrieval_completed"}
+

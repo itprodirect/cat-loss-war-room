@@ -169,11 +169,13 @@ def execute_retrieval_task(
         )
 
     completed_at = dt.datetime.now(dt.UTC)
+    raw_artifact_refs = _artifact_refs_from_hits(hits)
     if hits:
         final_task = running_task.model_copy(
             update={
                 "completed_at": completed_at,
                 "status": "completed",
+                "raw_artifact_refs": raw_artifact_refs,
             }
         )
         final_event = RunEvent(
@@ -184,6 +186,7 @@ def execute_retrieval_task(
             severity="info",
             message=f"{provider.provider_name} returned {len(hits)} hit(s).",
             created_at=completed_at,
+            artifact_refs=raw_artifact_refs,
         )
         warning = None
     else:
@@ -193,6 +196,7 @@ def execute_retrieval_task(
                 "completed_at": completed_at,
                 "review_required": True,
                 "status": "degraded",
+                "raw_artifact_refs": raw_artifact_refs,
             }
         )
         final_event = RunEvent(
@@ -203,6 +207,7 @@ def execute_retrieval_task(
             severity="warning",
             message=warning,
             created_at=completed_at,
+            artifact_refs=raw_artifact_refs,
         )
     run_events.append(final_event)
     return RetrievalExecutionResult(
@@ -248,3 +253,12 @@ def _validate_provider_match(provider: RetrievalProvider, task: RetrievalTask) -
 def _slug_token(value: str) -> str:
     normalized = re.sub(r"[^a-z0-9]+", "-", value.lower())
     return normalized.strip("-")
+
+
+def _artifact_refs_from_hits(hits: list[dict[str, Any]]) -> list[str]:
+    refs: list[str] = []
+    for hit in hits:
+        url = (hit.get("url") or "").strip()
+        if url and url not in refs:
+            refs.append(url)
+    return refs

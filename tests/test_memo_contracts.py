@@ -319,6 +319,34 @@ def test_run_audit_snapshot_aggregates_retrieval_state_from_module_payloads():
         }
     ]
 
+    citecheck["retrieval_tasks"] = [
+        {
+            "retrieval_task_id": "run-cite-1",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:citation_verify",
+            "provider": "exa",
+            "query_text": "Doe v. Ins 123 So.3d 456",
+            "status": "completed",
+            "attempt_count": 1,
+            "review_required": False,
+            "raw_artifact_refs": ["https://example.com/case"],
+            "requested_at": None,
+            "completed_at": None,
+        }
+    ]
+    citecheck["run_events"] = [
+        {
+            "run_event_id": "run-cite-1:completed",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:citation_verify",
+            "event_type": "retrieval_completed",
+            "severity": "info",
+            "message": "exa returned 1 hit.",
+            "created_at": None,
+            "artifact_refs": ["https://example.com/case"],
+        }
+    ]
+
     snapshot = run_audit_snapshot_from_parts(
         intake,
         weather,
@@ -327,10 +355,11 @@ def test_run_audit_snapshot_aggregates_retrieval_state_from_module_payloads():
         citecheck,
         query_plan,
     )
+
     payload = run_audit_snapshot_to_payload(snapshot)
 
-    assert len(snapshot.retrieval_tasks) == 2
-    assert len(snapshot.run_events) == 2
+    assert len(snapshot.retrieval_tasks) == 3
+    assert len(snapshot.run_events) == 3
     assert payload["retrieval_tasks"][0]["retrieval_task_id"] == "run-weather-1"
-    assert payload["run_events"][1]["stage_id"] == "run-milton:carrier"
+    assert payload["run_events"][2]["stage_id"] == "run-milton:citation_verify"
 

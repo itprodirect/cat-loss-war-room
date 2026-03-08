@@ -21,12 +21,12 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 167 passing, package-installed, no network calls in tests |
+| Tests | 168 passing, package-installed, no network calls in tests |
 | CI | Fresh-env test gate + exa-py compatibility matrix, both using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
 | Typed domain contracts (#6) | Slices 1-6 complete (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts) |
-| Retrieval contracts (#7) | Two slices landed: provider protocol/task helpers plus notebook-era retrieval-task and run-event emission |
+| Retrieval contracts (#7) | Three slices landed: provider seam, notebook retrieval-state emission, and citation-verify retrieval tracking |
 | Product foundation (`#22`) | Complete: packaging/bootstrap lane implemented |
 | V2 foundation planning (#23-#27) | Created and documented |
 | Cache samples | Milton/Citizens/Pinellas committed |
@@ -78,7 +78,7 @@ Core implementation lives in `src/war_room/`.
 - #24 canonical evidence graph and audit schema
 - #27 quality rubric and release scorecard
 - #6 typed domain contracts
-- #7 retrieval provider abstraction and contracts (provider seam plus notebook retrieval-state slice landed)
+- #7 retrieval provider abstraction and contracts (provider seam, notebook retrieval-state, and citation-verify slices landed)
 - #8 multi-jurisdiction fixtures and snapshots
 - #9 expanded CI quality gates
 

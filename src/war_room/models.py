@@ -466,6 +466,8 @@ class CitationVerifyPack(BaseModel):
     disclaimer: str = Field(min_length=1)
     checks: list[CitationCheck] = Field(default_factory=list)
     summary: CitationSummary
+    retrieval_tasks: list[RetrievalTask] = Field(default_factory=list)
+    run_events: list[RunEvent] = Field(default_factory=list)
 
 
 class EvidenceItem(BaseModel):
@@ -830,11 +832,13 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         *memo_input.weather.retrieval_tasks,
         *memo_input.carrier.retrieval_tasks,
         *memo_input.caselaw.retrieval_tasks,
+        *memo_input.citecheck.retrieval_tasks,
     ]
     run_events = [
         *memo_input.weather.run_events,
         *memo_input.carrier.run_events,
         *memo_input.caselaw.run_events,
+        *memo_input.citecheck.run_events,
     ]
     review_events: list[ReviewEvent] = []
     for module_key, module_label, payload in (

@@ -76,12 +76,12 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 ## Current Status
 
-**V2 product foundation landed:** Core demo pipeline is stable, `167` tests are passing, and CI now enforces:
+**V2 product foundation landed:** Core demo pipeline is stable, `168` tests are passing, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`)
 
-Issues `#4`, `#5`, and `#22` are complete, issue `#6` is underway with slices 1-6 (typed intake/query, module pack adapters, citation/export contracts, graph/version envelopes, issue/authority contracts, and run/retrieval lifecycle contracts), and issue `#7` has two slices landed: the provider-contract seam and notebook-era retrieval-state emission.
+Issues `#4`, `#5`, and `#22` are complete, issue `#6` is underway with slices 1-6 (typed intake/query, module pack adapters, citation/export contracts, graph/version envelopes, issue/authority contracts, and run/retrieval lifecycle contracts), and issue `#7` has three slices landed: the provider seam, notebook retrieval-state emission, and citation-verify retrieval tracking.
 
 ## Roadmap (Simple)
 

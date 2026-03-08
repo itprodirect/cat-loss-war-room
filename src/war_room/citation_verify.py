@@ -14,8 +14,13 @@ from urllib.parse import urlparse
 
 from war_room.cache_io import cached_call
 from war_room.exa_client import BudgetExhausted
-from war_room.retrieval import RetrievalProvider
-from war_room.models import citation_verify_pack_to_payload
+from war_room.retrieval import (
+    RetrievalProvider,
+    RetrievalSearchRequest,
+    execute_retrieval_task,
+    query_spec_to_retrieval_task,
+)
+from war_room.models import QuerySpec, citation_verify_pack_to_payload
 from war_room.source_scoring import score_url
 
 
@@ -83,17 +88,37 @@ def spot_check_citations(
     """
     case_key_base = "citecheck"
     all_cases = _extract_cases(caselaw_pack)
+    run_id = _run_id_from_caselaw_pack(caselaw_pack)
+    stage_id = f"{run_id}:citation_verify"
 
     checks = []
-    for case in all_cases[:max_checks]:
+    retrieval_tasks = []
+    run_events = []
+    for index, case in enumerate(all_cases[:max_checks], 1):
         name = case["name"]
         citation = case["citation"]
         search_term = f"{name} {citation}".strip()
+        task = query_spec_to_retrieval_task(
+            QuerySpec(
+                module="citation_verify",
+                query=search_term,
+                category="citation_check",
+            ),
+            run_id=run_id,
+            stage_id=stage_id,
+            provider=client.provider_name,
+            retrieval_task_id=f"{stage_id}:citation_check:{index}",
+        )
 
         check_key = f"{case_key_base}__{search_term}"
 
-        def _verify(q=search_term, case_name=name, cite=citation) -> dict[str, Any]:
-            return _do_check(q, client, case_name=case_name, citation=cite)
+        def _verify(
+            q=search_term,
+            case_name=name,
+            cite=citation,
+            retrieval_task=task,
+        ) -> dict[str, Any]:
+            return _do_check(q, client, retrieval_task=retrieval_task, case_name=case_name, citation=cite)
 
         result = cached_call(
             check_key,
@@ -105,6 +130,10 @@ def spot_check_citations(
         result["case_name"] = name
         result["citation"] = citation
         checks.append(result)
+        retrieval_tasks.append(result.pop("_retrieval_task", None))
+        run_events.extend(result.pop("_run_events", []))
+
+    retrieval_tasks = [task for task in retrieval_tasks if task is not None]
 
     # Summary counts
     verified = sum(1 for c in checks if c["status"] == "verified")
@@ -122,6 +151,8 @@ def spot_check_citations(
                 "uncertain": uncertain,
                 "not_found": not_found,
             },
+            "retrieval_tasks": retrieval_tasks,
+            "run_events": run_events,
         }
     )
 
@@ -134,34 +165,65 @@ def _do_check(
     query: str,
     client: RetrievalProvider,
     *,
+    retrieval_task=None,
     case_name: str | None = None,
     citation: str | None = None,
 ) -> dict[str, Any]:
     """Run a single citation spot-check."""
-    try:
-        hits = client.search(query, k=5)
-    except BudgetExhausted:
-        return {
-            "status": "uncertain",
-            "badge": "warning",
-            "source_url": None,
-            "note": "Budget exhausted - could not verify",
-        }
-    except Exception as exc:
-        return {
-            "status": "uncertain",
-            "badge": "warning",
-            "source_url": None,
-            "note": f"Search error - could not verify: {type(exc).__name__}",
-        }
+    run_events = []
+    task = retrieval_task
+    hits = []
+    if retrieval_task is not None:
+        execution = execute_retrieval_task(
+            client,
+            RetrievalSearchRequest(task=retrieval_task, k=5),
+        )
+        task = execution.task
+        run_events = execution.run_events
+        hits = execution.hits
+        if task.status == "failed":
+            return {
+                "status": "uncertain",
+                "badge": "warning",
+                "source_url": None,
+                "note": execution.warning or "Search error - could not verify",
+                "_retrieval_task": task,
+                "_run_events": run_events,
+            }
+        if not hits:
+            return {
+                "status": "not_found",
+                "badge": "not_found",
+                "source_url": None,
+                "note": execution.warning or "No results found",
+                "_retrieval_task": task,
+                "_run_events": run_events,
+            }
+    else:
+        try:
+            hits = client.search(query, k=5)
+        except BudgetExhausted:
+            return {
+                "status": "uncertain",
+                "badge": "warning",
+                "source_url": None,
+                "note": "Budget exhausted - could not verify",
+            }
+        except Exception as exc:
+            return {
+                "status": "uncertain",
+                "badge": "warning",
+                "source_url": None,
+                "note": f"Search error - could not verify: {type(exc).__name__}",
+            }
 
-    if not hits:
-        return {
-            "status": "not_found",
-            "badge": "not_found",
-            "source_url": None,
-            "note": "No results found",
-        }
+        if not hits:
+            return {
+                "status": "not_found",
+                "badge": "not_found",
+                "source_url": None,
+                "note": "No results found",
+            }
 
     scored_hits = []
     for hit in hits:
@@ -171,39 +233,48 @@ def _do_check(
     if citation or case_name:
         scored_hits = [item for item in scored_hits if item[2][0] > 0 or item[2][1] > 0]
         if not scored_hits:
-            return {
+            result = {
                 "status": "not_found",
                 "badge": "not_found",
                 "source_url": None,
                 "note": "No relevant citation match found",
             }
+            if task is not None:
+                result["_retrieval_task"] = task
+                result["_run_events"] = run_events
+            return result
 
     scored_hits.sort(key=lambda item: _hit_priority(item[0], item[1], item[2]))
 
     best_hit, best_score, best_match = scored_hits[0]
 
+    result: dict[str, Any]
     if best_score["tier"] == "official":
-        return {
+        result = {
             "status": "verified",
             "badge": "verified",
             "source_url": best_hit["url"],
             "note": f"Found on official source: {best_score['hostname']}",
         }
-    if best_score["tier"] == "professional":
+    elif best_score["tier"] == "professional":
         detail = "citation-aligned result" if best_match[0] > 0 else "professional source"
-        return {
+        result = {
             "status": "uncertain",
             "badge": "warning",
             "source_url": best_hit["url"],
             "note": f"Found on {detail}: {best_score['hostname']} - verify independently",
         }
-
-    return {
-        "status": "uncertain",
-        "badge": "warning",
-        "source_url": best_hit["url"],
-        "note": f"Found on {best_score['hostname']} - unvetted source, verify independently",
-    }
+    else:
+        result = {
+            "status": "uncertain",
+            "badge": "warning",
+            "source_url": best_hit["url"],
+            "note": f"Found on {best_score['hostname']} - unvetted source, verify independently",
+        }
+    if task is not None:
+        result["_retrieval_task"] = task
+        result["_run_events"] = run_events
+    return result
 
 
 def _hit_priority(hit: dict[str, Any], score: dict[str, Any], match: tuple[int, int, int]) -> tuple[int, int, int, int, str]:
@@ -263,3 +334,19 @@ def _is_legal_host(url: str) -> bool:
     if hostname.endswith(".gov"):
         return True
     return any(hostname == suffix or hostname.endswith("." + suffix) for suffix in _LEGAL_HOST_SUFFIXES)
+
+
+def _run_id_from_caselaw_pack(caselaw_pack: Any) -> str:
+    if isinstance(caselaw_pack, dict):
+        retrieval_tasks = caselaw_pack.get("retrieval_tasks", []) or []
+    else:
+        retrieval_tasks = getattr(caselaw_pack, "retrieval_tasks", []) or []
+    if retrieval_tasks:
+        first = retrieval_tasks[0]
+        if isinstance(first, dict):
+            run_id = first.get("run_id")
+        else:
+            run_id = getattr(first, "run_id", None)
+        if run_id:
+            return run_id
+    return "run-notebook-citation-verify"
