@@ -9,6 +9,35 @@ from typing import Any, Literal, Mapping, Sequence
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 POSTURE_VALUE_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
+SCHEMA_VERSION_DEFAULT = "v2alpha1"
+
+RunStatus = Literal["queued", "running", "partial_success", "failed", "completed", "cancelled"]
+RunStageStatus = Literal["not_started", "in_progress", "completed", "degraded", "failed", "skipped"]
+RunStageKey = Literal[
+    "intake_validation",
+    "research_plan",
+    "weather",
+    "carrier",
+    "caselaw",
+    "citation_verify",
+    "memo_assembly",
+    "export",
+]
+MemoSectionStatus = Literal["draft", "review_required", "ready"]
+
+
+def _validate_schema_version(value: str) -> str:
+    cleaned = value.strip()
+    if not cleaned:
+        raise ValueError("schema_version must be non-empty.")
+    return cleaned
+
+
+def _validate_non_empty_string_list(value: list[str], field_name: str) -> list[str]:
+    for token in value:
+        if not token:
+            raise ValueError(f"{field_name} values must be non-empty strings.")
+    return value
 
 
 class CaseIntake(BaseModel):
@@ -115,6 +144,91 @@ class QuerySpec(BaseModel):
         if self.preferred_domains:
             domains = f" (prefer: {', '.join(self.preferred_domains)})"
         return f"  [{self.category}] {self.query}{date_range}{domains}"
+
+
+class ResearchPlan(BaseModel):
+    """Canonical research-plan contract for a run."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    schema_version: str = SCHEMA_VERSION_DEFAULT
+    plan_id: str = Field(min_length=1)
+    run_id: str = Field(min_length=1)
+    planned_modules: list[str] = Field(default_factory=list)
+    issue_hypotheses: list[str] = Field(default_factory=list)
+    query_plan: list[QuerySpec] = Field(default_factory=list)
+    preferred_domains: list[str] = Field(default_factory=list)
+    estimated_scope: str = ""
+    review_required: bool = False
+    created_at: dt.datetime | None = None
+
+    @field_validator("schema_version")
+    @classmethod
+    def _validate_schema_version(cls, value: str) -> str:
+        return _validate_schema_version(value)
+
+    @field_validator("planned_modules", "issue_hypotheses", "preferred_domains")
+    @classmethod
+    def _validate_string_lists(cls, value: list[str], info: Any) -> list[str]:
+        return _validate_non_empty_string_list(value, info.field_name)
+
+
+class Run(BaseModel):
+    """Top-level canonical execution record."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    schema_version: str = SCHEMA_VERSION_DEFAULT
+    run_id: str = Field(min_length=1)
+    environment: str = Field(min_length=1)
+    status: RunStatus = "queued"
+    review_required: bool = False
+    created_at: dt.datetime | None = None
+    started_at: dt.datetime | None = None
+    completed_at: dt.datetime | None = None
+    intake_id: str | None = None
+    plan_id: str | None = None
+    latest_export_artifact_id: str | None = None
+
+    @field_validator("schema_version")
+    @classmethod
+    def _validate_schema_version(cls, value: str) -> str:
+        return _validate_schema_version(value)
+
+
+class RunStage(BaseModel):
+    """Canonical stage-level progress record."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    stage_id: str = Field(min_length=1)
+    run_id: str = Field(min_length=1)
+    stage_key: RunStageKey
+    status: RunStageStatus = "not_started"
+    review_required: bool = False
+    started_at: dt.datetime | None = None
+    completed_at: dt.datetime | None = None
+    summary: str = ""
+    error_summary: str = ""
+
+
+class MemoSection(BaseModel):
+    """Section-level memo composition container."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    section_id: str = Field(min_length=1)
+    run_id: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    status: MemoSectionStatus = "draft"
+    issue_ids: list[str] = Field(default_factory=list)
+    claim_ids: list[str] = Field(default_factory=list)
+    review_required: bool = False
+
+    @field_validator("issue_ids", "claim_ids")
+    @classmethod
+    def _validate_string_lists(cls, value: list[str], info: Any) -> list[str]:
+        return _validate_non_empty_string_list(value, info.field_name)
 
 
 class SourceReference(BaseModel):
@@ -340,6 +454,7 @@ class MemoRenderInput(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    schema_version: str = SCHEMA_VERSION_DEFAULT
     intake: CaseIntake
     weather: WeatherBrief
     carrier: CarrierDocPack
@@ -347,12 +462,18 @@ class MemoRenderInput(BaseModel):
     citecheck: CitationVerifyPack
     query_plan: list[QuerySpec] = Field(default_factory=list)
 
+    @field_validator("schema_version")
+    @classmethod
+    def _validate_schema_version(cls, value: str) -> str:
+        return _validate_schema_version(value)
+
 
 class RunAuditSnapshot(BaseModel):
     """Canonical audit snapshot for a rendered research memo."""
 
     model_config = ConfigDict(extra="forbid")
 
+    schema_version: str = SCHEMA_VERSION_DEFAULT
     intake: CaseIntake
     query_plan: list[QuerySpec] = Field(default_factory=list)
     evidence_items: list[EvidenceItem] = Field(default_factory=list)
@@ -360,6 +481,11 @@ class RunAuditSnapshot(BaseModel):
     memo_claims: list[MemoClaim] = Field(default_factory=list)
     review_events: list[ReviewEvent] = Field(default_factory=list)
     export_artifact: ExportArtifact
+
+    @field_validator("schema_version")
+    @classmethod
+    def _validate_schema_version(cls, value: str) -> str:
+        return _validate_schema_version(value)
 
 
 def adapt_case_intake(payload: Mapping[str, Any] | CaseIntake) -> CaseIntake:
@@ -381,6 +507,34 @@ def adapt_query_plan(
 ) -> list[QuerySpec]:
     """Validate/coerce a mixed query-plan payload into typed query specs."""
     return [adapt_query_spec(item) for item in payload]
+
+
+def adapt_research_plan(payload: Mapping[str, Any] | ResearchPlan) -> ResearchPlan:
+    """Validate/coerce research-plan payload into typed model."""
+    if isinstance(payload, ResearchPlan):
+        return payload
+    return ResearchPlan.model_validate(payload)
+
+
+def adapt_run(payload: Mapping[str, Any] | Run) -> Run:
+    """Validate/coerce run payload into typed model."""
+    if isinstance(payload, Run):
+        return payload
+    return Run.model_validate(payload)
+
+
+def adapt_run_stage(payload: Mapping[str, Any] | RunStage) -> RunStage:
+    """Validate/coerce run-stage payload into typed model."""
+    if isinstance(payload, RunStage):
+        return payload
+    return RunStage.model_validate(payload)
+
+
+def adapt_memo_section(payload: Mapping[str, Any] | MemoSection) -> MemoSection:
+    """Validate/coerce memo-section payload into typed model."""
+    if isinstance(payload, MemoSection):
+        return payload
+    return MemoSection.model_validate(payload)
 
 
 def adapt_weather_brief(payload: Mapping[str, Any] | WeatherBrief) -> WeatherBrief:
@@ -420,9 +574,12 @@ def memo_render_input_from_parts(
     caselaw: Mapping[str, Any] | CaseLawPack,
     citecheck: Mapping[str, Any] | CitationVerifyPack,
     query_plan: list[Mapping[str, Any] | QuerySpec],
+    *,
+    schema_version: str = SCHEMA_VERSION_DEFAULT,
 ) -> MemoRenderInput:
     """Build typed memo-render input from mixed dict/model payloads."""
     return MemoRenderInput(
+        schema_version=schema_version,
         intake=adapt_case_intake(intake),
         weather=adapt_weather_brief(weather),
         carrier=adapt_carrier_doc_pack(carrier),
@@ -681,6 +838,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         section_titles.insert(8, "Appendix: Review Log")
 
     return RunAuditSnapshot(
+        schema_version=memo_input.schema_version,
         intake=memo_input.intake,
         query_plan=memo_input.query_plan,
         evidence_items=evidence_items,
@@ -702,10 +860,20 @@ def run_audit_snapshot_from_parts(
     caselaw: Mapping[str, Any] | CaseLawPack,
     citecheck: Mapping[str, Any] | CitationVerifyPack,
     query_plan: list[Mapping[str, Any] | QuerySpec],
+    *,
+    schema_version: str = SCHEMA_VERSION_DEFAULT,
 ) -> RunAuditSnapshot:
     """Build a canonical audit snapshot from mixed dict/model payloads."""
     return run_audit_snapshot_from_memo_input(
-        memo_render_input_from_parts(intake, weather, carrier, caselaw, citecheck, query_plan)
+        memo_render_input_from_parts(
+            intake,
+            weather,
+            carrier,
+            caselaw,
+            citecheck,
+            query_plan,
+            schema_version=schema_version,
+        )
     )
 
 
@@ -832,6 +1000,30 @@ def query_plan_to_payloads(
 ) -> list[dict[str, Any]]:
     """Return a query plan normalized against the typed contract."""
     return [query_spec_to_payload(item) for item in adapt_query_plan(payload)]
+
+
+def research_plan_to_payload(
+    payload: Mapping[str, Any] | ResearchPlan,
+) -> dict[str, Any]:
+    """Return a research plan normalized against the typed contract."""
+    return _model_to_payload(adapt_research_plan(payload))
+
+
+def run_to_payload(payload: Mapping[str, Any] | Run) -> dict[str, Any]:
+    """Return a run normalized against the typed contract."""
+    return _model_to_payload(adapt_run(payload))
+
+
+def run_stage_to_payload(payload: Mapping[str, Any] | RunStage) -> dict[str, Any]:
+    """Return a run stage normalized against the typed contract."""
+    return _model_to_payload(adapt_run_stage(payload))
+
+
+def memo_section_to_payload(
+    payload: Mapping[str, Any] | MemoSection,
+) -> dict[str, Any]:
+    """Return a memo section normalized against the typed contract."""
+    return _model_to_payload(adapt_memo_section(payload))
 
 
 def run_audit_snapshot_to_payload(

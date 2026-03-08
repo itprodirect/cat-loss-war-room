@@ -76,12 +76,12 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 ## Current Status
 
-**V2 product foundation landed:** Core demo pipeline is stable, `144` tests are passing, and CI now enforces:
+**V2 product foundation landed:** Core demo pipeline is stable, `149` tests are passing, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`)
 
-Issues `#4`, `#5`, and `#22` are complete, and issue `#6` is underway with slices 1-3 (typed intake/query, module pack adapters, and citation/export contracts).
+Issues `#4`, `#5`, and `#22` are complete, and issue `#6` is underway with slices 1-4 (typed intake/query, module pack adapters, citation/export contracts, and graph/version envelopes).
 
 ## Roadmap (Simple)
 

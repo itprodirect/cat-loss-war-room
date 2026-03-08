@@ -1,19 +1,20 @@
 # Roadmap (Simple, Current)
 
-Last updated: March 7, 2026
+Last updated: March 8, 2026
 
 This is the short version. Clean, practical, no drama.
 
 ## Where we are now
 
 - Demo pipeline is stable.
-- 142 tests are passing.
+- 149 tests are passing.
 - CI has a fresh-environment gate, editable-package install, and `exa-py` compatibility matrix.
 - A deeper V2 foundation layer is now tracked in issues `#22` through `#27`.
 - Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is complete.
 - Issue [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) is complete and closed.
 - Issue [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) is complete.
-- Issue [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) is in progress (slices 1-3 merged in PR #21).
+- Issue [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) is in progress (slices 1-4 landed locally; graph/version contract slice now added).
+- Test expectations assume the documented bootstrap flow: editable package install or equivalent `PYTHONPATH=src`, not a raw-checkout `pytest -q`.
 
 ## Active Priority Rank
 
@@ -98,3 +99,5 @@ Goal: trust, polish, and real-world adoption readiness.
 
 - Detailed architecture plan: [V2_BLUEPRINT.md](V2_BLUEPRINT.md)
 - Issue-by-issue map: [V2_ISSUE_MAP.md](V2_ISSUE_MAP.md)
+- Workflow and IA source of truth: [V2_WORKFLOW_IA.md](V2_WORKFLOW_IA.md)
+- Evidence schema source of truth: [V2_EVIDENCE_SCHEMA.md](V2_EVIDENCE_SCHEMA.md)

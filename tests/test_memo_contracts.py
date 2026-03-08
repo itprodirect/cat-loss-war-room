@@ -150,6 +150,7 @@ def test_memo_render_input_from_parts_accepts_mixed_shapes():
         [query_plan[0].model_dump()],
     )
 
+    assert memo_input.schema_version == "v2alpha1"
     assert memo_input.intake.event_name == "Hurricane Milton"
     assert memo_input.citecheck.summary.verified == 1
     assert memo_input.query_plan[0].module == "weather"
@@ -171,9 +172,11 @@ def test_run_audit_snapshot_builds_canonical_entities():
     assert len(snapshot.evidence_items) == 4
     assert len(snapshot.evidence_clusters) == 3
     assert len(snapshot.memo_claims) == 4
+    assert snapshot.schema_version == "v2alpha1"
     assert snapshot.export_artifact.artifact_type == "markdown_memo"
     assert "Appendix: Evidence Clusters" in snapshot.export_artifact.section_titles
     assert "Appendix: Evidence Index" in snapshot.export_artifact.section_titles
+    assert payload["schema_version"] == "v2alpha1"
     assert payload["evidence_items"][0]["evidence_id"] == "weather-source-1"
     assert payload["evidence_clusters"][0]["cluster_id"] == "cluster-1"
     assert payload["evidence_clusters"][2]["cluster_type"] == "citation"
@@ -238,3 +241,23 @@ def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():
     assert "Trust Snapshot" in markdown
     assert "Evidence Clusters" in markdown
     assert "Evidence Index" in markdown
+
+
+
+def test_run_audit_snapshot_preserves_schema_version_override():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+        schema_version="v2alpha2",
+    )
+
+    payload = run_audit_snapshot_to_payload(snapshot)
+
+    assert snapshot.schema_version == "v2alpha2"
+    assert payload["schema_version"] == "v2alpha2"

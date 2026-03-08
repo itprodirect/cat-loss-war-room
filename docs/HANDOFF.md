@@ -15,17 +15,17 @@ Given a case intake, it assembles:
 
 This is research acceleration, not legal advice.
 
-## 2) Current status (as of March 7, 2026)
+## 2) Current status (as of March 8, 2026)
 
 | Item | Status |
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 144 passing, package-installed, no network calls in tests |
+| Tests | 149 passing, package-installed, no network calls in tests |
 | CI | Fresh-env test gate + exa-py compatibility matrix, both using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
-| Typed domain contracts (#6) | Slices 1-3 complete (intake/query + packs + citation/export contracts) |
+| Typed domain contracts (#6) | Slices 1-4 complete (intake/query + packs + citation/export contracts + graph/version envelopes) |
 | Product foundation (`#22`) | Complete: packaging/bootstrap lane implemented |
 | V2 foundation planning (#23-#27) | Created and documented |
 | Cache samples | Milton/Citizens/Pinellas committed |
@@ -101,6 +101,8 @@ Core implementation lives in `src/war_room/`.
 - [README.md](../README.md): quickstart and status
 - [ROADMAP.md](ROADMAP.md): plain-language roadmap
 - [FOUNDATION.md](FOUNDATION.md): bootstrap, envs, runtime boundaries
+- [V2_WORKFLOW_IA.md](V2_WORKFLOW_IA.md): canonical V2 workflow, IA, and design-system rules
+- [V2_EVIDENCE_SCHEMA.md](V2_EVIDENCE_SCHEMA.md): canonical V2 evidence graph, audit schema, and versioning rules
 - [V2_ISSUE_MAP.md](V2_ISSUE_MAP.md): issue-by-issue execution map
 - [SESSION_LOG.md](SESSION_LOG.md): build history
 - [METHOD.md](METHOD.md): module behavior and methodology

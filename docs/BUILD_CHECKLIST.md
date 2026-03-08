@@ -12,7 +12,7 @@ Simple execution checklist aligned with the live GitHub roadmap.
 
 ## V2 Foundation (in progress)
 
-- [ ] [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) product foundation and repo shape
+- [x] [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) product foundation and repo shape
 - [ ] [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) workflow IA and design system
 - [ ] [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) canonical evidence graph and audit schema
 - [ ] [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric and release scorecard
@@ -20,7 +20,7 @@ Simple execution checklist aligned with the live GitHub roadmap.
 ## In Progress / Next
 
 - [x] [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) intake schema alignment
-- [ ] [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) typed domain models (slices 1-3 complete: intake/query + module packs + citation/export contracts)
+- [ ] [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) typed domain models (slices 1-4 complete: intake/query + module packs + citation/export contracts + graph/version envelopes)
 - [ ] [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) retrieval contracts
 - [ ] [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) scenario fixtures + snapshots
 - [ ] [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) expanded CI gates

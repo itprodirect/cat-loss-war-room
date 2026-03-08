@@ -56,9 +56,9 @@ Status: Complete
 Date: 2026-03-07
 
 - Branch baseline: `main` contains PR #20 and PR #21 changes.
-- Test status: 144 passing.
+- Test status: 149 passing.
 - Roadmap source of truth: `docs/ROADMAP.md` and `docs/V2_ISSUE_MAP.md`.
-- Issues #4, #5, and #22 complete. Issue #6 slices 1-3 merged.
+- Issues #4, #5, and #22 complete. Issue #6 slices 1-4 landed.
 - V2 foundation issues #22-#27 created and documented.
 - Next priority: start #23, continue #24 and #27 framing, and finish #6 remaining scope.
 
@@ -420,3 +420,76 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; python -m pytest -q tests/test_export.py tests/test_memo_contracts.py` -> `15 passed`
   - `$env:PYTHONPATH="src"; python -m pytest -q` -> `144 passed`
+
+## Session 29 - Workflow IA Source of Truth
+Date: 2026-03-08
+Status: Complete
+
+- Added `docs/V2_WORKFLOW_IA.md` as the canonical written spec for issue `#23`.
+- Locked the end-to-end V2 workflow:
+  - Intake
+  - Research Plan Preview
+  - Run Timeline
+  - Evidence Board
+  - Issue Workspace
+  - Memo Composer
+  - Export and Audit Bundle
+- Defined the primary V2 operator as the first non-technical legal user, with partner and associate flows layered onto the same evidence-first workflow.
+- Standardized V2 workflow contracts for:
+  - canonical run states,
+  - stage progress states,
+  - review-required semantics,
+  - evidence-to-claim traceability expectations.
+- Recorded narrowing product decisions in `docs/DECISION_LOG.md`.
+- Aligned roadmap and handoff docs with current repo state:
+  - `144` passing tests,
+  - `#22` marked complete in `docs/BUILD_CHECKLIST.md`,
+  - bootstrap expectation clarified in `docs/ROADMAP.md`,
+  - workflow spec linked from canonical-doc references.
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q` -> `144 passed`
+
+## Session 30 - Evidence Graph Source of Truth
+Date: 2026-03-08
+Status: Complete
+
+- Added `docs/V2_EVIDENCE_SCHEMA.md` as the canonical written spec for issue `#24`.
+- Defined the V2 evidence graph around one run-scoped canonical boundary linking:
+  - intake,
+  - research plan,
+  - run and stage state,
+  - retrieval tasks,
+  - evidence items and clusters,
+  - legal issues,
+  - memo sections and claims,
+  - review events,
+  - export artifacts.
+- Standardized durable-ID expectations so future V2 persistence does not depend on list ordering such as `cluster-1` or `evidence-3`.
+- Added explicit schema-versioning rules for canonical graph envelopes, starting with `v2alpha1`.
+- Mapped the current typed audit models to their intended V2 roles so `RunAuditSnapshot` remains useful as an audit bundle while no longer standing in for the full product persistence model.
+- Linked the new schema spec from roadmap and handoff docs, and updated `docs/V2_ISSUE_MAP.md` so downstream work uses it as the source of truth.
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q` -> `144 passed`
+
+
+## Session 31 - Typed Graph Contract Slice
+Date: 2026-03-08
+Status: Complete
+
+- Extended `src/war_room/models.py` with the next `#6` typed-contract slice from the `#24` schema spec.
+- Added canonical typed entities for:
+  - `ResearchPlan`
+  - `Run`
+  - `RunStage`
+  - `MemoSection`
+- Added envelope-level `schema_version` support to:
+  - `MemoRenderInput`
+  - `RunAuditSnapshot`
+- Added typed adapter and payload helpers for the new graph models and exported them through `war_room.__init__`.
+- Kept the current memo/export flow intact while allowing the audit snapshot path to carry explicit schema versions.
+- Expanded regression coverage in:
+  - `tests/test_models.py`
+  - `tests/test_memo_contracts.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `18 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `149 passed`

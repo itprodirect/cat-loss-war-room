@@ -55,3 +55,33 @@ Track key architecture and design decisions so future sessions (human or AI) und
 **Date:** 2026-02-24  
 **Decision:** Include `exa_py` in requirements.txt even though Prompt #1 doesn't make API calls.  
 **Reason:** Stub modules import Exa types for type hints. Having it installed prevents import errors during development. Costs nothing, prevents a "why is this broken" moment between Prompt #1 and Prompt #2.
+
+## D011: V2 workflow optimized for non-technical operator
+**Date:** 2026-03-08  
+**Decision:** Treat the paralegal or other non-technical legal operator as the primary V2 workflow driver. Partners and associates are first-class reviewers, but not the default interaction model.  
+**Reason:** The core product gap is not raw research capability; it is self-serve usability without Python, Jupyter, or narrated setup. Optimizing for the first non-technical operator forces guided intake, visible trust states, and clearer handoffs.
+
+## D012: Evidence-first V2 review model
+**Date:** 2026-03-08  
+**Decision:** Make evidence review and issue analysis the primary V2 product surfaces. The memo remains a downstream artifact rather than the main object of the system.  
+**Reason:** Trust depends on showing support before prose. A memo-first workflow makes it too easy to hide uncertainty, flatten provenance, and overstate incomplete analysis.
+
+## D013: Canonical V2 workflow and state vocabulary
+**Date:** 2026-03-08  
+**Decision:** Standardize the V2 workflow as `Intake -> Research Plan Preview -> Run Timeline -> Evidence Board -> Issue Workspace -> Memo Composer -> Export/Audit Bundle`, with canonical run states `queued`, `running`, `partial_success`, `failed`, `completed`, and `cancelled`.  
+**Reason:** `#10`, `#11`, and later provenance/review work need one stable workflow contract and one state vocabulary. Locking the sequence now reduces downstream drift across API, UI, and schema work.
+
+## D014: Run-scoped canonical graph
+**Date:** 2026-03-08  
+**Decision:** Treat `Run` as the top-level canonical persistence boundary for V2, with intake, planning, evidence, issue, claim, review, and export records all attached to the run.  
+**Reason:** The product needs one stable graph for progress, review, export history, and partial-success handling. Making the memo or export the primary object would flatten provenance and make review state harder to preserve.
+
+## D015: Evidence clusters are canonical, not presentational only
+**Date:** 2026-03-08  
+**Decision:** Keep `EvidenceCluster` as a first-class canonical entity that links evidence, issues, claims, review events, and exports.  
+**Reason:** Grouped support is necessary for trustworthy issue review and export traceability. Flat evidence rows alone are not enough for the Evidence Board or Issue Workspace.
+
+## D016: Schema versioning at canonical-envelope level
+**Date:** 2026-03-08  
+**Decision:** Require `schema_version` on persisted or exported canonical graph envelopes, starting with `v2alpha1`.  
+**Reason:** Typed contracts, fixtures, exports, and future APIs need an explicit compatibility boundary. Versioning only in tribal knowledge would make `#6`, `#10`, and `#12` drift silently.

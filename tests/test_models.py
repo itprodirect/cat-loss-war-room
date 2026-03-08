@@ -5,11 +5,19 @@ from pydantic import ValidationError
 
 from war_room.models import (
     CaseIntake,
+    MemoSection,
     QuerySpec,
+    ResearchPlan,
+    Run,
+    RunStage,
     adapt_query_plan,
     case_intake_to_payload,
+    memo_section_to_payload,
     query_plan_to_payloads,
     query_spec_to_payload,
+    research_plan_to_payload,
+    run_stage_to_payload,
+    run_to_payload,
 )
 
 
@@ -108,3 +116,71 @@ def test_query_spec_payload_helper_normalizes_model():
 
     assert payload["module"] == "weather"
     assert payload["query"] == "storm report"
+
+
+def test_research_plan_payload_helper_tracks_schema_version_and_queries():
+    plan = ResearchPlan(
+        plan_id="plan-milton",
+        run_id="run-milton",
+        planned_modules=["weather", "caselaw"],
+        issue_hypotheses=["wind_vs_water_causation"],
+        query_plan=[QuerySpec(module="weather", query="milton pinellas", category="damage_report")],
+        preferred_domains=["weather.gov", "courtlistener.com"],
+        estimated_scope="standard",
+    )
+
+    payload = research_plan_to_payload(plan)
+
+    assert payload["schema_version"] == "v2alpha1"
+    assert payload["query_plan"][0]["module"] == "weather"
+
+
+def test_run_payload_helper_normalizes_status_and_schema_version():
+    run = Run(
+        run_id="run-milton",
+        environment="local",
+        status="running",
+        intake_id="intake-milton",
+        plan_id="plan-milton",
+    )
+
+    payload = run_to_payload(run)
+
+    assert payload["schema_version"] == "v2alpha1"
+    assert payload["status"] == "running"
+
+
+def test_run_rejects_blank_schema_version():
+    with pytest.raises(ValidationError, match="schema_version"):
+        Run(
+            run_id="run-milton",
+            environment="local",
+            schema_version="   ",
+        )
+
+
+def test_run_stage_and_memo_section_payload_helpers_validate_contracts():
+    stage = RunStage(
+        stage_id="run-milton:weather",
+        run_id="run-milton",
+        stage_key="weather",
+        status="degraded",
+        summary="Used fallback sources",
+    )
+    section = MemoSection(
+        section_id="section-weather",
+        run_id="run-milton",
+        title="Weather Corroboration",
+        status="review_required",
+        issue_ids=["issue-wind"],
+        claim_ids=["claim-weather"],
+        review_required=True,
+    )
+
+    stage_payload = run_stage_to_payload(stage)
+    section_payload = memo_section_to_payload(section)
+
+    assert stage_payload["stage_key"] == "weather"
+    assert stage_payload["status"] == "degraded"
+    assert section_payload["status"] == "review_required"
+    assert section_payload["issue_ids"] == ["issue-wind"]
