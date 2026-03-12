@@ -10,14 +10,14 @@ Simple execution checklist aligned with the live GitHub roadmap.
 - [x] exa-py compatibility matrix live
 - [x] Adapter kwargs smoke-contract tests added
 
-## V2 Foundation (in progress)
+## V2 Written Specs
 
 - [x] [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) product foundation and repo shape
-- [x] [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) workflow IA and design system
-- [x] [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) canonical evidence graph and audit schema
-- [ ] [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric and release scorecard
+- [x] [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) workflow IA and design system source of truth
+- [x] [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) canonical evidence graph and audit schema source of truth
+- [ ] [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric and release scorecard (v0.1 rubric doc plus local scorecard artifact generator landed; calibration and CI/pilot operationalization still needed)
 
-## In Progress / Next
+## Immediate Execution Priorities
 
 - [x] [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) intake schema alignment
 - [ ] [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) typed domain models (slices 1-6 complete: intake/query + module packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts)
@@ -42,3 +42,4 @@ Simple execution checklist aligned with the live GitHub roadmap.
 - [ ] [#19](https://github.com/itprodirect/cat-loss-war-room-demo/issues/19) pilot validation
 - [ ] [#25](https://github.com/itprodirect/cat-loss-war-room-demo/issues/25) AI guardrails and eval harness
 - [ ] [#26](https://github.com/itprodirect/cat-loss-war-room-demo/issues/26) human review workflow
+

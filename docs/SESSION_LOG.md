@@ -587,3 +587,65 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q tests/test_citation_verify.py tests/test_memo_contracts.py tests/test_retrieval_contracts.py tests/test_pack_adapters.py` -> `31 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `168 passed`
+
+## Session 37 - Project Health Audit and Docs Realignment
+Date: 2026-03-10
+Status: Complete
+
+- Audited the canonical docs against local repo state for bootstrap, roadmap, and repo-shape drift.
+- Reconfirmed the supported test posture and documented that raw-checkout `pytest -q` is not a supported contributor path.
+- Added `docs/PROJECT_HEALTH_AUDIT_2026-03-10.md` with:
+  - implemented-now vs planned-V2 status memo,
+  - docs inconsistency list,
+  - contributor friction notes,
+  - next-2-weeks action plan.
+- Realigned the core builder docs so they tell the same story:
+  - `README.md`
+  - `docs/HANDOFF.md`
+  - `docs/ROADMAP.md`
+  - `docs/FOUNDATION.md`
+  - `docs/V2_ISSUE_MAP.md`
+  - `docs/BUILD_CHECKLIST.md`
+- Added `D017` to `docs/DECISION_LOG.md` to lock the rule that written V2 specs and placeholder directories are not the same thing as shipped runtime surfaces.
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q` -> `168 passed`
+
+## Session 38 - Issue #27 First-Pass Release Rubric
+Date: 2026-03-10
+Status: Complete
+
+- Added `docs/V2_RELEASE_RUBRIC.md` as the first-pass v0.1 output of `#27`.
+- Defined the shared quality dimensions for release decisions:
+  - reliability,
+  - evidence quality,
+  - trust and provenance,
+  - workflow usability,
+  - review and export quality,
+  - operational readiness,
+  - security and governance.
+- Defined release levels and gates for:
+  - demo-ready,
+  - beta-ready,
+  - pilot-ready.
+- Added a current-state baseline scorecard for the repo as of March 10, 2026.
+- Synced the canonical docs so `#27` now reads as first-pass landed but still open for calibration:
+  - `README.md`
+  - `docs/HANDOFF.md`
+  - `docs/ROADMAP.md`
+  - `docs/BUILD_CHECKLIST.md`
+  - `docs/V2_ISSUE_MAP.md`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q` -> `168 passed`
+
+## Session 39 - Issue #27 Scorecard Artifact Generator
+Date: 2026-03-11
+Status: Complete
+
+- Added `src/war_room/release_scorecard.py` to operationalize the `#27` rubric as a repeatable local artifact instead of docs-only guidance.
+- Added a lightweight CLI:
+  - `python -m war_room.release_scorecard --candidate <label> --verification-summary "<result>"`
+- The generator writes both Markdown and JSON artifacts into `runs/release_scorecards/` using the existing bootstrap/runtime settings.
+- Seeded the artifact with the current demo-ready baseline so release discussions can attach to concrete files while `#8`, `#9`, and `#19` remain open.
+- Added regression coverage in:
+  - `tests/test_release_scorecard.py`
+- Updated `docs/V2_RELEASE_RUBRIC.md` and `docs/BUILD_CHECKLIST.md` to point at the new local workflow.
