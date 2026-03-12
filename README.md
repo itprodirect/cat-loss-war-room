@@ -30,6 +30,8 @@ pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```
 
+`pytest -q` assumes the editable install step above has already run. If you skip package install for ad hoc local inspection, use `PYTHONPATH=src` instead of a raw-checkout test run.
+
 ## Dependency Compatibility
 
 This repo currently pins a tested dependency set in `requirements.txt`
@@ -76,12 +78,15 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 ## Current Status
 
-**V2 product foundation landed:** Core demo pipeline is stable, `168` tests are passing, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across three committed scenarios (FL, TX, LA), `178` tests are passing under the supported bootstrap path, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
+- Offline fixture smoke validation across committed scenarios
 - `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`)
 
-Issues `#4`, `#5`, and `#22` are complete, issue `#6` is underway with slices 1-6 (typed intake/query, module pack adapters, citation/export contracts, graph/version envelopes, issue/authority contracts, and run/retrieval lifecycle contracts), and issue `#7` has three slices landed: the provider seam, notebook retrieval-state emission, and citation-verify retrieval tracking.
+**Specified, not built yet:** `docs/V2_WORKFLOW_IA.md`, `docs/V2_EVIDENCE_SCHEMA.md`, and `docs/V2_RELEASE_RUBRIC.md` are the written source-of-truth specs for the current V2 planning layer, while `apps/`, `workers/`, and `packages/` remain placeholder boundaries for later implementation.
+
+Issues `#4`, `#5`, `#22`, `#23`, and `#24` are complete in their current intended scope. Issue `#27` now has a first-pass release rubric in `docs/V2_RELEASE_RUBRIC.md` but remains open for calibration, issue `#6` is underway with slices 1-6 landed, and issue `#7` has three slices landed: the provider seam, notebook retrieval-state emission, and citation-verify retrieval tracking.
 
 ## Roadmap (Simple)
 

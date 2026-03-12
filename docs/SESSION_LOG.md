@@ -1,4 +1,4 @@
-﻿# CAT-Loss War Room - Session Log
+# CAT-Loss War Room - Session Log
 
 This is the concise, current session timeline.
 
@@ -676,3 +676,24 @@ Status: Complete
 - Added a third committed fixture scenario under `cache_samples/ida_lloyds_orleans/` so the offline lane now covers Florida, Texas, and Louisiana.
 - Added matching root-level cache artifacts plus `eval/intakes/ida_lloyds_orleans.json` so the Louisiana scenario resolves through the cache-first runtime and the canonical intake contract.
 - Expanded the shared scenario map in `tests/test_offline_demo_pack.py` so the existing offline fixture validation now exercises all three committed jurisdictions.
+
+## Session 43 - Issue #27 Fixture-Calibrated Scorecard
+Date: 2026-03-11
+Status: Complete
+
+- Updated `src/war_room/release_scorecard.py` so scorecard artifacts inspect committed fixture scenario folders under `cache_samples/` instead of relying only on a hardcoded baseline narrative.
+- Added fixture coverage to the scorecard JSON/Markdown artifact, including scenario count, covered states, and per-scenario issue/citation-check summaries.
+- Expanded `tests/test_release_scorecard.py` so the scorecard generator is validated against the committed three-scenario fixture set.
+- Updated `docs/V2_RELEASE_RUBRIC.md` so the local artifact workflow explicitly calls out fixture-coverage capture as part of `#27` calibration.
+
+
+## Session 44 - Closing Sync and Clean Repo State
+Date: 2026-03-11
+Status: Complete
+
+- Synced the canonical docs to the current repo state: `178` passing tests, three committed fixture scenarios (FL/TX/LA), explicit fixture smoke CI, and fixture-calibrated release-scorecard artifacts.
+- Added `D018` to `docs/DECISION_LOG.md` so release scorecards derive fixture coverage from committed `cache_samples/` scenario folders instead of a hardcoded narrative.
+- Cleaned the committed notebook file back to a source-controlled state by stripping execution counts and outputs before session close.
+- Added an explicit `pytest-asyncio` loop-scope setting in `pyproject.toml` so the supported verification path is warning-free.
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q` -> `178 passed`

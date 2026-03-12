@@ -15,15 +15,15 @@ Simple execution checklist aligned with the live GitHub roadmap.
 - [x] [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) product foundation and repo shape
 - [x] [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) workflow IA and design system source of truth
 - [x] [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) canonical evidence graph and audit schema source of truth
-- [ ] [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric and release scorecard (v0.1 rubric doc plus local scorecard artifact generator landed; calibration and CI/pilot operationalization still needed)
+- [ ] [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric and release scorecard (v0.1 rubric doc, local artifact generator, and fixture-calibrated scenario coverage landed; threshold calibration and CI/pilot operationalization still needed)
 
 ## Immediate Execution Priorities
 
 - [x] [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) intake schema alignment
 - [ ] [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) typed domain models (slices 1-6 complete: intake/query + module packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts)
 - [ ] [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) retrieval contracts (provider seam + notebook retrieval-state + citation-verify slices landed)
-- [ ] [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) scenario fixtures + snapshots
-- [ ] [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) expanded CI gates
+- [ ] [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) scenario fixtures + snapshots (three committed scenarios now cover FL/TX/LA; broader breadth and snapshot thresholds still needed)
+- [ ] [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) expanded CI gates (offline fixture smoke gate landed; broader CI layering still needed)
 
 ## Product Core (queued)
 

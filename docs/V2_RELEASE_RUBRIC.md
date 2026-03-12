@@ -1,6 +1,6 @@
 # V2 Quality Rubric and Release Scorecard
 
-Last updated: March 10, 2026
+Last updated: March 11, 2026
 
 This document is the first-pass output of issue `#27`.
 
@@ -265,20 +265,20 @@ Recommended minimum scores:
 - Operational Readiness: `2`
 - Security and Governance: `2`
 
-## 7) Current Baseline Snapshot (March 10, 2026)
+## 7) Current Baseline Snapshot (March 11, 2026)
 
-This is the first scorecard entry using the rubric above.
+This is the current scorecard entry using the rubric above.
 
 Target release level: `Demo-ready`
 
 | Dimension | Score | Verdict | Why |
 |---|---:|---|---|
-| Reliability | 3 | Strong | `168` tests pass on the supported bootstrap path, CI covers fresh-env plus `exa-py` compatibility, and the offline lane is established. |
-| Evidence Quality | 1 | Weak | The direction is good, but broader scenario coverage and stronger normalization are still pending under `#8`, `#12`, and `#13`. |
+| Reliability | 3 | Strong | `178` tests pass on the supported bootstrap path, CI covers fresh-env plus `exa-py` compatibility, the offline fixture smoke gate is explicit, and the committed offline lane now spans FL/TX/LA scenarios. |
+| Evidence Quality | 1 | Weak | Three committed scenarios now exist for calibration, but pass/fail thresholds, deeper breadth, and stronger normalization are still pending under `#8`, `#12`, and `#13`. |
 | Trust and Provenance | 2 | Acceptable | Disclaimers, source tiers, citation checks, evidence clusters, and claim/review trace links exist, but they are still notebook-era rather than full product workflow state. |
 | Workflow Usability | 1 | Weak | The product is still notebook-first and generally engineer-driven for setup and operation. |
 | Review and Export Quality | 2 | Acceptable | Memo/export trust signals are stronger and audit structures exist, but export quality is still not polished for repeated client-facing use. |
-| Operational Readiness | 1 | Weak | Bootstrap and runtime boundaries are documented, but product-grade observability and deployment lanes remain future work. |
+| Operational Readiness | 1 | Weak | Bootstrap and runtime boundaries are documented, fixture smoke is now explicit in CI, and local scorecards record fixture coverage, but broader observability and deployment lanes remain future work. |
 | Security and Governance | 1 | Weak | Safety posture is disciplined for a demo, but production-grade controls are still roadmap items. |
 
 Current verdict:
@@ -338,7 +338,7 @@ After running the supported verification command, generate a scorecard artifact 
 ```bash
 python -m war_room.release_scorecard \
   --candidate local-demo \
-  --verification-summary "170 passed"
+  --verification-summary "178 passed"
 ```
 
 Default verification command recorded in the artifact:
@@ -351,6 +351,7 @@ What this does now:
 
 - writes Markdown and JSON scorecard artifacts into `runs/release_scorecards/`
 - records the current demo-ready baseline in a repeatable format
+- captures committed fixture coverage from `cache_samples/` so the scorecard reflects the live offline scenario set
 - creates a concrete artifact that later `#9` CI work can emit automatically
 
 What it does not do yet:
@@ -393,4 +394,3 @@ Implement workflow surfaces that can actually satisfy the Beta-ready usability g
 ### For `#19`
 
 Use this rubric as the starting benchmark sheet for pilot evaluation rather than creating a second competing readiness framework.
-

@@ -1,6 +1,6 @@
 # V2 Foundation
 
-Last updated: March 6, 2026
+Last updated: March 11, 2026
 
 This document is the concrete output of issue `#22`.
 
@@ -8,6 +8,7 @@ This document is the concrete output of issue `#22`.
 
 - Packaging: the repo is installable as an editable package via `pip install -e . --no-deps --no-build-isolation`.
 - Runtime bootstrap: scripts, tests, and notebooks load configuration through `war_room.bootstrap` and `war_room.settings`.
+- Test/bootstrap contract: contributors should run tests after editable install, or use `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not a supported path.
 - Environment lanes:
   - `local`: default contributor environment.
   - `demo`: cache-first offline lane. Live retrieval is disabled.
@@ -18,6 +19,10 @@ This document is the concrete output of issue `#22`.
   - `cache_samples/`: committed offline fixtures.
   - `output/`: rendered memo exports.
   - `runs/`: run-level artifacts and future audit snapshots.
+- Current active runtime surfaces:
+  - `src/war_room/`: Python package and current implementation
+  - `notebooks/01_case_war_room.ipynb`: demo/diagnostic surface
+  - `python -m war_room`: bootstrap check and runtime summary
 
 ## Local bootstrap
 
@@ -50,6 +55,7 @@ pytest -q
 - Notebooks and scripts must import `war_room.bootstrap.bootstrap_runtime` instead of mutating `sys.path`.
 - The notebook remains a demo/diagnostic surface, not the primary product runtime.
 - The offline fixture lane stays first-class through `WAR_ROOM_ENV=demo` plus committed `cache_samples/`.
+- The committed fixture lane now includes three public/redacted scenarios spanning Florida, Texas, and Louisiana.
 
 ## Planned V2 repo shape
 
@@ -70,6 +76,8 @@ packages/
 ```
 
 For the current build, this remains a documented target rather than a code move. The implemented foundation work in this issue is the packaging/bootstrap layer that makes that transition clean.
+
+The top-level `apps/`, `workers/`, and `packages/` directories currently contain README placeholders only. They document future boundaries and should not be read as active runtime entrypoints.
 
 ## Deployment lanes
 

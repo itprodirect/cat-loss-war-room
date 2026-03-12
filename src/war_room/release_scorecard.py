@@ -12,6 +12,7 @@ from pathlib import Path
 from war_room.bootstrap import bootstrap_runtime
 
 DEFAULT_VERIFICATION_COMMAND = '$env:PYTHONPATH="src"; pytest -q'
+_FIXTURE_FILE_NAMES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
 
 
 @dataclass(frozen=True)
@@ -35,6 +36,29 @@ class MustPassGate:
 
 
 @dataclass(frozen=True)
+class FixtureScenarioCoverage:
+    """Summary of one committed fixture scenario."""
+
+    case_key: str
+    event_summary: str
+    state: str
+    carrier: str
+    issue_count: int
+    citation_checks: int
+    module_files: list[str]
+
+
+@dataclass(frozen=True)
+class FixtureCoverageSummary:
+    """Aggregate fixture coverage used for release-scorecard calibration."""
+
+    scenario_count: int
+    states: list[str]
+    scenario_keys: list[str]
+    scenarios: list[FixtureScenarioCoverage]
+
+
+@dataclass(frozen=True)
 class ReleaseScorecard:
     """Structured release scorecard artifact."""
 
@@ -43,10 +67,50 @@ class ReleaseScorecard:
     target_release_level: str
     evaluators: list[str]
     evidence_bundle: list[str]
+    fixture_coverage: FixtureCoverageSummary | None
     dimensions: list[ScorecardDimension]
     must_pass_gates: list[MustPassGate]
     blocking_gaps: list[str]
     decision: str
+
+
+def collect_fixture_coverage(cache_samples_dir: Path) -> FixtureCoverageSummary:
+    """Inspect committed scenario folders and summarize fixture coverage."""
+
+    scenarios: list[FixtureScenarioCoverage] = []
+    if not cache_samples_dir.exists():
+        return FixtureCoverageSummary(0, [], [], [])
+
+    for scenario_dir in sorted(path for path in cache_samples_dir.iterdir() if path.is_dir()):
+        module_files = [name for name in _FIXTURE_FILE_NAMES if (scenario_dir / name).exists()]
+        if not module_files:
+            continue
+
+        weather = _load_json_if_exists(scenario_dir / "weather.json")
+        carrier = _load_json_if_exists(scenario_dir / "carrier.json")
+        caselaw = _load_json_if_exists(scenario_dir / "caselaw.json")
+        citation_verify = _load_json_if_exists(scenario_dir / "citation_verify.json")
+
+        carrier_snapshot = carrier.get("carrier_snapshot", {}) if isinstance(carrier, dict) else {}
+        summary = citation_verify.get("summary", {}) if isinstance(citation_verify, dict) else {}
+        scenarios.append(
+            FixtureScenarioCoverage(
+                case_key=scenario_dir.name,
+                event_summary=_clean_fixture_text(str(weather.get("event_summary", scenario_dir.name))),
+                state=str(carrier_snapshot.get("state", "")),
+                carrier=str(carrier_snapshot.get("name", "")),
+                issue_count=len(caselaw.get("issues", [])) if isinstance(caselaw, dict) else 0,
+                citation_checks=int(summary.get("total", 0)) if isinstance(summary, dict) else 0,
+                module_files=module_files,
+            )
+        )
+
+    return FixtureCoverageSummary(
+        scenario_count=len(scenarios),
+        states=sorted({scenario.state for scenario in scenarios if scenario.state}),
+        scenario_keys=[scenario.case_key for scenario in scenarios],
+        scenarios=scenarios,
+    )
 
 
 def build_demo_release_scorecard(
@@ -58,6 +122,7 @@ def build_demo_release_scorecard(
     evaluators: list[str] | None = None,
     blocking_gaps: list[str] | None = None,
     decision: str = "Ship",
+    fixture_coverage: FixtureCoverageSummary | None = None,
 ) -> ReleaseScorecard:
     """Build the current demo-ready baseline scorecard."""
 
@@ -67,26 +132,50 @@ def build_demo_release_scorecard(
         "Offline demo lane uses committed cache_samples fixtures.",
         "Rubric source of truth: docs/V2_RELEASE_RUBRIC.md",
     ]
+    if fixture_coverage and fixture_coverage.scenario_count:
+        evidence_bundle.insert(
+            1,
+            f"Fixture coverage: {fixture_coverage.scenario_count} committed scenarios across {', '.join(fixture_coverage.states)}.",
+        )
+
+    reliability_evidence = [
+        f"Supported verification path passed ({verification_summary}).",
+        "Offline demo lane is established with committed fixtures.",
+    ]
+    evidence_quality_evidence = [
+        "Normalization and caselaw quality improvements remain future work under #12 and #13.",
+    ]
+    operational_evidence = [
+        "Bootstrap and runtime boundaries are documented.",
+        "This script now emits repeatable local scorecard artifacts into runs/.",
+    ]
+    if fixture_coverage and fixture_coverage.scenario_count:
+        fixture_line = (
+            f"Committed fixture lane now spans {fixture_coverage.scenario_count} scenarios "
+            f"across {', '.join(fixture_coverage.states)}."
+        )
+        reliability_evidence.append(fixture_line)
+        evidence_quality_evidence.insert(0, fixture_line)
+        operational_evidence.append(
+            "Fixture coverage is exercised through an explicit CI smoke job and local smoke command."
+        )
+    else:
+        evidence_quality_evidence.insert(0, "Broader scenario coverage is still pending under #8.")
+
     dimensions = [
         ScorecardDimension(
             name="Reliability",
             score=3,
             verdict="Strong",
-            evidence=[
-                f"Supported verification path passed ({verification_summary}).",
-                "Offline demo lane is established with committed fixtures.",
-            ],
-            notes="Fresh-env and exa-py compatibility CI gates exist, but this local artifact records the supported local verification lane.",
+            evidence=reliability_evidence,
+            notes="Fresh-env and exa-py compatibility CI gates exist, and the local scorecard now records the supported verification lane plus committed fixture breadth.",
         ),
         ScorecardDimension(
             name="Evidence Quality",
             score=1,
             verdict="Weak",
-            evidence=[
-                "Broader scenario coverage is still pending under #8.",
-                "Normalization and caselaw quality improvements remain future work under #12 and #13.",
-            ],
-            notes="Good enough for narrated demo usage, not yet calibrated for broader release claims.",
+            evidence=evidence_quality_evidence,
+            notes="Fixture breadth is now measurable, but output-quality thresholds and comparative scenario scoring are still not calibrated enough for stronger release claims.",
         ),
         ScorecardDimension(
             name="Trust and Provenance",
@@ -122,11 +211,8 @@ def build_demo_release_scorecard(
             name="Operational Readiness",
             score=1,
             verdict="Weak",
-            evidence=[
-                "Bootstrap and runtime boundaries are documented.",
-                "This script now emits repeatable local scorecard artifacts into runs/.",
-            ],
-            notes="Observability and broader deployment lanes remain future work.",
+            evidence=operational_evidence,
+            notes="Observability and broader deployment lanes remain future work, but fixture coverage is now explicit in both CI and the scorecard artifact.",
         ),
         ScorecardDimension(
             name="Security and Governance",
@@ -148,7 +234,7 @@ def build_demo_release_scorecard(
         MustPassGate(
             name="Offline demo lane completes",
             passed=True,
-            evidence="Committed cache_samples fixtures support the offline demo lane.",
+            evidence=_offline_gate_evidence(fixture_coverage),
         ),
         MustPassGate(
             name="Required disclaimer language appears in outputs",
@@ -173,6 +259,7 @@ def build_demo_release_scorecard(
         target_release_level="Demo-ready",
         evaluators=evaluators or ["local builder"],
         evidence_bundle=evidence_bundle,
+        fixture_coverage=fixture_coverage,
         dimensions=dimensions,
         must_pass_gates=must_pass_gates,
         blocking_gaps=blocking_gaps or [],
@@ -194,6 +281,20 @@ def render_release_scorecard_markdown(scorecard: ReleaseScorecard) -> str:
     ]
     for entry in scorecard.evidence_bundle:
         lines.append(f"  - {entry}")
+
+    if scorecard.fixture_coverage and scorecard.fixture_coverage.scenario_count:
+        lines.extend(
+            [
+                "",
+                "## Fixture Coverage",
+                f"- Scenario count: {scorecard.fixture_coverage.scenario_count}",
+                f"- States: {', '.join(scorecard.fixture_coverage.states)}",
+            ]
+        )
+        for scenario in scorecard.fixture_coverage.scenarios:
+            lines.append(
+                f"- {scenario.case_key}: {scenario.event_summary} | {scenario.carrier} | issues {scenario.issue_count} | citation checks {scenario.citation_checks}"
+            )
 
     lines.extend(
         [
@@ -250,7 +351,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--verification-summary",
         required=True,
-        help='Short verification result, for example "170 passed"',
+        help='Short verification result, for example "178 passed"',
     )
     parser.add_argument(
         "--verification-command",
@@ -288,6 +389,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     context = bootstrap_runtime(start_path=Path(__file__))
     output_dir = Path(args.output_dir) if args.output_dir else context.settings.runs_dir / "release_scorecards"
+    fixture_coverage = collect_fixture_coverage(context.settings.cache_samples_dir)
     scorecard = build_demo_release_scorecard(
         candidate=args.candidate,
         verification_summary=args.verification_summary,
@@ -296,11 +398,36 @@ def main(argv: list[str] | None = None) -> int:
         evaluators=args.evaluators,
         blocking_gaps=args.blocking_gaps,
         decision=args.decision,
+        fixture_coverage=fixture_coverage,
     )
     json_path, markdown_path = write_release_scorecard_artifacts(scorecard, output_dir=output_dir)
     print(f"Wrote JSON scorecard: {json_path}")
     print(f"Wrote Markdown scorecard: {markdown_path}")
     return 0
+
+
+def _load_json_if_exists(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def _clean_fixture_text(value: str) -> str:
+    return (
+        value.replace("\u00c3\u00a2\u00e2\u201a\u00ac\u00e2\u20ac\u009d", "-")
+        .replace("\u00e2\u20ac\u201d", "-")
+        .replace("\u2014", "-")
+        .strip()
+    )
+
+
+def _offline_gate_evidence(fixture_coverage: FixtureCoverageSummary | None) -> str:
+    if not fixture_coverage or not fixture_coverage.scenario_count:
+        return "Committed cache_samples fixtures support the offline demo lane."
+    return (
+        f"Committed cache_samples fixtures cover {fixture_coverage.scenario_count} scenarios: "
+        f"{', '.join(fixture_coverage.scenario_keys)}."
+    )
 
 
 def _slugify(value: str) -> str:
