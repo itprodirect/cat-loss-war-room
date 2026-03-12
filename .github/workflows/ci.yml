@@ -7,6 +7,7 @@ on:
       - feat/**
       - fix/**
       - chore/**
+      - codex/**
   pull_request:
 
 jobs:
@@ -31,3 +32,25 @@ jobs:
 
       - name: Run Tests
         run: pytest -q
+
+  fixture-smoke:
+    name: Offline Fixture Smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "setuptools>=69"
+          pip install -r requirements.txt
+          pip install -e . --no-deps --no-build-isolation
+
+      - name: Run Offline Fixture Validation
+        run: pytest -q tests/test_offline_demo_pack.py tests/test_intake_validation.py

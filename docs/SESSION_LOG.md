@@ -1,4 +1,4 @@
-﻿# CAT-Loss War Room - Session Log
+# CAT-Loss War Room - Session Log
 
 This is the concise, current session timeline.
 
@@ -659,3 +659,12 @@ Status: Complete
 - Added `eval/intakes/tx_hail_allstate_tarrant.json` so the backup scenario also exists as a canonical intake payload.
 - Expanded `tests/test_offline_demo_pack.py` to validate all committed scenarios and to exercise cache-first runtime resolution for each scenario.
 - Expanded `tests/test_intake_validation.py` so committed eval intakes are validated against the canonical schema.
+
+## Session 41 - Issue #9 Fixture Smoke CI Gate
+Date: 2026-03-11
+Status: Complete
+
+- Updated GitHub Actions workflow triggers so `codex/**` branch pushes receive the same CI coverage as `feat/**`, `fix/**`, and `chore/**` branches.
+- Added an explicit `Offline Fixture Smoke` job to `.github/workflows/ci.yml` that runs:
+  - `pytest -q tests/test_offline_demo_pack.py tests/test_intake_validation.py`
+- Kept the existing full fresh-env test job and exa compatibility matrix intact so this remains a narrow CI-signal improvement rather than a workflow redesign.
