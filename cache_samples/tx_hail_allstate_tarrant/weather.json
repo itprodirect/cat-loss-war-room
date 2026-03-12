@@ -1,0 +1,33 @@
+{
+  "module": "weather",
+  "event_summary": "Texas Hailstorm - Tarrant County, TX (2023-05-04)",
+  "key_observations": [
+    "NOAA Storm Events records describe large hail and severe wind impacts across Tarrant County during the May 4, 2023 North Texas outbreak.",
+    "Texas emergency and weather reporting tie roof and exterior damage patterns in Tarrant County to the same hail-producing storm system."
+  ],
+  "metrics": {
+    "max_wind_mph": 78,
+    "storm_surge_ft": null,
+    "rain_in": 2.1
+  },
+  "sources": [
+    {
+      "title": "Storm Events Database - Tarrant County hail event",
+      "url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=1111111",
+      "badge": "official",
+      "reason": "Official source"
+    },
+    {
+      "title": "NWS Fort Worth/Dallas severe weather summary",
+      "url": "https://www.weather.gov/fwd/may2023hailsummary",
+      "badge": "official",
+      "reason": "Official source"
+    },
+    {
+      "title": "Texas Division of Emergency Management incident update",
+      "url": "https://tdem.texas.gov/disasters/2023/may-hail-event",
+      "badge": "official",
+      "reason": "Official source"
+    }
+  ]
+}

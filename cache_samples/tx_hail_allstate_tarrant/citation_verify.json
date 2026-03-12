@@ -1,0 +1,36 @@
+{
+  "module": "citation_verify",
+  "disclaimer": "CITATION SPOT-CHECK ONLY - These are confidence signals, not verification. KeyCite / Shepardize every citation before reliance.",
+  "checks": [
+    {
+      "status": "verified",
+      "badge": "verified",
+      "source_url": "https://www.txcourts.gov/media/1440000/17-1048.pdf",
+      "note": "Found on official source: txcourts.gov",
+      "case_name": "Ortiz v. State Farm Lloyds",
+      "citation": "589 S.W.3d 127"
+    },
+    {
+      "status": "uncertain",
+      "badge": "warning",
+      "source_url": "https://casetext.com/case/lambros-v-standard-fire-ins-co",
+      "note": "Found on professional source: casetext.com - verify independently",
+      "case_name": "Lambros v. Standard Fire Ins. Co.",
+      "citation": "530 S.W.3d 138"
+    },
+    {
+      "status": "uncertain",
+      "badge": "warning",
+      "source_url": "https://casetext.com/case/lyons-v-millers-cas-ins-co-of-texas",
+      "note": "Found on professional source: casetext.com - verify independently",
+      "case_name": "Lyons v. Millers Cas. Ins. Co. of Texas",
+      "citation": "866 S.W.2d 597"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "verified": 1,
+    "uncertain": 2,
+    "not_found": 0
+  }
+}

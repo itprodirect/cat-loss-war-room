@@ -1,4 +1,4 @@
-# CAT-Loss War Room - Session Log
+﻿# CAT-Loss War Room - Session Log
 
 This is the concise, current session timeline.
 
@@ -649,3 +649,13 @@ Status: Complete
 - Added regression coverage in:
   - `tests/test_release_scorecard.py`
 - Updated `docs/V2_RELEASE_RUBRIC.md` and `docs/BUILD_CHECKLIST.md` to point at the new local workflow.
+
+## Session 40 - Issue #8 Backup Fixture Scenario
+Date: 2026-03-11
+Status: Complete
+
+- Added a second committed fixture scenario under `cache_samples/tx_hail_allstate_tarrant/` to broaden the offline validation lane beyond the Milton / Citizens / Pinellas baseline.
+- Added matching root-level cache artifacts so the backup scenario resolves through the existing cache-first runtime path, not only through folder-level fixture reads.
+- Added `eval/intakes/tx_hail_allstate_tarrant.json` so the backup scenario also exists as a canonical intake payload.
+- Expanded `tests/test_offline_demo_pack.py` to validate all committed scenarios and to exercise cache-first runtime resolution for each scenario.
+- Expanded `tests/test_intake_validation.py` so committed eval intakes are validated against the canonical schema.
