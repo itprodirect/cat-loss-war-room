@@ -1,0 +1,74 @@
+{
+  "module": "caselaw",
+  "issues": [
+    {
+      "issue": "Lloyd's / Hurricane Property Precedent",
+      "cases": [
+        {
+          "name": "Sher v. Lafayette Ins. Co.",
+          "citation": "988 So. 2d 186",
+          "court": "Supreme Court of Louisiana",
+          "year": "2008",
+          "one_liner": "Louisiana Supreme Court decision addressing hurricane-related property damage and policy interpretation issues.",
+          "url": "https://casetext.com/case/sher-v-lafayette-ins-co",
+          "badge": "professional"
+        }
+      ],
+      "notes": [
+        "Useful for Louisiana first-party hurricane property disputes involving causation and policy interpretation."
+      ]
+    },
+    {
+      "issue": "Wind / Water Causation Standards",
+      "cases": [
+        {
+          "name": "Dickerson v. Lexington Ins. Co.",
+          "citation": "556 F.3d 290",
+          "court": "United States Court of Appeals for the Fifth Circuit",
+          "year": "2009",
+          "one_liner": "Fifth Circuit decision frequently cited in Louisiana hurricane-coverage disputes involving wind versus flood causation.",
+          "url": "https://casetext.com/case/dickerson-v-lexington-ins-co",
+          "badge": "professional"
+        },
+        {
+          "name": "In re Katrina Canal Breaches Litig.",
+          "citation": "495 F.3d 191",
+          "court": "United States Court of Appeals for the Fifth Circuit",
+          "year": "2007",
+          "one_liner": "Fifth Circuit opinion frequently referenced for Louisiana flood, levee, and policy causation issues after major storms.",
+          "url": "https://casetext.com/case/in-re-katrina-canal-breaches-litigation",
+          "badge": "professional"
+        }
+      ],
+      "notes": [
+        "Review how Louisiana and Fifth Circuit authorities treat concurrent wind and flood damage theories."
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "title": "Sher v. Lafayette Ins. Co.",
+      "url": "https://casetext.com/case/sher-v-lafayette-ins-co",
+      "badge": "professional",
+      "reason": "Professional source"
+    },
+    {
+      "title": "Dickerson v. Lexington Ins. Co.",
+      "url": "https://casetext.com/case/dickerson-v-lexington-ins-co",
+      "badge": "professional",
+      "reason": "Professional source"
+    },
+    {
+      "title": "In re Katrina Canal Breaches Litig.",
+      "url": "https://casetext.com/case/in-re-katrina-canal-breaches-litigation",
+      "badge": "professional",
+      "reason": "Professional source"
+    },
+    {
+      "title": "Louisiana bad-faith statutes overview",
+      "url": "https://legis.la.gov/legis/Law.aspx?d=508078",
+      "badge": "official",
+      "reason": "Official source"
+    }
+  ]
+}

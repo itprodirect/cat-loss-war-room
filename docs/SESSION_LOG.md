@@ -1,4 +1,4 @@
-# CAT-Loss War Room - Session Log
+﻿# CAT-Loss War Room - Session Log
 
 This is the concise, current session timeline.
 
@@ -668,3 +668,11 @@ Status: Complete
 - Added an explicit `Offline Fixture Smoke` job to `.github/workflows/ci.yml` that runs:
   - `pytest -q tests/test_offline_demo_pack.py tests/test_intake_validation.py`
 - Kept the existing full fresh-env test job and exa compatibility matrix intact so this remains a narrow CI-signal improvement rather than a workflow redesign.
+
+## Session 42 - Issue #8 Louisiana Stretch Fixture
+Date: 2026-03-11
+Status: Complete
+
+- Added a third committed fixture scenario under `cache_samples/ida_lloyds_orleans/` so the offline lane now covers Florida, Texas, and Louisiana.
+- Added matching root-level cache artifacts plus `eval/intakes/ida_lloyds_orleans.json` so the Louisiana scenario resolves through the cache-first runtime and the canonical intake contract.
+- Expanded the shared scenario map in `tests/test_offline_demo_pack.py` so the existing offline fixture validation now exercises all three committed jurisdictions.

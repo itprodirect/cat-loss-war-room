@@ -61,6 +61,26 @@ SCENARIOS = {
         ],
         "expected_checks": 3,
     },
+    "ida_lloyds_orleans": {
+        "event_name": "Hurricane Ida",
+        "event_date": "2021-08-29",
+        "state": "LA",
+        "county": "Orleans",
+        "carrier": "Certain Underwriters at Lloyd's, London",
+        "policy_type": "HO-3 Dwelling",
+        "posture": ["denial", "bad_faith"],
+        "key_facts": [
+            "Hurricane-force winds were documented in Orleans Parish during Ida landfall",
+            "Interior water intrusion was reported immediately after roof and window-envelope damage",
+            "Carrier attributed the majority of loss to excluded flood and delayed portions of the adjustment",
+        ],
+        "coverage_issues": [
+            "wind vs water causation",
+            "concurrent causation",
+            "duty to investigate",
+        ],
+        "expected_checks": 3,
+    },
 }
 
 _GENERIC_CARRIER_TITLES = {
