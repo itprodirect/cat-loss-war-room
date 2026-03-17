@@ -697,3 +697,19 @@ Status: Complete
 - Added an explicit `pytest-asyncio` loop-scope setting in `pyproject.toml` so the supported verification path is warning-free.
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q` -> `178 passed`
+
+## Session 45 - Issue #27 Verification Command Alignment
+Date: 2026-03-17
+Status: Complete
+
+- Updated `src/war_room/release_scorecard.py` so the default verification command recorded in scorecard artifacts is `pytest -q`, matching the repo's supported editable-install test path instead of the ad hoc `PYTHONPATH=src` lane.
+- Expanded `tests/test_release_scorecard.py` with an explicit regression check for the default verification command.
+- Updated `docs/V2_RELEASE_RUBRIC.md` so the documented local scorecard workflow matches the code and canonical repo guidance.
+
+## Session 46 - Collaborator-Facing Doc Readability Cleanup
+Date: 2026-03-17
+Status: Complete
+
+- Rewrote `docs/METHOD.md` in clean ASCII so the methodology narrative no longer contains mojibake and now matches current badge/status terminology.
+- Rewrote `docs/DEMO_SCRIPT.md` in clean ASCII so stakeholder-facing demo guidance reads cleanly instead of showing broken punctuation and symbol substitutions.
+- Updated `README.md` so the supported local setup path is explicit for Windows PowerShell and macOS/Linux/Git Bash, clarified the supported editable-install test path, tightened the `#23`/`#24` status wording, and updated the current-state test count from `178` to `179`.

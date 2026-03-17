@@ -11,7 +11,7 @@ from pathlib import Path
 
 from war_room.bootstrap import bootstrap_runtime
 
-DEFAULT_VERIFICATION_COMMAND = '$env:PYTHONPATH="src"; pytest -q'
+DEFAULT_VERIFICATION_COMMAND = "pytest -q"
 _FIXTURE_FILE_NAMES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
 
 

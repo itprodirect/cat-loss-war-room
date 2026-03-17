@@ -7,30 +7,39 @@ Built for demo at Merlin Law Group.
 > All outputs are for demonstration purposes only. Verify all citations
 > independently before any legal reliance. See [SAFETY_GUARDRAILS.md](docs/SAFETY_GUARDRAILS.md).
 
-## Quickstart
+## Supported Local Paths
+
+Use one of these supported local setups from repo root.
+
+### Windows PowerShell
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+pip install -e . --no-deps --no-build-isolation
+Copy-Item .env.example .env
+python -m war_room
+pytest -q
+jupyter notebook notebooks/01_case_war_room.ipynb
+```
+
+### macOS / Linux / Git Bash
 
 ```bash
-# Clone and setup
-git clone <repo-url>
-cd cat-loss-war-room-demo
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 pip install -e . --no-deps --no-build-isolation
-
-# Copy env template
 cp .env.example .env
-# Edit .env to add your EXA_API_KEY (optional - demo runs from cache)
-
-# Run tests
 python -m war_room
 pytest -q
-
-# Open the notebook
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```
 
-`pytest -q` assumes the editable install step above has already run. If you skip package install for ad hoc local inspection, use `PYTHONPATH=src` instead of a raw-checkout test run.
+`EXA_API_KEY` is optional for the offline demo path because committed fixtures in `cache_samples/` let the notebook run from cache.
+
+`pytest -q` is the supported test command after editable install. If you skip package install for ad hoc local inspection, use `PYTHONPATH=src` instead of a raw-checkout test run.
 
 ## Dependency Compatibility
 
@@ -78,7 +87,7 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across three committed scenarios (FL, TX, LA), `178` tests are passing under the supported bootstrap path, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across three committed scenarios (FL, TX, LA), `179` tests are passing under the supported bootstrap path, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - Offline fixture smoke validation across committed scenarios
@@ -86,7 +95,7 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 **Specified, not built yet:** `docs/V2_WORKFLOW_IA.md`, `docs/V2_EVIDENCE_SCHEMA.md`, and `docs/V2_RELEASE_RUBRIC.md` are the written source-of-truth specs for the current V2 planning layer, while `apps/`, `workers/`, and `packages/` remain placeholder boundaries for later implementation.
 
-Issues `#4`, `#5`, `#22`, `#23`, and `#24` are complete in their current intended scope. Issue `#27` now has a first-pass release rubric in `docs/V2_RELEASE_RUBRIC.md` but remains open for calibration, issue `#6` is underway with slices 1-6 landed, and issue `#7` has three slices landed: the provider seam, notebook retrieval-state emission, and citation-verify retrieval tracking.
+Issues `#4`, `#5`, and `#22` are complete and closed. The written source-of-truth specs for `#23` and `#24` have landed locally in `docs/V2_WORKFLOW_IA.md` and `docs/V2_EVIDENCE_SCHEMA.md`, while downstream implementation remains tracked in later issues. Issue `#27` now has a first-pass release rubric in `docs/V2_RELEASE_RUBRIC.md` but remains open for calibration, issue `#6` is underway with slices 1-6 landed, and issue `#7` has three slices landed: the provider seam, notebook retrieval-state emission, and citation-verify retrieval tracking.
 
 ## Roadmap (Simple)
 

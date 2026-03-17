@@ -344,7 +344,7 @@ python -m war_room.release_scorecard \
 Default verification command recorded in the artifact:
 
 ```bash
-$env:PYTHONPATH="src"; pytest -q
+pytest -q
 ```
 
 What this does now:

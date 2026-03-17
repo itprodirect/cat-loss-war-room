@@ -24,6 +24,10 @@ def test_collect_fixture_coverage_reads_committed_scenarios():
     assert "ida_lloyds_orleans" in summary.scenario_keys
 
 
+def test_default_verification_command_matches_supported_path():
+    assert DEFAULT_VERIFICATION_COMMAND == "pytest -q"
+
+
 def test_build_demo_release_scorecard_uses_fixture_calibration():
     summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
     scorecard = build_demo_release_scorecard(
