@@ -92,6 +92,7 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 - Editable package bootstrap validation
 - Offline fixture smoke validation across committed scenarios
 - `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`)
+- Release-scorecard artifact emission from the calibrated `#27` workflow
 
 **Specified, not built yet:** `docs/V2_WORKFLOW_IA.md`, `docs/V2_EVIDENCE_SCHEMA.md`, and `docs/V2_RELEASE_RUBRIC.md` are the written source-of-truth specs for the current V2 planning layer, while `apps/`, `workers/`, and `packages/` remain placeholder boundaries for later implementation.
 

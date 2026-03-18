@@ -9,6 +9,7 @@ This is the short version. Clean, practical, no drama.
 - Demo pipeline is stable.
 - 180 tests are passing.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job, and the `exa-py` compatibility matrix.
+- CI now also emits a release-scorecard artifact from the calibrated `#27` workflow.
 - The supported test path is editable install plus `pytest -q`, or `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not supported.
 - A deeper V2 foundation layer is tracked in issues `#22` through `#27`.
 - Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is complete.
@@ -59,7 +60,8 @@ Issues [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) an
   - `#9` should track CI expansion beyond the gates already in place.
   - `#11` should explicitly implement the workflow defined in `#23`.
   - `#12` should explicitly implement against the canonical schema defined in `#24`.
-  - `#27` should now focus on CI and pilot operationalization of the calibrated rubric rather than inventing the first rubric draft.
+- `#27` should now focus on CI and pilot operationalization of the calibrated rubric rather than inventing the first rubric draft.
+  - CI artifact emission already landed; the remaining work is broader gate coverage and pilot evidence.
 
 ## Now (next 2-3 weeks)
 

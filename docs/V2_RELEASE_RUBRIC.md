@@ -368,11 +368,12 @@ What this does now:
 - records the current demo-ready baseline in a repeatable format
 - captures committed fixture coverage from `cache_samples/` so the scorecard reflects the live offline scenario set
 - evaluates explicit demo-ready fixture thresholds inside the artifact
+- runs in CI and uploads the same artifact from the release-scorecard job
 - creates a concrete artifact that later `#9` CI work can emit automatically
 
 What it does not do yet:
 
-- replace CI-enforced evidence from `#9`
+- replace broader CI-enforced evidence from `#9`
 - replace pilot benchmark inputs from `#19`
 
 ## 10) What Should Improve This Rubric Next
@@ -380,7 +381,7 @@ What it does not do yet:
 This v0.1 rubric should be revised when the following land:
 
 - `#8`: broader fixture and scenario coverage
-- `#9`: expanded CI gates and stronger repeatable evidence for release claims
+- `#9`: expanded CI gates and stronger repeatable evidence for release claims, beyond artifact emission
 - `#10` and `#11`: real product workflow surfaces
 - `#12` and `#13`: better evidence normalization and case-law quality
 - `#19`: pilot feedback and operator usability benchmarks

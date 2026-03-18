@@ -22,7 +22,7 @@ This is research acceleration, not legal advice.
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
 | Tests | 180 passing under editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
-| CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix, all using editable package install |
+| CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix + release-scorecard artifact job, all using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
 | Typed domain contracts (#6) | Slices 1-6 complete (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts) |

@@ -737,3 +737,14 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q tests/test_release_scorecard.py` -> `5 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `180 passed`
+
+## Session 48 - Issue #9 Release Scorecard CI Artifact
+Date: 2026-03-18
+Status: Complete
+
+- Updated `.github/workflows/ci.yml` so the fresh-env test job now exposes its verification summary and a dedicated release-scorecard job can generate the calibrated artifact in CI.
+- Added CI artifact upload for the generated Markdown and JSON scorecard under `runs/release_scorecards/`.
+- Synced the rubric and roadmap docs so `#9` now reads as release-scorecard artifact emission having landed, while broader CI layering remains open.
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q` -> `180 passed`
+  - `python -m war_room.release_scorecard --candidate codex/quality-hardening --verification-summary "180 passed"`
