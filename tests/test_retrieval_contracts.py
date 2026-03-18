@@ -99,16 +99,20 @@ def test_execute_retrieval_task_records_completed_attempt_state():
         query_text="milton pinellas weather.gov",
     )
 
+    started_at = dt.datetime(2026, 3, 8, 12, 0, tzinfo=dt.UTC)
     result = execute_retrieval_task(
         provider,
         RetrievalSearchRequest(task=task),
-        now=dt.datetime(2026, 3, 8, 12, 0, tzinfo=dt.UTC),
+        now=started_at,
     )
 
     assert result.task.status == "completed"
     assert result.task.attempt_count == 1
+    assert result.task.requested_at == started_at
+    assert result.task.completed_at == started_at
     assert result.warning is None
     assert [event.event_type for event in result.run_events] == ["retrieval_started", "retrieval_completed"]
+    assert all(event.created_at == started_at for event in result.run_events)
 
 
 def test_execute_retrieval_task_records_degraded_state_for_empty_results():
@@ -121,12 +125,15 @@ def test_execute_retrieval_task_records_degraded_state_for_empty_results():
         query_text="milton pinellas weather.gov",
     )
 
-    result = execute_retrieval_task(provider, RetrievalSearchRequest(task=task))
+    completed_at = dt.datetime(2026, 3, 8, 12, 30, tzinfo=dt.UTC)
+    result = execute_retrieval_task(provider, RetrievalSearchRequest(task=task), now=completed_at)
 
     assert result.task.status == "degraded"
     assert result.task.review_required is True
+    assert result.task.completed_at == completed_at
     assert result.warning is not None
     assert result.run_events[-1].event_type == "retrieval_empty"
+    assert all(event.created_at == completed_at for event in result.run_events)
 
 
 def test_execute_retrieval_task_records_failed_state_for_provider_error():
@@ -139,12 +146,15 @@ def test_execute_retrieval_task_records_failed_state_for_provider_error():
         query_text="milton pinellas weather.gov",
     )
 
-    result = execute_retrieval_task(provider, RetrievalSearchRequest(task=task))
+    completed_at = dt.datetime(2026, 3, 8, 12, 45, tzinfo=dt.UTC)
+    result = execute_retrieval_task(provider, RetrievalSearchRequest(task=task), now=completed_at)
 
     assert result.task.status == "failed"
     assert result.task.review_required is True
+    assert result.task.completed_at == completed_at
     assert "RuntimeError" in (result.warning or "")
     assert result.run_events[-1].event_type == "retrieval_failed"
+    assert all(event.created_at == completed_at for event in result.run_events)
 
 
 def test_execute_retrieval_search_rejects_provider_mismatch():

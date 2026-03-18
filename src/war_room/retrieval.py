@@ -138,7 +138,7 @@ def execute_retrieval_task(
     try:
         hits = execute_retrieval_search(provider, request)
     except Exception as exc:
-        completed_at = dt.datetime.now(dt.UTC)
+        completed_at = now or dt.datetime.now(dt.UTC)
         warning = (
             f"{provider.provider_name} retrieval failed for '{request.task.query_text}': "
             f"{type(exc).__name__}."
@@ -168,7 +168,7 @@ def execute_retrieval_task(
             warning=warning,
         )
 
-    completed_at = dt.datetime.now(dt.UTC)
+    completed_at = now or dt.datetime.now(dt.UTC)
     raw_artifact_refs = _artifact_refs_from_hits(hits)
     if hits:
         final_task = running_task.model_copy(

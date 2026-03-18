@@ -491,6 +491,21 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `25 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `189 passed`
+
+## Session 53 - Issue #7 Deterministic Retrieval Task Timing
+Date: 2026-03-18
+Status: Complete
+
+- Tightened `src/war_room/retrieval.py` so `execute_retrieval_task()` now uses the provided `now` value consistently across completed, degraded, and failed execution paths.
+- This keeps `RetrievalTask.completed_at` and emitted `RunEvent.created_at` values deterministic for contract tests and replayable audit snapshots.
+- Expanded regression coverage in:
+  - `tests/test_retrieval_contracts.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_retrieval_contracts.py tests/test_citation_verify.py` -> `18 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `189 passed`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `25 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `189 passed`
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `18 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `149 passed`

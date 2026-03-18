@@ -26,7 +26,7 @@ This is research acceleration, not legal advice.
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
 | Typed domain contracts (#6) | Slices 1-7 complete (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts) |
-| Retrieval contracts (#7) | Three slices landed: provider seam, notebook retrieval-state emission, and citation-verify retrieval tracking |
+| Retrieval contracts (#7) | Four slices landed: provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing |
 | Product foundation (`#22`) | Complete: packaging/bootstrap lane implemented |
 | Workflow IA spec (`#23`) | Complete as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
 | Evidence schema spec (`#24`) | Complete as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |

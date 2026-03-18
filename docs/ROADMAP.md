@@ -36,7 +36,7 @@ Issues [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) an
 
 1. [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) Refine and operationalize the first-pass quality rubric and release scorecard
 2. [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) Complete remaining typed domain contracts
-3. [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) Retrieval provider abstraction + contract tests (three slices landed)
+3. [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) Retrieval provider abstraction + contract tests (four slices landed)
 4. [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) Multi-jurisdiction fixture suite + snapshots
 5. [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) Expand CI quality gates
 6. [#10](https://github.com/itprodirect/cat-loss-war-room-demo/issues/10) API orchestrator with graceful degradation
@@ -70,7 +70,7 @@ Goal: finish the remaining definition/foundation work so V2 implementation start
 
 - [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) Refine and operationalize the first-pass quality rubric and release scorecard
 - [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) Complete remaining typed domain contracts
-- [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) Retrieval provider abstraction + contract tests (provider seam + notebook retrieval-state + citation-verify slice landed)
+- [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) Retrieval provider abstraction + contract tests (provider seam + notebook retrieval-state + citation-verify + deterministic timing slices landed)
 - [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) Multi-jurisdiction fixture suite + snapshots
 - [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) Expand CI quality gates
 
