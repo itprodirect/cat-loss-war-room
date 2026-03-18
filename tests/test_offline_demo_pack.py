@@ -101,6 +101,9 @@ _CASE_COMMENTARY_MARKERS = (
     "in the wake of hurricane",
 )
 
+_STABLE_SOURCE_BADGES = {"official", "professional", "unvetted", "paywalled"}
+_STABLE_CITATION_BADGES = {"verified", "warning", "not_found"}
+
 
 class _FixtureProvider:
     provider_name = "fixture"
@@ -228,4 +231,23 @@ def test_milton_citation_checks_reference_case_titles_not_commentary():
     case_titles = [check["case_name"].lower() for check in data["checks"]]
     for marker in _CASE_COMMENTARY_MARKERS:
         assert all(marker not in title for title in case_titles)
+
+
+@pytest.mark.parametrize("case_key", sorted(SCENARIOS))
+def test_fixture_badges_use_stable_ascii_tokens(case_key: str):
+    weather = _load(case_key, "weather")
+    assert {source["badge"] for source in weather["sources"]}.issubset(_STABLE_SOURCE_BADGES)
+
+    carrier = _load(case_key, "carrier")
+    carrier_badges = {document["badge"] for document in carrier["document_pack"]}
+    carrier_badges.update(source["badge"] for source in carrier["sources"])
+    assert carrier_badges.issubset(_STABLE_SOURCE_BADGES)
+
+    caselaw = _load(case_key, "caselaw")
+    caselaw_badges = {source["badge"] for source in caselaw["sources"]}
+    caselaw_badges.update(case["badge"] for issue in caselaw["issues"] for case in issue["cases"])
+    assert caselaw_badges.issubset(_STABLE_SOURCE_BADGES)
+
+    citecheck = _load(case_key, "citation_verify")
+    assert {check["badge"] for check in citecheck["checks"]}.issubset(_STABLE_CITATION_BADGES)
 

@@ -1,164 +1,163 @@
-﻿{
-    "module":  "caselaw",
-    "issues":  [
-                   {
-                       "issue":  "Citizens Property Insurance Precedent",
-                       "cases":  [
-                                     {
-                                         "name":  "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678",
-                                         "citation":  "739 F.3d 678",
-                                         "court":  "COURT OF APPEALS FOR THE ELEVENTH CIRCUIT\nDat",
-                                         "year":  "",
-                                         "one_liner":  "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678 | Casetext Search + Citator\nSapuppo v. Allstate Floridian Ins. Co.\n#### Citing Cases\n[Jackson v. Inch] \nAn appellant abandons any argument not brie",
-                                         "url":  "https://casetext.com/case/sapuppo-v-allstate-floridian-ins-co",
-                                         "badge":  "??"
-                                     },
-                                     {
-                                         "name":  "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732",
-                                         "citation":  "819 So. 2d 732",
-                                         "court":  "Supreme Court of Florida\nDate published:\u0026#x",
-                                         "year":  "",
-                                         "one_liner":  "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732 | Casetext Search + Citator\nSiegle v. Progressive Consumers Ins. Co.\n#### Citing Cases\n[Culhane v. Western Nat. Mut. Ins. Co.] \nWe are not the",
-                                         "url":  "https://casetext.com/case/siegle-v-progressive-consumers-ins-co",
-                                         "badge":  "??"
-                                     }
-                                 ],
-                       "notes":  [
-                                     "Review for applicability to Citizens Property Insurance / Hurricane Milton"
-                                 ]
-                   },
-                   {
-                       "issue":  "Coverage / Denial Law",
-                       "cases":  [
-                                     {
-                                         "name":  "Quesada v. Director, Fed. Emergency Agency, 753 F.2d 1011",
-                                         "citation":  "753 F.2d 1011",
-                                         "court":  "Court of Appeals, Eleventh Circuit\nDate publi",
-                                         "year":  "",
-                                         "one_liner":  "Quesada v. Director, Fed. Emergency Agency, 753 F.2d 1011 | Casetext Search + Citator\nQuesada v. Director, Fed. Emergency Agency\n#### Citing Cases\n[Sodowski v. National Flood Ins. Program] \nThe ground",
-                                         "url":  "https://casetext.com/case/quesada-v-director-fed-emergency-agency",
-                                         "badge":  "??"
-                                     },
-                                     {
-                                         "name":  "Quesada v. Director, Federal Emergency Mgmt. Agency, 577 F. Supp. 695",
-                                         "citation":  "577 F. Supp. 695",
-                                         "court":  "District Court, S",
-                                         "year":  "",
-                                         "one_liner":  "Quesada v. Director, Federal Emergency Mgmt. Agency, 577 F. Supp. 695 | Casetext Search + Citator\nQuesada v. Director, Federal Emergency Mgmt. Agency\n#### Citing Cases\n[Quesada v. Director, Fed. Emerg",
-                                         "url":  "https://casetext.com/case/quesada-v-director-federal-emergency-mgmt-agency",
-                                         "badge":  "??"
-                                     },
-                                     {
-                                         "name":  "Johnson v. Davis, 480 So. 2d 625",
-                                         "citation":  "480 So. 2d 625",
-                                         "court":  "Supreme Court of Florida\nDate published:Jan",
-                                         "year":  "",
-                                         "one_liner":  "Johnson v. Davis, 480 So. 2d 625 | Casetext Search + Citator\nJohnson v. Davis\n#### Citing Cases\n[Lorber v. Passick] \nUnder Florida law, \"where the seller of a home knows of facts materially affecting",
-                                         "url":  "https://casetext.com/case/johnson-v-davis-20",
-                                         "badge":  "??"
-                                     }
-                                 ],
-                       "notes":  [
-                                     "Review for applicability to Citizens Property Insurance / Hurricane Milton"
-                                 ]
-                   },
-                   {
-                       "issue":  "Concurrent Causation Doctrine",
-                       "cases":  [
-                                     {
-                                         "name":  "Sebo v. American Home Assurance Co.",
-                                         "citation":  "208 So. 3d 694",
-                                         "court":  "Supreme Court of Florida",
-                                         "year":  "2016",
-                                         "one_liner":  "Florida Supreme Court decision addressing concurrent causation and all-risk policy language in a property coverage dispute.",
-                                         "url":  "https://casetext.com/case/sebo-v-american-home-assurance-co",
-                                         "badge":  "??"
-                                     }
-                                 ],
-                       "notes":  [
-                                     "Key issue in FL hurricane cases — determines whether wind or water exclusion controls"
-                                 ]
-                   }
-               ],
-    "sources":  [
-                    {
-                        "title":  "Sebo v. American Home Assurance Co.",
-                        "url":  "https://casetext.com/case/sebo-v-american-home-assurance-co",
-                        "badge":  "??",
-                        "reason":  "Professional source"
-                    },
-                    {
-                        "title":  "Citizens Property Insurance Corporation",
-                        "url":  "https://citizensfla.com/",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    },
-                    {
-                        "title":  "Homeowner Claims Help",
-                        "url":  "https://hchflorida.com/",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    },
-                    {
-                        "title":  "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678",
-                        "url":  "https://casetext.com/case/sapuppo-v-allstate-floridian-ins-co",
-                        "badge":  "??",
-                        "reason":  "Professional source"
-                    },
-                    {
-                        "title":  "Fla. Admin. Code Ann. R. 69J-123.003 - Property Insurance Intent to Initiate Litigation Notice",
-                        "url":  "https://www.law.cornell.edu/regulations/florida/Fla-Admin-Code-Ann-R-69J-123-003",
-                        "badge":  "??",
-                        "reason":  "Professional source"
-                    },
-                    {
-                        "title":  "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732",
-                        "url":  "https://casetext.com/case/siegle-v-progressive-consumers-ins-co",
-                        "badge":  "??",
-                        "reason":  "Professional source"
-                    },
-                    {
-                        "title":  "Quesada v. Director, Fed. Emergency Agency, 753 F.2d 1011",
-                        "url":  "https://casetext.com/case/quesada-v-director-fed-emergency-agency",
-                        "badge":  "??",
-                        "reason":  "Professional source"
-                    },
-                    {
-                        "title":  "Quesada v. Director, Federal Emergency Mgmt. Agency, 577 F. Supp. 695",
-                        "url":  "https://casetext.com/case/quesada-v-director-federal-emergency-mgmt-agency",
-                        "badge":  "??",
-                        "reason":  "Professional source"
-                    },
-                    {
-                        "title":  "Johnson v. Davis, 480 So. 2d 625",
-                        "url":  "https://casetext.com/case/johnson-v-davis-20",
-                        "badge":  "??",
-                        "reason":  "Professional source"
-                    },
-                    {
-                        "title":  "Lyons v. Millers Cas. Ins. Co. of Texas, 866 S.W.2d 597",
-                        "url":  "https://casetext.com/case/lyons-v-millers-cas-ins-co-of-texas",
-                        "badge":  "??",
-                        "reason":  "Professional source"
-                    },
-                    {
-                        "title":  "Johnson v. Davis, 480 So. 2d 625 - Fla: Supreme Court 1985",
-                        "url":  "https://scholar.google.com/scholar_case?about=14586619263907958570\u0026hl=en\u0026as_sdt=6,47\u0026as_vis=1",
-                        "badge":  "??",
-                        "reason":  "Professional source"
-                    },
-                    {
-                        "title":  "Concurrent Causation in Florida",
-                        "url":  "https://www.propertyinsurancecoveragelaw.com/blog/concurrent-causation-in-florida/",
-                        "badge":  "??",
-                        "reason":  "Professional source"
-                    },
-                    {
-                        "title":  "Florida Court Rules on Concurrent Causation",
-                        "url":  "https://www.sill.com/latest-news/posts/florida-court-rules-on-concurrent-causation/",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    }
-                ]
+{
+    "module": "caselaw",
+    "issues": [
+        {
+            "issue": "Citizens Property Insurance Precedent",
+            "cases": [
+                {
+                    "name": "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678",
+                    "citation": "739 F.3d 678",
+                    "court": "COURT OF APPEALS FOR THE ELEVENTH CIRCUIT\nDat",
+                    "year": "",
+                    "one_liner": "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678 | Casetext Search + Citator\nSapuppo v. Allstate Floridian Ins. Co.\n#### Citing Cases\n[Jackson v. Inch] \nAn appellant abandons any argument not brie",
+                    "url": "https://casetext.com/case/sapuppo-v-allstate-floridian-ins-co",
+                    "badge": "professional"
+                },
+                {
+                    "name": "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732",
+                    "citation": "819 So. 2d 732",
+                    "court": "Supreme Court of Florida\nDate published:&#x",
+                    "year": "",
+                    "one_liner": "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732 | Casetext Search + Citator\nSiegle v. Progressive Consumers Ins. Co.\n#### Citing Cases\n[Culhane v. Western Nat. Mut. Ins. Co.] \nWe are not the",
+                    "url": "https://casetext.com/case/siegle-v-progressive-consumers-ins-co",
+                    "badge": "professional"
+                }
+            ],
+            "notes": [
+                "Review for applicability to Citizens Property Insurance / Hurricane Milton"
+            ]
+        },
+        {
+            "issue": "Coverage / Denial Law",
+            "cases": [
+                {
+                    "name": "Quesada v. Director, Fed. Emergency Agency, 753 F.2d 1011",
+                    "citation": "753 F.2d 1011",
+                    "court": "Court of Appeals, Eleventh Circuit\nDate publi",
+                    "year": "",
+                    "one_liner": "Quesada v. Director, Fed. Emergency Agency, 753 F.2d 1011 | Casetext Search + Citator\nQuesada v. Director, Fed. Emergency Agency\n#### Citing Cases\n[Sodowski v. National Flood Ins. Program] \nThe ground",
+                    "url": "https://casetext.com/case/quesada-v-director-fed-emergency-agency",
+                    "badge": "professional"
+                },
+                {
+                    "name": "Quesada v. Director, Federal Emergency Mgmt. Agency, 577 F. Supp. 695",
+                    "citation": "577 F. Supp. 695",
+                    "court": "District Court, S",
+                    "year": "",
+                    "one_liner": "Quesada v. Director, Federal Emergency Mgmt. Agency, 577 F. Supp. 695 | Casetext Search + Citator\nQuesada v. Director, Federal Emergency Mgmt. Agency\n#### Citing Cases\n[Quesada v. Director, Fed. Emerg",
+                    "url": "https://casetext.com/case/quesada-v-director-federal-emergency-mgmt-agency",
+                    "badge": "professional"
+                },
+                {
+                    "name": "Johnson v. Davis, 480 So. 2d 625",
+                    "citation": "480 So. 2d 625",
+                    "court": "Supreme Court of Florida\nDate published:Jan",
+                    "year": "",
+                    "one_liner": "Johnson v. Davis, 480 So. 2d 625 | Casetext Search + Citator\nJohnson v. Davis\n#### Citing Cases\n[Lorber v. Passick] \nUnder Florida law, \"where the seller of a home knows of facts materially affecting",
+                    "url": "https://casetext.com/case/johnson-v-davis-20",
+                    "badge": "professional"
+                }
+            ],
+            "notes": [
+                "Review for applicability to Citizens Property Insurance / Hurricane Milton"
+            ]
+        },
+        {
+            "issue": "Concurrent Causation Doctrine",
+            "cases": [
+                {
+                    "name": "Sebo v. American Home Assurance Co.",
+                    "citation": "208 So. 3d 694",
+                    "court": "Supreme Court of Florida",
+                    "year": "2016",
+                    "one_liner": "Florida Supreme Court decision addressing concurrent causation and all-risk policy language in a property coverage dispute.",
+                    "url": "https://casetext.com/case/sebo-v-american-home-assurance-co",
+                    "badge": "professional"
+                }
+            ],
+            "notes": [
+                "Key issue in FL hurricane cases \u2014 determines whether wind or water exclusion controls"
+            ]
+        }
+    ],
+    "sources": [
+        {
+            "title": "Sebo v. American Home Assurance Co.",
+            "url": "https://casetext.com/case/sebo-v-american-home-assurance-co",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Citizens Property Insurance Corporation",
+            "url": "https://citizensfla.com/",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Homeowner Claims Help",
+            "url": "https://hchflorida.com/",
+            "badge": "unvetted",
+            "reason": "Unvetted source"
+        },
+        {
+            "title": "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678",
+            "url": "https://casetext.com/case/sapuppo-v-allstate-floridian-ins-co",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Fla. Admin. Code Ann. R. 69J-123.003 - Property Insurance Intent to Initiate Litigation Notice",
+            "url": "https://www.law.cornell.edu/regulations/florida/Fla-Admin-Code-Ann-R-69J-123-003",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732",
+            "url": "https://casetext.com/case/siegle-v-progressive-consumers-ins-co",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Quesada v. Director, Fed. Emergency Agency, 753 F.2d 1011",
+            "url": "https://casetext.com/case/quesada-v-director-fed-emergency-agency",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Quesada v. Director, Federal Emergency Mgmt. Agency, 577 F. Supp. 695",
+            "url": "https://casetext.com/case/quesada-v-director-federal-emergency-mgmt-agency",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Johnson v. Davis, 480 So. 2d 625",
+            "url": "https://casetext.com/case/johnson-v-davis-20",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Lyons v. Millers Cas. Ins. Co. of Texas, 866 S.W.2d 597",
+            "url": "https://casetext.com/case/lyons-v-millers-cas-ins-co-of-texas",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Johnson v. Davis, 480 So. 2d 625 - Fla: Supreme Court 1985",
+            "url": "https://scholar.google.com/scholar_case?about=14586619263907958570&hl=en&as_sdt=6,47&as_vis=1",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Concurrent Causation in Florida",
+            "url": "https://www.propertyinsurancecoveragelaw.com/blog/concurrent-causation-in-florida/",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Florida Court Rules on Concurrent Causation",
+            "url": "https://www.sill.com/latest-news/posts/florida-court-rules-on-concurrent-causation/",
+            "badge": "unvetted",
+            "reason": "Unvetted source"
+        }
+    ]
 }
-

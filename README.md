@@ -20,6 +20,7 @@ pip install -r requirements.txt
 pip install -e . --no-deps --no-build-isolation
 Copy-Item .env.example .env
 python -m war_room
+python -m war_room --preflight
 pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```
@@ -33,6 +34,7 @@ pip install -r requirements.txt
 pip install -e . --no-deps --no-build-isolation
 cp .env.example .env
 python -m war_room
+python -m war_room --preflight
 pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```
@@ -87,7 +89,7 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across three committed scenarios (FL, TX, LA), `180` tests are passing under the supported bootstrap path, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across three committed scenarios (FL, TX, LA), `186` tests are passing under the supported bootstrap path, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - Offline fixture smoke validation across committed scenarios

@@ -1,161 +1,160 @@
-﻿{
-    "module":  "carrier",
-    "carrier_snapshot":  {
-                             "name":  "Citizens Property Insurance",
-                             "state":  "FL",
-                             "event":  "Hurricane Milton",
-                             "policy_type":  "HO-3 Dwelling"
-                         },
-    "document_pack":  [
-                          {
-                              "doc_type":  "Denial Pattern Analysis",
-                              "title":  "Citizens sued over alleged mishandling of Hurricane Milton claim | Insurance Business",
-                              "url":  "https://www.insurancebusinessmag.com/us/news/legal-insights/citizens-sued-over-alleged-mishandling-of-hurricane-milton-claim-550172.aspx",
-                              "badge":  "??",
-                              "why_it_matters":  "Documents Citizens Property Insurance denial patterns — CONTINUE TO SITE\n\nCONTINUE TO SITE\n\n# Citizens sued over alleged mishandling of Hurricane Milton cla"
-                          },
-                          {
-                              "doc_type":  "Denial Pattern Analysis",
-                              "title":  "Commissioner Yaworsky Fights for Consumers and Brings More ...",
-                              "url":  "https://floir.gov/home/2025/04/09/commissioner-yaworsky-fights-for-consumers-and-brings-more-transparency-and-accountability-for-hurricane-claim-denials",
-                              "badge":  "??",
-                              "why_it_matters":  "Documents Citizens Property Insurance denial patterns — Commissioner Yaworsky Fights for Consumers and Brings More Transparency and Accountability for Hurri"
-                          },
-                          {
-                              "doc_type":  "Denial Pattern Analysis",
-                              "title":  "Denied By Citizens Property Insurance For Your Hurricane Debby ...",
-                              "url":  "https://vargasgonzalez.com/blog/denied-by-citizens-property-insurance-for-your-hurricane-debby-claim-heres-what/",
-                              "badge":  "??",
-                              "why_it_matters":  "Documents Citizens Property Insurance denial patterns — Denied by Citizens Property Insurance for Your Hurricane Debby Claim? Here’s What to Do | Blog | Var"
-                          },
-                          {
-                              "doc_type":  "Denial Pattern Analysis",
-                              "title":  "Denied Hurricane Milton Insurance Claim? Here\u0027s What to Do | Williams Law",
-                              "url":  "https://www.williamspa.com/hurricane-milton-insurance-claims/",
-                              "badge":  "??",
-                              "why_it_matters":  "Documents Citizens Property Insurance denial patterns — Denied Hurricane Milton Insurance Claim? Here\u0027s What to Do | Williams Law\n\n## Denied a Hurricane Mil"
-                          },
-                          {
-                              "doc_type":  "Denial Pattern Analysis",
-                              "title":  "The Reasons Behind Citizens Claim \u0027Denials\u0027 - Lisa Miller Associates",
-                              "url":  "https://lisamillerassociates.com/newsletter-story/the-reasons-behind-citizens-claim-denials/",
-                              "badge":  "??",
-                              "why_it_matters":  "Documents Citizens Property Insurance denial patterns — The Reasons Behind Citizens Claim ‘Denials’ \u0026#8211; Lisa Miller Associates\n* [Home] \n* [About Us] \n*"
-                          },
-                          {
-                              "doc_type":  "DOI/Regulatory Complaint",
-                              "title":  "[PDF] CITIZENS PROPERTY INSURANCE CORPORATION",
-                              "url":  "https://floir.com/docs-sf/default-source/property-and-casualty/citizens-market-conduct-exam-reports/citizens-property-insurance-corporation-final-exam-report_1-18-2023.pdf?sfvrsn=88e41c6c_6",
-                              "badge":  "??",
-                              "why_it_matters":  "Regulatory complaint record — may signal systemic issues"
-                          },
-                          {
-                              "doc_type":  "DOI/Regulatory Complaint",
-                              "title":  "Orders and Memoranda - Florida Office of Insurance Regulation",
-                              "url":  "https://www.floir.com/resources-and-reports/orders-and-memoranda",
-                              "badge":  "??",
-                              "why_it_matters":  "Regulatory complaint record — may signal systemic issues"
-                          },
-                          {
-                              "doc_type":  "Regulatory Action",
-                              "title":  "\u0027IS THAT LEGAL?\u0027: Citizens Property Insurance expands ...",
-                              "url":  "https://www.wflx.com/2026/02/18/is-that-legal-citizens-property-insurance-expands-arbitration-system-despite-legislative-pushback/",
-                              "badge":  "??",
-                              "why_it_matters":  "Regulatory action against Citizens Property Insurance — supports bad faith narrative"
-                          },
-                          {
-                              "doc_type":  "Regulatory Action",
-                              "title":  "Florida\u0027s Citizens Property Insurance Wins Most of Its Claim ...",
-                              "url":  "https://www.propublica.org/article/citizens-property-insurance-florida-arbitration-cases",
-                              "badge":  "??",
-                              "why_it_matters":  "Regulatory action against Citizens Property Insurance — supports bad faith narrative"
-                          }
-                      ],
-    "common_defenses":  [
-                            "Citizens Property Insurance may argue damage was pre-existing",
-                            "Policy exclusion defense"
-                        ],
-    "rebuttal_angles":  [
-                            "Key fact undermines carrier position: Category 3 at landfall near Siesta Key",
-                            "Key fact undermines carrier position: Roof damage + water intrusion reported within 48 hours",
-                            "Key fact undermines carrier position: Claim denied citing pre-existing conditions",
-                            "Counter pre-existing defense: damage timeline correlates with event date",
-                            "Bad faith signal: investigate Citizens Property Insurance\u0027s claims handling timeline and investigation adequacy",
-                            "Regulatory record: 5 DOI/regulatory results found — may support pattern-of-conduct argument"
-                        ],
-    "sources":  [
-                    {
-                        "title":  "Citizens sued over alleged mishandling of Hurricane Milton claim | Insurance Business",
-                        "url":  "https://www.insurancebusinessmag.com/us/news/legal-insights/citizens-sued-over-alleged-mishandling-of-hurricane-milton-claim-550172.aspx",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    },
-                    {
-                        "title":  "Commissioner Yaworsky Fights for Consumers and Brings More ...",
-                        "url":  "https://floir.gov/home/2025/04/09/commissioner-yaworsky-fights-for-consumers-and-brings-more-transparency-and-accountability-for-hurricane-claim-denials",
-                        "badge":  "??",
-                        "reason":  "Official source"
-                    },
-                    {
-                        "title":  "Denied By Citizens Property Insurance For Your Hurricane Debby ...",
-                        "url":  "https://vargasgonzalez.com/blog/denied-by-citizens-property-insurance-for-your-hurricane-debby-claim-heres-what/",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    },
-                    {
-                        "title":  "Denied Hurricane Milton Insurance Claim? Here\u0027s What to Do | Williams Law",
-                        "url":  "https://www.williamspa.com/hurricane-milton-insurance-claims/",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    },
-                    {
-                        "title":  "The Reasons Behind Citizens Claim \u0027Denials\u0027 - Lisa Miller Associates",
-                        "url":  "https://lisamillerassociates.com/newsletter-story/the-reasons-behind-citizens-claim-denials/",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    },
-                    {
-                        "title":  "[PDF] CITIZENS PROPERTY INSURANCE CORPORATION",
-                        "url":  "https://floir.com/docs-sf/default-source/property-and-casualty/citizens-market-conduct-exam-reports/citizens-property-insurance-corporation-final-exam-report_1-18-2023.pdf?sfvrsn=88e41c6c_6",
-                        "badge":  "??",
-                        "reason":  "Official source"
-                    },
-                    {
-                        "title":  "Orders and Memoranda - Florida Office of Insurance Regulation",
-                        "url":  "https://www.floir.com/resources-and-reports/orders-and-memoranda",
-                        "badge":  "??",
-                        "reason":  "Official source"
-                    },
-                    {
-                        "title":  "\u0027IS THAT LEGAL?\u0027: Citizens Property Insurance expands ...",
-                        "url":  "https://www.wflx.com/2026/02/18/is-that-legal-citizens-property-insurance-expands-arbitration-system-despite-legislative-pushback/",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    },
-                    {
-                        "title":  "Florida\u0027s Citizens Property Insurance Wins Most of Its Claim ...",
-                        "url":  "https://www.propublica.org/article/citizens-property-insurance-florida-arbitration-cases",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    },
-                    {
-                        "title":  "Citizens Property Insurance defeats late hurricane claims ...",
-                        "url":  "https://www.insurancebusinessmag.com/us/news/risk-compliance-legal/citizens-property-insurance-defeats-late-hurricane-claims-in-decisive-florida-court-ruling-545365.aspx",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    },
-                    {
-                        "title":  "State orders Citizens Insurance to provide deeper rate cuts than requested",
-                        "url":  "https://insurancenewsnet.com/oarticle/state-orders-citizens-insurance-to-provide-deeper-rate-cuts-than-requested",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    },
-                    {
-                        "title":  "What to Expect After Reporting Your Claim",
-                        "url":  "https://www.citizensfla.com/documents/20702/460724/Claim+Report+Process+Brochure+0919/e694b24a-77e2-4dc0-9a99-9b5502a6ae08",
-                        "badge":  "??",
-                        "reason":  "Unvetted source"
-                    }
-                ]
+{
+    "module": "carrier",
+    "carrier_snapshot": {
+        "name": "Citizens Property Insurance",
+        "state": "FL",
+        "event": "Hurricane Milton",
+        "policy_type": "HO-3 Dwelling"
+    },
+    "document_pack": [
+        {
+            "doc_type": "Denial Pattern Analysis",
+            "title": "Citizens sued over alleged mishandling of Hurricane Milton claim | Insurance Business",
+            "url": "https://www.insurancebusinessmag.com/us/news/legal-insights/citizens-sued-over-alleged-mishandling-of-hurricane-milton-claim-550172.aspx",
+            "badge": "unvetted",
+            "why_it_matters": "Documents Citizens Property Insurance denial patterns \u2014 CONTINUE TO SITE\n\nCONTINUE TO SITE\n\n# Citizens sued over alleged mishandling of Hurricane Milton cla"
+        },
+        {
+            "doc_type": "Denial Pattern Analysis",
+            "title": "Commissioner Yaworsky Fights for Consumers and Brings More ...",
+            "url": "https://floir.gov/home/2025/04/09/commissioner-yaworsky-fights-for-consumers-and-brings-more-transparency-and-accountability-for-hurricane-claim-denials",
+            "badge": "official",
+            "why_it_matters": "Documents Citizens Property Insurance denial patterns \u2014 Commissioner Yaworsky Fights for Consumers and Brings More Transparency and Accountability for Hurri"
+        },
+        {
+            "doc_type": "Denial Pattern Analysis",
+            "title": "Denied By Citizens Property Insurance For Your Hurricane Debby ...",
+            "url": "https://vargasgonzalez.com/blog/denied-by-citizens-property-insurance-for-your-hurricane-debby-claim-heres-what/",
+            "badge": "unvetted",
+            "why_it_matters": "Documents Citizens Property Insurance denial patterns \u2014 Denied by Citizens Property Insurance for Your Hurricane Debby Claim? Here\u2019s What to Do | Blog | Var"
+        },
+        {
+            "doc_type": "Denial Pattern Analysis",
+            "title": "Denied Hurricane Milton Insurance Claim? Here's What to Do | Williams Law",
+            "url": "https://www.williamspa.com/hurricane-milton-insurance-claims/",
+            "badge": "unvetted",
+            "why_it_matters": "Documents Citizens Property Insurance denial patterns \u2014 Denied Hurricane Milton Insurance Claim? Here's What to Do | Williams Law\n\n## Denied a Hurricane Mil"
+        },
+        {
+            "doc_type": "Denial Pattern Analysis",
+            "title": "The Reasons Behind Citizens Claim 'Denials' - Lisa Miller Associates",
+            "url": "https://lisamillerassociates.com/newsletter-story/the-reasons-behind-citizens-claim-denials/",
+            "badge": "unvetted",
+            "why_it_matters": "Documents Citizens Property Insurance denial patterns \u2014 The Reasons Behind Citizens Claim \u2018Denials\u2019 &#8211; Lisa Miller Associates\n* [Home] \n* [About Us] \n*"
+        },
+        {
+            "doc_type": "DOI/Regulatory Complaint",
+            "title": "[PDF] CITIZENS PROPERTY INSURANCE CORPORATION",
+            "url": "https://floir.com/docs-sf/default-source/property-and-casualty/citizens-market-conduct-exam-reports/citizens-property-insurance-corporation-final-exam-report_1-18-2023.pdf?sfvrsn=88e41c6c_6",
+            "badge": "official",
+            "why_it_matters": "Regulatory complaint record \u2014 may signal systemic issues"
+        },
+        {
+            "doc_type": "DOI/Regulatory Complaint",
+            "title": "Orders and Memoranda - Florida Office of Insurance Regulation",
+            "url": "https://www.floir.com/resources-and-reports/orders-and-memoranda",
+            "badge": "official",
+            "why_it_matters": "Regulatory complaint record \u2014 may signal systemic issues"
+        },
+        {
+            "doc_type": "Regulatory Action",
+            "title": "'IS THAT LEGAL?': Citizens Property Insurance expands ...",
+            "url": "https://www.wflx.com/2026/02/18/is-that-legal-citizens-property-insurance-expands-arbitration-system-despite-legislative-pushback/",
+            "badge": "unvetted",
+            "why_it_matters": "Regulatory action against Citizens Property Insurance \u2014 supports bad faith narrative"
+        },
+        {
+            "doc_type": "Regulatory Action",
+            "title": "Florida's Citizens Property Insurance Wins Most of Its Claim ...",
+            "url": "https://www.propublica.org/article/citizens-property-insurance-florida-arbitration-cases",
+            "badge": "professional",
+            "why_it_matters": "Regulatory action against Citizens Property Insurance \u2014 supports bad faith narrative"
+        }
+    ],
+    "common_defenses": [
+        "Citizens Property Insurance may argue damage was pre-existing",
+        "Policy exclusion defense"
+    ],
+    "rebuttal_angles": [
+        "Key fact undermines carrier position: Category 3 at landfall near Siesta Key",
+        "Key fact undermines carrier position: Roof damage + water intrusion reported within 48 hours",
+        "Key fact undermines carrier position: Claim denied citing pre-existing conditions",
+        "Counter pre-existing defense: damage timeline correlates with event date",
+        "Bad faith signal: investigate Citizens Property Insurance's claims handling timeline and investigation adequacy",
+        "Regulatory record: 5 DOI/regulatory results found \u2014 may support pattern-of-conduct argument"
+    ],
+    "sources": [
+        {
+            "title": "Citizens sued over alleged mishandling of Hurricane Milton claim | Insurance Business",
+            "url": "https://www.insurancebusinessmag.com/us/news/legal-insights/citizens-sued-over-alleged-mishandling-of-hurricane-milton-claim-550172.aspx",
+            "badge": "unvetted",
+            "reason": "Unvetted source"
+        },
+        {
+            "title": "Commissioner Yaworsky Fights for Consumers and Brings More ...",
+            "url": "https://floir.gov/home/2025/04/09/commissioner-yaworsky-fights-for-consumers-and-brings-more-transparency-and-accountability-for-hurricane-claim-denials",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "Denied By Citizens Property Insurance For Your Hurricane Debby ...",
+            "url": "https://vargasgonzalez.com/blog/denied-by-citizens-property-insurance-for-your-hurricane-debby-claim-heres-what/",
+            "badge": "unvetted",
+            "reason": "Unvetted source"
+        },
+        {
+            "title": "Denied Hurricane Milton Insurance Claim? Here's What to Do | Williams Law",
+            "url": "https://www.williamspa.com/hurricane-milton-insurance-claims/",
+            "badge": "unvetted",
+            "reason": "Unvetted source"
+        },
+        {
+            "title": "The Reasons Behind Citizens Claim 'Denials' - Lisa Miller Associates",
+            "url": "https://lisamillerassociates.com/newsletter-story/the-reasons-behind-citizens-claim-denials/",
+            "badge": "unvetted",
+            "reason": "Unvetted source"
+        },
+        {
+            "title": "[PDF] CITIZENS PROPERTY INSURANCE CORPORATION",
+            "url": "https://floir.com/docs-sf/default-source/property-and-casualty/citizens-market-conduct-exam-reports/citizens-property-insurance-corporation-final-exam-report_1-18-2023.pdf?sfvrsn=88e41c6c_6",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "Orders and Memoranda - Florida Office of Insurance Regulation",
+            "url": "https://www.floir.com/resources-and-reports/orders-and-memoranda",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "'IS THAT LEGAL?': Citizens Property Insurance expands ...",
+            "url": "https://www.wflx.com/2026/02/18/is-that-legal-citizens-property-insurance-expands-arbitration-system-despite-legislative-pushback/",
+            "badge": "unvetted",
+            "reason": "Unvetted source"
+        },
+        {
+            "title": "Florida's Citizens Property Insurance Wins Most of Its Claim ...",
+            "url": "https://www.propublica.org/article/citizens-property-insurance-florida-arbitration-cases",
+            "badge": "professional",
+            "reason": "Professional source"
+        },
+        {
+            "title": "Citizens Property Insurance defeats late hurricane claims ...",
+            "url": "https://www.insurancebusinessmag.com/us/news/risk-compliance-legal/citizens-property-insurance-defeats-late-hurricane-claims-in-decisive-florida-court-ruling-545365.aspx",
+            "badge": "unvetted",
+            "reason": "Unvetted source"
+        },
+        {
+            "title": "State orders Citizens Insurance to provide deeper rate cuts than requested",
+            "url": "https://insurancenewsnet.com/oarticle/state-orders-citizens-insurance-to-provide-deeper-rate-cuts-than-requested",
+            "badge": "unvetted",
+            "reason": "Unvetted source"
+        },
+        {
+            "title": "What to Expect After Reporting Your Claim",
+            "url": "https://www.citizensfla.com/documents/20702/460724/Claim+Report+Process+Brochure+0919/e694b24a-77e2-4dc0-9a99-9b5502a6ae08",
+            "badge": "professional",
+            "reason": "Professional source"
+        }
+    ]
 }
-

@@ -1,51 +1,51 @@
-﻿{
-    "module":  "weather",
-    "event_summary":  "Hurricane Milton — Pinellas County, FL (2024-10-09)",
-    "key_observations":  [
-                             "Pinellas County was within the Tampa Bay Area/Ruskin post-tropical summary footprint for Hurricane Milton, supporting county-level storm corroboration.",
-                             "Official weather reporting for the event includes Tampa Bay area documentation and FEMA disaster designation tied to Hurricane Milton in Florida."
-                         ],
-    "metrics":  {
-                    "max_wind_mph":  180,
-                    "storm_surge_ft":  10.0,
-                    "rain_in":  null
-                },
-    "sources":  [
-                    {
-                        "title":  "[PDF] Hurricane Milton",
-                        "url":  "https://www.nhc.noaa.gov/data/tcr/AL142024_Milton.pdf",
-                        "badge":  "??",
-                        "reason":  "Official source"
-                    },
-                    {
-                        "title":  "Storm Events Database - Event Details | National Centers for ...",
-                        "url":  "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=1221581",
-                        "badge":  "??",
-                        "reason":  "Official source"
-                    },
-                    {
-                        "title":  "[PDF] POST TROPICAL CYCLONE REPORT",
-                        "url":  "https://www.weather.gov/media/tbw/TropicalEventSummary/PSHTBW_2024AL14_Milton_Summary.pdf",
-                        "badge":  "??",
-                        "reason":  "Official source"
-                    },
-                    {
-                        "title":  "Storm Events Database",
-                        "url":  "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=1221569",
-                        "badge":  "??",
-                        "reason":  "Official source"
-                    },
-                    {
-                        "title":  "[PDF] Storm Data - National Centers for Environmental Information",
-                        "url":  "https://www.ncei.noaa.gov/pub/data/swdi/stormevents/pub-pdf/storm_1971_08.pdf",
-                        "badge":  "??",
-                        "reason":  "Official source"
-                    },
-                    {
-                        "title":  "Florida Hurricane Milton (DR-4834-FL) - FEMA.gov",
-                        "url":  "https://www.fema.gov/disaster/4834",
-                        "badge":  "??",
-                        "reason":  "Official source"
-                    }
-                ]
+{
+    "module": "weather",
+    "event_summary": "Hurricane Milton \u2014 Pinellas County, FL (2024-10-09)",
+    "key_observations": [
+        "Pinellas County was within the Tampa Bay Area/Ruskin post-tropical summary footprint for Hurricane Milton, supporting county-level storm corroboration.",
+        "Official weather reporting for the event includes Tampa Bay area documentation and FEMA disaster designation tied to Hurricane Milton in Florida."
+    ],
+    "metrics": {
+        "max_wind_mph": 180,
+        "storm_surge_ft": 10.0,
+        "rain_in": null
+    },
+    "sources": [
+        {
+            "title": "[PDF] Hurricane Milton",
+            "url": "https://www.nhc.noaa.gov/data/tcr/AL142024_Milton.pdf",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "Storm Events Database - Event Details | National Centers for ...",
+            "url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=1221581",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "[PDF] POST TROPICAL CYCLONE REPORT",
+            "url": "https://www.weather.gov/media/tbw/TropicalEventSummary/PSHTBW_2024AL14_Milton_Summary.pdf",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "Storm Events Database",
+            "url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=1221569",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "[PDF] Storm Data - National Centers for Environmental Information",
+            "url": "https://www.ncei.noaa.gov/pub/data/swdi/stormevents/pub-pdf/storm_1971_08.pdf",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "Florida Hurricane Milton (DR-4834-FL) - FEMA.gov",
+            "url": "https://www.fema.gov/disaster/4834",
+            "badge": "official",
+            "reason": "Official source"
+        }
+    ]
 }
