@@ -7,7 +7,7 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 186 tests are passing.
+- 189 tests are passing.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job, and the `exa-py` compatibility matrix.
 - CI now also emits a release-scorecard artifact from the calibrated `#27` workflow.
 - The supported test path is editable install plus `pytest -q`, or `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not supported.
@@ -18,7 +18,7 @@ This is the short version. Clean, practical, no drama.
 - Issue [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) is complete.
 - Issues [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) are complete as written source-of-truth specs.
 - Issue [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) is still open, but the local scorecard now includes explicit demo-ready threshold calibration in `docs/V2_RELEASE_RUBRIC.md`.
-- Issue [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) is in progress (slices 1-6 landed locally; run/retrieval lifecycle contract slice now added).
+- Issue [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) is in progress (slices 1-7 landed locally; review/export graph-linkage contract slice now added).
 - Placeholder directories under `apps/`, `packages/`, and `workers/` are planned V2 boundaries only. The active runtime remains the notebook plus `src/war_room/`.
 
 ## Delivery layers

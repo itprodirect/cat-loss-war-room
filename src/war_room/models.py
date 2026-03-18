@@ -522,12 +522,18 @@ class ReviewEvent(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     event_id: str = Field(min_length=1)
-    event_type: Literal["warning", "citation_uncertain", "citation_not_found"]
+    run_id: str = Field(default="")
+    event_type: Literal["warning", "citation_uncertain", "citation_not_found", "human_override", "missing_support"]
     label: str = Field(min_length=1)
     detail: str = Field(min_length=1)
     module: str | None = None
+    target_type: str = Field(default="")
+    target_ids: list[str] = Field(default_factory=list)
     related_evidence_ids: list[str] = Field(default_factory=list)
     related_cluster_ids: list[str] = Field(default_factory=list)
+    related_claim_ids: list[str] = Field(default_factory=list)
+    related_stage_id: str | None = None
+    created_at: dt.datetime | None = None
 
 
 class ExportArtifact(BaseModel):
@@ -535,9 +541,15 @@ class ExportArtifact(BaseModel):
 
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
+    artifact_id: str = Field(default="")
+    run_id: str = Field(default="")
     artifact_type: Literal["markdown_memo"] = "markdown_memo"
     title: str = Field(min_length=1)
     disclaimer: str = Field(min_length=1)
+    uri: str = Field(default="")
+    section_ids: list[str] = Field(default_factory=list)
+    review_required: bool = False
+    created_at: dt.datetime | None = None
     section_titles: list[str] = Field(default_factory=list)
 
 
@@ -726,6 +738,12 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
     carrier_payload = carrier_doc_pack_to_payload(memo_input.carrier)
     caselaw_payload = caselaw_pack_to_payload(memo_input.caselaw)
     citecheck_payload = citation_verify_pack_to_payload(memo_input.citecheck)
+    run_id = _run_id_from_intake(memo_input.intake)
+    created_at = dt.datetime.combine(
+        dt.date.fromisoformat(memo_input.intake.event_date),
+        dt.time.min,
+        tzinfo=dt.UTC,
+    )
 
     evidence_items: list[EvidenceItem] = []
     evidence_ids_by_module = {
@@ -840,6 +858,12 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         *memo_input.caselaw.run_events,
         *memo_input.citecheck.run_events,
     ]
+    claim_ids_by_module = {
+        "weather": "weather-corroboration",
+        "carrier": "carrier-positioning",
+        "caselaw": "case-law-support",
+        "citation_verify": "citation-check-status",
+    }
     review_events: list[ReviewEvent] = []
     for module_key, module_label, payload in (
         ("weather", "Weather", weather_payload),
@@ -847,18 +871,25 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         ("caselaw", "Case law", caselaw_payload),
     ):
         for index, warning in enumerate(payload.get("warnings", []) or [], 1):
+            related_cluster_ids = _cluster_ids_for_evidence_ids(
+                evidence_ids_by_module[module_key],
+                evidence_cluster_ids_by_evidence_id,
+            )
+            claim_id = claim_ids_by_module[module_key]
             review_events.append(
                 ReviewEvent(
                     event_id=f"{module_key}-warning-{index}",
+                    run_id=run_id,
                     event_type="warning",
                     label=f"{module_label} review required",
                     detail=warning,
                     module=module_key,
+                    target_type="memo_claim",
+                    target_ids=[claim_id],
                     related_evidence_ids=evidence_ids_by_module[module_key],
-                    related_cluster_ids=_cluster_ids_for_evidence_ids(
-                        evidence_ids_by_module[module_key],
-                        evidence_cluster_ids_by_evidence_id,
-                    ),
+                    related_cluster_ids=related_cluster_ids,
+                    related_claim_ids=[claim_id],
+                    created_at=created_at,
                 )
             )
 
@@ -866,33 +897,47 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
     uncertain = citation_summary.get("uncertain", 0)
     not_found = citation_summary.get("not_found", 0)
     if uncertain:
+        related_cluster_ids = _cluster_ids_for_evidence_ids(
+            evidence_ids_by_module["citation_verify"],
+            evidence_cluster_ids_by_evidence_id,
+        )
+        claim_id = claim_ids_by_module["citation_verify"]
         review_events.append(
             ReviewEvent(
                 event_id="citation-uncertain",
+                run_id=run_id,
                 event_type="citation_uncertain",
                 label="Citation review required",
                 detail=f"{uncertain} citation checks are uncertain.",
                 module="citation_verify",
+                target_type="memo_claim",
+                target_ids=[claim_id],
                 related_evidence_ids=evidence_ids_by_module["citation_verify"],
-                related_cluster_ids=_cluster_ids_for_evidence_ids(
-                    evidence_ids_by_module["citation_verify"],
-                    evidence_cluster_ids_by_evidence_id,
-                ),
+                related_cluster_ids=related_cluster_ids,
+                related_claim_ids=[claim_id],
+                created_at=created_at,
             )
         )
     if not_found:
+        related_cluster_ids = _cluster_ids_for_evidence_ids(
+            evidence_ids_by_module["citation_verify"],
+            evidence_cluster_ids_by_evidence_id,
+        )
+        claim_id = claim_ids_by_module["citation_verify"]
         review_events.append(
             ReviewEvent(
                 event_id="citation-not-found",
+                run_id=run_id,
                 event_type="citation_not_found",
                 label="Citation not found",
                 detail=f"{not_found} citation checks were not found on reviewed sources.",
                 module="citation_verify",
+                target_type="memo_claim",
+                target_ids=[claim_id],
                 related_evidence_ids=evidence_ids_by_module["citation_verify"],
-                related_cluster_ids=_cluster_ids_for_evidence_ids(
-                    evidence_ids_by_module["citation_verify"],
-                    evidence_cluster_ids_by_evidence_id,
-                ),
+                related_cluster_ids=related_cluster_ids,
+                related_claim_ids=[claim_id],
+                created_at=created_at,
             )
         )
 
@@ -971,6 +1016,8 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
     if review_events:
         section_titles.insert(8, "Appendix: Review Log")
 
+    section_ids = [_stable_token(title) for title in section_titles]
+
     return RunAuditSnapshot(
         schema_version=memo_input.schema_version,
         intake=memo_input.intake,
@@ -982,8 +1029,14 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         memo_claims=memo_claims,
         review_events=review_events,
         export_artifact=ExportArtifact(
+            artifact_id=f"{run_id}:artifact:markdown-memo",
+            run_id=run_id,
             title="CAT-Loss War Room - Research Memo",
             disclaimer="DEMO RESEARCH MEMO - VERIFY CITATIONS - NOT LEGAL ADVICE",
+            uri=f"runs/{run_id}/research-memo.md",
+            section_ids=section_ids,
+            review_required=bool(review_events),
+            created_at=created_at,
             section_titles=section_titles,
         ),
     )
@@ -1106,6 +1159,22 @@ def _caselaw_claim_text(caselaw_payload: dict[str, Any]) -> str:
         return first_case[0]["one_liner"]
 
     return f"Case-law authorities identified across {len(issues)} issue buckets."
+
+
+def _stable_token(value: str) -> str:
+    normalized = re.sub(r"[^A-Za-z0-9]+", "-", value.strip().lower()).strip("-")
+    return normalized or "item"
+
+
+def _run_id_from_intake(intake: CaseIntake) -> str:
+    parts = (
+        intake.event_name,
+        intake.state,
+        intake.county,
+        intake.carrier,
+    )
+    slug = "-".join(_stable_token(part) for part in parts if part.strip())
+    return f"run-notebook-{slug}"
 
 
 def _model_to_payload(model: BaseModel) -> dict[str, Any]:

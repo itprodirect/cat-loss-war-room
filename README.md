@@ -93,7 +93,7 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across three committed scenarios (FL, TX, LA), `186` tests are passing under the supported bootstrap path, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across three committed scenarios (FL, TX, LA), `189` tests are passing under the supported bootstrap path, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - Offline fixture smoke validation across committed scenarios
@@ -102,7 +102,7 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 **Specified, not built yet:** `docs/V2_WORKFLOW_IA.md`, `docs/V2_EVIDENCE_SCHEMA.md`, and `docs/V2_RELEASE_RUBRIC.md` are the written source-of-truth specs for the current V2 planning layer, while `apps/`, `workers/`, and `packages/` remain placeholder boundaries for later implementation.
 
-Issues `#4`, `#5`, and `#22` are complete and closed. The written source-of-truth specs for `#23` and `#24` have landed locally in `docs/V2_WORKFLOW_IA.md` and `docs/V2_EVIDENCE_SCHEMA.md`, while downstream implementation remains tracked in later issues. Issue `#27` now has a calibrated demo-ready scorecard in `docs/V2_RELEASE_RUBRIC.md` and remains open for CI and pilot operationalization, issue `#6` is underway with slices 1-6 landed, and issue `#7` has three slices landed: the provider seam, notebook retrieval-state emission, and citation-verify retrieval tracking.
+Issues `#4`, `#5`, and `#22` are complete and closed. The written source-of-truth specs for `#23` and `#24` have landed locally in `docs/V2_WORKFLOW_IA.md` and `docs/V2_EVIDENCE_SCHEMA.md`, while downstream implementation remains tracked in later issues. Issue `#27` now has a calibrated demo-ready scorecard in `docs/V2_RELEASE_RUBRIC.md` and remains open for CI and pilot operationalization, issue `#6` is underway with slices 1-7 landed, and issue `#7` has three slices landed: the provider seam, notebook retrieval-state emission, and citation-verify retrieval tracking.
 
 ## Roadmap (Simple)
 

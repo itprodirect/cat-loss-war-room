@@ -489,6 +489,9 @@ Status: Complete
   - `tests/test_models.py`
   - `tests/test_memo_contracts.py`
 - Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `25 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `189 passed`
+- Verification:
   - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `18 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `149 passed`
 
@@ -786,7 +789,6 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q tests/test_preflight.py tests/test_release_scorecard.py` -> `8 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `186 passed`
-
 ## Session 50 - Supported Local Verification Wrapper
 Date: 2026-03-18
 Status: Complete
@@ -820,3 +822,19 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q` -> `188 passed`
   - `$env:PYTHONPATH="src"; python -m war_room.release_scorecard --candidate codex/quality-hardening --verification-summary "188 passed"` -> success
+
+## Session 52 - Issue #6 Review and Export Graph Linkage
+Date: 2026-03-18
+Status: Complete
+
+- Extended `src/war_room/models.py` with the next `#6` typed-contract slice for run-scoped review and export linkage.
+- Added stable linkage fields to:
+  - `ReviewEvent`
+  - `ExportArtifact`
+- The audit snapshot builder now derives:
+  - a deterministic run ID from intake data,
+  - stable section IDs from memo section titles,
+  - and run-scoped linkage between review events, memo claims, and the exported memo artifact.
+- Expanded regression coverage in:
+  - `tests/test_models.py`
+  - `tests/test_memo_contracts.py`

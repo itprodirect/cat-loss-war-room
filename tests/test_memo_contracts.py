@@ -172,10 +172,19 @@ def test_run_audit_snapshot_builds_canonical_entities():
     assert len(snapshot.evidence_items) == 4
     assert len(snapshot.evidence_clusters) == 3
     assert len(snapshot.memo_claims) == 4
+    assert snapshot.review_events == []
     assert snapshot.schema_version == "v2alpha1"
     assert snapshot.export_artifact.artifact_type == "markdown_memo"
+    assert snapshot.export_artifact.run_id == "run-notebook-hurricane-milton-fl-pinellas-citizens-property-insurance"
+    assert (
+        snapshot.export_artifact.artifact_id
+        == "run-notebook-hurricane-milton-fl-pinellas-citizens-property-insurance:artifact:markdown-memo"
+    )
+    assert snapshot.export_artifact.review_required is False
+    assert snapshot.export_artifact.uri == "runs/run-notebook-hurricane-milton-fl-pinellas-citizens-property-insurance/research-memo.md"
     assert "Appendix: Evidence Clusters" in snapshot.export_artifact.section_titles
     assert "Appendix: Evidence Index" in snapshot.export_artifact.section_titles
+    assert snapshot.export_artifact.section_ids[:3] == ["trust-snapshot", "case-intake", "weather-corroboration"]
     assert payload["schema_version"] == "v2alpha1"
     assert payload["evidence_items"][0]["evidence_id"] == "weather-source-1"
     assert payload["evidence_clusters"][0]["cluster_id"] == "cluster-1"
@@ -183,6 +192,7 @@ def test_run_audit_snapshot_builds_canonical_entities():
     assert snapshot.memo_claims[0].cluster_ids == ["cluster-1"]
     assert snapshot.memo_claims[2].cluster_ids == ["cluster-3"]
     assert payload["memo_claims"][3]["cluster_ids"] == ["cluster-3"]
+    assert payload["export_artifact"]["artifact_id"].endswith(":artifact:markdown-memo")
 
 
 def test_run_audit_snapshot_tracks_review_events_and_claim_status():
@@ -217,10 +227,18 @@ def test_run_audit_snapshot_tracks_review_events_and_claim_status():
         event.event_id == "weather-warning-1" and event.related_cluster_ids == ["cluster-1"]
         for event in snapshot.review_events
     )
+    assert all(
+        event.run_id == "run-notebook-hurricane-milton-fl-pinellas-citizens-property-insurance"
+        for event in snapshot.review_events
+    )
+    assert all(event.target_type == "memo_claim" for event in snapshot.review_events)
+    assert any(event.related_claim_ids == ["weather-corroboration"] for event in snapshot.review_events)
     assert any(
         event.event_id == "citation-uncertain" and event.related_cluster_ids == ["cluster-3"]
         for event in snapshot.review_events
     )
+    assert snapshot.export_artifact.review_required is True
+    assert snapshot.export_artifact.section_ids[8] == "appendix-review-log"
 
 
 def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():

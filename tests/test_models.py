@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from war_room.models import (
     CaseCandidate,
     CaseIntake,
+    ExportArtifact,
     LegalIssue,
     MemoSection,
     QuerySpec,
@@ -14,6 +15,7 @@ from war_room.models import (
     Run,
     RunEvent,
     RunStage,
+    ReviewEvent,
     adapt_query_plan,
     case_candidate_to_payload,
     case_intake_to_payload,
@@ -266,6 +268,42 @@ def test_run_event_and_retrieval_task_payload_helpers_validate_contracts():
     assert event_payload["artifact_refs"] == ["artifact-log-1"]
     assert task_payload["status"] == "degraded"
     assert task_payload["raw_artifact_refs"] == ["raw-search-1"]
+
+
+def test_review_event_and_export_artifact_capture_graph_linkage_fields():
+    review_event = ReviewEvent(
+        event_id="event-1",
+        run_id="run-milton",
+        event_type="warning",
+        label="Weather review required",
+        detail="County-specific weather corroboration is limited.",
+        module="weather",
+        target_type="memo_claim",
+        target_ids=["weather-corroboration"],
+        related_evidence_ids=["weather-source-1"],
+        related_cluster_ids=["cluster-1"],
+        related_claim_ids=["weather-corroboration"],
+        related_stage_id="run-milton:weather",
+    )
+    artifact = ExportArtifact(
+        artifact_id="run-milton:artifact:markdown-memo",
+        run_id="run-milton",
+        title="CAT-Loss War Room - Research Memo",
+        disclaimer="DEMO RESEARCH MEMO - VERIFY CITATIONS - NOT LEGAL ADVICE",
+        uri="runs/run-milton/research-memo.md",
+        section_ids=["trust-snapshot", "case-intake"],
+        review_required=True,
+        section_titles=["Trust Snapshot", "Case Intake"],
+    )
+
+    assert review_event.run_id == "run-milton"
+    assert review_event.target_type == "memo_claim"
+    assert review_event.related_claim_ids == ["weather-corroboration"]
+    assert review_event.related_stage_id == "run-milton:weather"
+    assert artifact.artifact_id == "run-milton:artifact:markdown-memo"
+    assert artifact.run_id == "run-milton"
+    assert artifact.section_ids == ["trust-snapshot", "case-intake"]
+    assert artifact.review_required is True
 
 
 def test_run_event_rejects_blank_artifact_refs():

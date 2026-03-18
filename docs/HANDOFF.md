@@ -21,11 +21,11 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 186 passing under editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 189 passing under editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix + release-scorecard artifact job, all using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
-| Typed domain contracts (#6) | Slices 1-6 complete (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts) |
+| Typed domain contracts (#6) | Slices 1-7 complete (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts) |
 | Retrieval contracts (#7) | Three slices landed: provider seam, notebook retrieval-state emission, and citation-verify retrieval tracking |
 | Product foundation (`#22`) | Complete: packaging/bootstrap lane implemented |
 | Workflow IA spec (`#23`) | Complete as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
@@ -45,6 +45,7 @@ This is research acceleration, not legal advice.
 - Audit snapshots now cluster evidence by citation and normalized URL so the export can group related support instead of listing only flat records.
 - Memo claims now carry cluster references directly so review and export layers can point to grouped evidence instead of only raw evidence IDs.
 - Review events now carry cluster references too, so warnings and citation failures can land on grouped evidence instead of only module-scoped evidence rows.
+- Review events and export artifacts now also carry run-scoped linkage fields so memo claims, sections, and exported memo artifacts can be referenced through stable IDs instead of only positional ordering.
 - The repo now installs as an editable package and uses shared bootstrap/settings helpers instead of per-file `sys.path` mutation in tests and scripts.
 - Runtime environment lanes and artifact boundaries are documented in `docs/FOUNDATION.md`.
 - V2 planning was expanded with a deeper rebuild blueprint plus new GitHub issues `#22` through `#27` covering product foundation, UX IA, provenance schema, AI guardrails, human review, and release scorecards.
