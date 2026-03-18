@@ -805,3 +805,18 @@ Status: Complete
   - `$env:PYTHONPATH="src"; pytest -q tests/test_bootstrap.py tests/test_preflight.py` -> `7 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `188 passed`
   - `$env:PYTHONPATH="src"; python -m war_room --verify` -> success
+
+## Session 51 - Issue #9 Release Scorecard CI Enforcement
+Date: 2026-03-18
+Status: Complete
+
+- Tightened `.github/workflows/ci.yml` so the release-scorecard job now validates the generated JSON artifact before upload.
+- The CI check now fails if:
+  - calibration thresholds are missing,
+  - any calibrated threshold fails,
+  - the demo-ready fixture gate fails,
+  - or the scorecard decision is not `Ship`.
+- Kept the existing artifact upload path intact so CI evidence is both generated and enforced.
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q` -> `188 passed`
+  - `$env:PYTHONPATH="src"; python -m war_room.release_scorecard --candidate codex/quality-hardening --verification-summary "188 passed"` -> success

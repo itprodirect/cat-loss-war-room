@@ -96,6 +96,34 @@ jobs:
             --candidate "$CANDIDATE" \
             --verification-summary "$VERIFICATION_SUMMARY"
 
+      - name: Validate Release Scorecard Artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          artifact_paths = sorted(Path("runs/release_scorecards").glob("*.json"))
+          if not artifact_paths:
+              raise SystemExit("No release-scorecard JSON artifact found.")
+
+          payload = json.loads(artifact_paths[-1].read_text(encoding="utf-8"))
+          thresholds = payload.get("calibration_thresholds") or []
+          if not thresholds:
+              raise SystemExit("Release scorecard artifact is missing calibration thresholds.")
+          if not all(item.get("passed") for item in thresholds):
+              raise SystemExit("Release scorecard calibration thresholds did not all pass.")
+
+          gates = {gate.get("name"): gate.get("passed") for gate in payload.get("must_pass_gates", [])}
+          required_gate = "Committed fixture coverage meets demo-ready threshold"
+          if not gates.get(required_gate, False):
+              raise SystemExit(f"Release scorecard gate failed: {required_gate}")
+
+          if payload.get("decision") != "Ship":
+              raise SystemExit(f"Unexpected release decision: {payload.get('decision')!r}")
+          PY
+
       - name: Upload Release Scorecard Artifact
         uses: actions/upload-artifact@v4
         with:
