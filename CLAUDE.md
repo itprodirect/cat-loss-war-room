@@ -82,9 +82,9 @@ Prioritize in this order:
 - `fix/` - bug fixes
 
 ## Current phase
-v0-demo shipped, issue #22 complete, and V2 foundation work is moving into workflow/schema/quality definition. Cells 0-7 remain stable and CI runs package-installed tests.
+v0-demo shipped, issues #22, #23, and #24 are complete and closed, and active V2 execution work is now concentrated in #27 and the remaining #6 to #9 foundation slices. Cells 0-7 remain stable and CI runs package-installed tests.
 
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
 Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
-Next priority: move to issue #23 after foundation completion, while continuing #6, #24, and #27 alignment work.
+Next priority: continue #27 operationalization plus the remaining #6, #7, #8, and #9 foundation work, then move downstream implementation into #10 onward.

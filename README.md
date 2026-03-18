@@ -102,7 +102,7 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 **Specified, not built yet:** `docs/V2_WORKFLOW_IA.md`, `docs/V2_EVIDENCE_SCHEMA.md`, and `docs/V2_RELEASE_RUBRIC.md` are the written source-of-truth specs for the current V2 planning layer, while `apps/`, `workers/`, and `packages/` remain placeholder boundaries for later implementation.
 
-Issues `#4`, `#5`, and `#22` are complete and closed. The written source-of-truth specs for `#23` and `#24` have landed locally in `docs/V2_WORKFLOW_IA.md` and `docs/V2_EVIDENCE_SCHEMA.md`, while downstream implementation remains tracked in later issues. Issue `#27` now has a calibrated demo-ready scorecard in `docs/V2_RELEASE_RUBRIC.md` and remains open for CI and pilot operationalization, issue `#6` is underway with slices 1-7 landed, and issue `#7` has four slices landed: the provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing.
+Issues `#4`, `#5`, `#22`, `#23`, and `#24` are complete and closed. The written source-of-truth specs for `#23` and `#24` live in `docs/V2_WORKFLOW_IA.md` and `docs/V2_EVIDENCE_SCHEMA.md`, while downstream implementation remains tracked in later issues. Issue `#27` now has a calibrated demo-ready scorecard in `docs/V2_RELEASE_RUBRIC.md` and remains open for CI and pilot operationalization, issue `#6` is underway with slices 1-7 landed, and issue `#7` has four slices landed: the provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing.
 
 ## Roadmap (Simple)
 

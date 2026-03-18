@@ -55,7 +55,7 @@ Horizon: Next 2 weeks
 - Raw-checkout `pytest -q` is not a supported path. Contributors must either use editable install or set `PYTHONPATH=src`.
 - The placeholder `apps/`, `workers/`, and `packages/` directories can look more implemented than they are unless docs call that out directly.
 - The notebook is still the main demo surface. V2 app/api/workers are roadmap targets, not current runtime entrypoints.
-- `#23` and `#24` are complete as written specs. Downstream implementation belongs to `#10`, `#11`, and `#12`, plus remaining foundation work in `#6`, `#7`, `#8`, and `#9`.
+- `#23` and `#24` are complete and closed as written specs. Downstream implementation belongs to `#10`, `#11`, and `#12`, plus remaining foundation work in `#6`, `#7`, `#8`, and `#9`.
 
 ## Next 2 weeks action plan
 
