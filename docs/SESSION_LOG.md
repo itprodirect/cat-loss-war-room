@@ -786,3 +786,22 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q tests/test_preflight.py tests/test_release_scorecard.py` -> `8 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `186 passed`
+
+## Session 50 - Supported Local Verification Wrapper
+Date: 2026-03-18
+Status: Complete
+
+- Extended `war_room.bootstrap` so `python -m war_room --verify` now runs the supported local verification path in one command.
+- The wrapper runs:
+  - deterministic offline preflight
+  - `pytest -q`
+- Expanded `tests/test_bootstrap.py` to lock the subprocess invocation and nonzero exit behavior.
+- Updated the canonical bootstrap docs so the wrapper is part of the supported contributor path:
+  - `README.md`
+  - `docs/FOUNDATION.md`
+  - `docs/HANDOFF.md`
+  - `docs/BUILD_CHECKLIST.md`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_bootstrap.py tests/test_preflight.py` -> `7 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `188 passed`
+  - `$env:PYTHONPATH="src"; python -m war_room --verify` -> success

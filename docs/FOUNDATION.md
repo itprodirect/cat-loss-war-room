@@ -23,6 +23,7 @@ This document is the concrete output of issue `#22`.
   - `src/war_room/`: Python package and current implementation
   - `notebooks/01_case_war_room.ipynb`: demo/diagnostic surface
   - `python -m war_room`: bootstrap check and runtime summary
+  - `python -m war_room --verify`: supported local verification path
 
 ## Local bootstrap
 
@@ -34,6 +35,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 pip install -e . --no-deps --no-build-isolation
 python -m war_room
+python -m war_room --verify
 pytest -q
 ```
 
@@ -45,10 +47,13 @@ python -m venv .venv
 pip install -r requirements.txt
 pip install -e . --no-deps --no-build-isolation
 python -m war_room
+python -m war_room --verify
 pytest -q
 ```
 
 `python -m war_room` is the bootstrap check. It resolves the repo root, loads `.env`, creates runtime directories when needed, and prints the active runtime summary.
+
+`python -m war_room --verify` is the supported contributor verification wrapper. It runs the deterministic offline preflight and then the supported test command (`pytest -q`).
 
 ## Notebook and script conventions
 

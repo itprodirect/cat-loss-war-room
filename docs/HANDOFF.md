@@ -52,6 +52,7 @@ This is research acceleration, not legal advice.
 - The offline fixture lane now spans three committed public/redacted scenarios across Florida, Texas, and Louisiana.
 - CI now includes an explicit offline fixture smoke job, and the local release scorecard records fixture coverage from the committed scenario set.
 - The repository now has a deterministic offline demo preflight command at `python -m war_room --preflight`.
+- The repository now also has a one-command local verification wrapper at `python -m war_room --verify`.
 
 ## 4) Quick run
 ```bash
@@ -61,6 +62,7 @@ pip install -r requirements.txt
 pip install -e . --no-deps --no-build-isolation
 python -m war_room
 python -m war_room --preflight
+python -m war_room --verify
 pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```

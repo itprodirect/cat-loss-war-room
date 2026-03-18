@@ -10,6 +10,7 @@ Simple execution checklist aligned with the live GitHub roadmap.
 - [x] exa-py compatibility matrix live
 - [x] Adapter kwargs smoke-contract tests added
 - [x] Deterministic offline demo preflight command available (`python -m war_room --preflight`)
+- [x] Supported local verification wrapper available (`python -m war_room --verify`)
 
 ## V2 Written Specs
 

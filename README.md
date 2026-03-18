@@ -21,6 +21,7 @@ pip install -e . --no-deps --no-build-isolation
 Copy-Item .env.example .env
 python -m war_room
 python -m war_room --preflight
+python -m war_room --verify
 pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```
@@ -35,13 +36,16 @@ pip install -e . --no-deps --no-build-isolation
 cp .env.example .env
 python -m war_room
 python -m war_room --preflight
+python -m war_room --verify
 pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```
 
 `EXA_API_KEY` is optional for the offline demo path because committed fixtures in `cache_samples/` let the notebook run from cache.
 
-`pytest -q` is the supported test command after editable install. If you skip package install for ad hoc local inspection, use `PYTHONPATH=src` instead of a raw-checkout test run.
+`python -m war_room --verify` runs the supported local verification path: offline demo preflight plus `pytest -q`.
+
+`pytest -q` is still the underlying supported test command after editable install. If you skip package install for ad hoc local inspection, use `PYTHONPATH=src` instead of a raw-checkout test run.
 
 ## Dependency Compatibility
 
