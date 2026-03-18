@@ -161,6 +161,7 @@ def test_carrier_sample_has_required_keys_and_content(case_key: str):
     assert data["carrier_snapshot"]["name"] == config["carrier"]
     assert data["carrier_snapshot"]["state"] == config["state"]
     assert data["carrier_snapshot"]["event"] == config["event_name"]
+    assert data["carrier_snapshot"]["policy_type"] == config["policy_type"]
     assert len(data["document_pack"]) > 0
     assert len(data["rebuttal_angles"]) > 0
     assert len(data["sources"]) > 0
@@ -199,6 +200,7 @@ def test_scenario_resolves_through_cache_first_runtime(case_key: str):
 
     carrier = build_carrier_doc_pack(intake, None, cache_samples_dir=cache_samples_dir)
     assert carrier["carrier_snapshot"]["name"] == SCENARIOS[case_key]["carrier"]
+    assert carrier["carrier_snapshot"]["policy_type"]
 
     caselaw = build_caselaw_pack(intake, None, cache_samples_dir=cache_samples_dir)
     assert len(caselaw["issues"]) > 0
@@ -250,4 +252,40 @@ def test_fixture_badges_use_stable_ascii_tokens(case_key: str):
 
     citecheck = _load(case_key, "citation_verify")
     assert {check["badge"] for check in citecheck["checks"]}.issubset(_STABLE_CITATION_BADGES)
+
+
+def test_matching_dispute_scenario_resolves_through_cache_first_runtime():
+    intake = CaseIntake(
+        event_name="Texas Hailstorm Matching Dispute",
+        event_date="2023-05-04",
+        state="TX",
+        county="Tarrant",
+        carrier="Allstate Texas Lloyds",
+        policy_type="DP-3 Dwelling",
+        posture=["underpayment"],
+        key_facts=[
+            "Golf-ball-size hail was reported in Tarrant County on the reported date of loss",
+            "Roof slope bruising and soft-metal damage were documented shortly after the storm",
+            "Carrier estimate scoped only spot repairs despite full-slope damage indicators",
+        ],
+        coverage_issues=[
+            "matching",
+            "actual cash value vs replacement cost",
+            "scope of repair",
+        ],
+    )
+    cache_samples_dir = str(CACHE_SAMPLES_ROOT)
+
+    weather = build_weather_brief(intake, None, cache_samples_dir=cache_samples_dir)
+    assert weather["event_summary"].startswith("Texas Hailstorm Matching Dispute")
+
+    carrier = build_carrier_doc_pack(intake, None, cache_samples_dir=cache_samples_dir)
+    assert carrier["carrier_snapshot"]["policy_type"] == "DP-3 Dwelling"
+    assert any("matching" in angle.lower() for angle in carrier["rebuttal_angles"])
+
+    caselaw = build_caselaw_pack(intake, None, cache_samples_dir=cache_samples_dir)
+    assert len(caselaw["issues"]) > 0
+
+    citecheck = spot_check_citations(caselaw, _FixtureProvider(), cache_samples_dir=cache_samples_dir)
+    assert citecheck["summary"]["total"] == 3
 

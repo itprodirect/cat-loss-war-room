@@ -60,7 +60,7 @@ pytest -q
 - Notebooks and scripts must import `war_room.bootstrap.bootstrap_runtime` instead of mutating `sys.path`.
 - The notebook remains a demo/diagnostic surface, not the primary product runtime.
 - The offline fixture lane stays first-class through `WAR_ROOM_ENV=demo` plus committed `cache_samples/`.
-- The committed fixture lane now includes three public/redacted scenarios spanning Florida, Texas, and Louisiana.
+- The committed fixture lane now includes three public/redacted scenario directories spanning Florida, Texas, and Louisiana, plus a fourth Texas matching-dispute runtime fixture.
 
 ## Planned V2 repo shape
 

@@ -93,12 +93,12 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across three committed scenarios (FL, TX, LA), `189` tests are passing under the supported bootstrap path, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across three committed scenario directories spanning Florida, Texas, and Louisiana, with an additional Texas matching-dispute runtime fixture committed for broader cache coverage, `190` tests are passing under the supported bootstrap path, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - Offline fixture smoke validation across committed scenarios
 - `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`)
-- Release-scorecard artifact emission from the calibrated `#27` workflow
+- Release-scorecard artifact emission plus ship-threshold validation from the calibrated `#27` workflow
 
 **Specified, not built yet:** `docs/V2_WORKFLOW_IA.md`, `docs/V2_EVIDENCE_SCHEMA.md`, and `docs/V2_RELEASE_RUBRIC.md` are the written source-of-truth specs for the current V2 planning layer, while `apps/`, `workers/`, and `packages/` remain placeholder boundaries for later implementation.
 

@@ -7,9 +7,9 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 189 tests are passing.
+- 190 tests are passing.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job, and the `exa-py` compatibility matrix.
-- CI now also emits a release-scorecard artifact from the calibrated `#27` workflow.
+- CI now also emits and validates a release-scorecard artifact from the calibrated `#27` workflow.
 - The supported test path is editable install plus `pytest -q`, or `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not supported.
 - The offline demo path now has a deterministic preflight command: `python -m war_room --preflight`.
 - A deeper V2 foundation layer is tracked in issues `#22` through `#27`.

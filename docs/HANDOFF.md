@@ -21,8 +21,8 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 189 passing under editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
-| CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix + release-scorecard artifact job, all using editable package install |
+| Tests | 190 passing under editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
 | Typed domain contracts (#6) | Slices 1-7 complete (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts) |
@@ -31,7 +31,7 @@ This is research acceleration, not legal advice.
 | Workflow IA spec (`#23`) | Complete as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
 | Evidence schema spec (`#24`) | Complete as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |
 | Quality rubric (`#27`) | First-pass rubric plus local artifact workflow landed in `docs/V2_RELEASE_RUBRIC.md`; demo-ready threshold calibration is now explicit in the scorecard, while CI and pilot operationalization remain open |
-| Cache samples | Milton/Citizens/Pinellas + TX hail/Allstate/Tarrant + Ida/Lloyd's/Orleans committed |
+| Cache samples | Milton/Citizens/Pinellas + TX hail/Allstate/Tarrant + Ida/Lloyd's/Orleans scenario dirs committed, plus TX hail matching/Allstate Texas Lloyds/Tarrant runtime fixtures |
 
 ## 3) What changed recently
 
@@ -50,7 +50,7 @@ This is research acceleration, not legal advice.
 - Runtime environment lanes and artifact boundaries are documented in `docs/FOUNDATION.md`.
 - V2 planning was expanded with a deeper rebuild blueprint plus new GitHub issues `#22` through `#27` covering product foundation, UX IA, provenance schema, AI guardrails, human review, and release scorecards.
 - A first-pass release rubric now exists in `docs/V2_RELEASE_RUBRIC.md` so release-readiness language is no longer purely roadmap text.
-- The offline fixture lane now spans three committed public/redacted scenarios across Florida, Texas, and Louisiana.
+- The offline fixture lane now spans three committed public/redacted scenario directories across Florida, Texas, and Louisiana, plus a fourth Texas matching-dispute runtime fixture.
 - CI now includes an explicit offline fixture smoke job, and the local release scorecard records fixture coverage from the committed scenario set.
 - The repository now has a deterministic offline demo preflight command at `python -m war_room --preflight`.
 - The repository now also has a one-command local verification wrapper at `python -m war_room --verify`.

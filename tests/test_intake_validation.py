@@ -131,7 +131,8 @@ def test_committed_eval_intakes_validate_against_canonical_schema():
     intakes_dir = Path(__file__).resolve().parent.parent / "eval" / "intakes"
     intake_paths = sorted(path for path in intakes_dir.glob("*.json"))
 
-    assert len(intake_paths) >= 2
+    assert len(intake_paths) >= 3
+    assert any(path.name == "tx_hail_allstate_tarrant_dp3.json" for path in intake_paths)
 
     for intake_path in intake_paths:
         intake = load_case_intake(intake_path)

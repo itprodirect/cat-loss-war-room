@@ -7,6 +7,7 @@ from pathlib import Path
 
 from war_room.bootstrap import bootstrap_runtime, main as bootstrap_main
 from war_room.preflight import render_demo_preflight_report, run_demo_preflight
+from tests.test_offline_demo_pack import SCENARIOS
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -16,15 +17,11 @@ def test_demo_preflight_smoke_covers_committed_scenarios():
 
     report = run_demo_preflight(context)
 
-    assert report.scenario_count == 3
+    assert report.scenario_count == len(SCENARIOS)
     assert report.passed is True
 
     scenario_keys = [scenario.case_key for scenario in report.scenarios]
-    assert scenario_keys == [
-        "ida_lloyds_orleans",
-        "milton_citizens_pinellas",
-        "tx_hail_allstate_tarrant",
-    ]
+    assert scenario_keys == sorted(SCENARIOS)
 
     for scenario in report.scenarios:
         check_names = {check.name for check in scenario.checks}
@@ -42,7 +39,7 @@ def test_demo_preflight_rendering_includes_summary():
     rendered = render_demo_preflight_report(report)
 
     assert "# Demo Preflight" in rendered
-    assert "Scenario count: 3" in rendered
+    assert f"Scenario count: {len(SCENARIOS)}" in rendered
     assert "ida_lloyds_orleans" in rendered
     assert "Passed: Yes" in rendered
 
@@ -55,5 +52,5 @@ def test_bootstrap_cli_preflight_json_output(monkeypatch, capsys):
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["passed"] is True
-    assert payload["scenario_count"] == 3
-    assert len(payload["scenarios"]) == 3
+    assert payload["scenario_count"] == len(SCENARIOS)
+    assert len(payload["scenarios"]) == len(SCENARIOS)

@@ -27,8 +27,8 @@ Written source-of-truth specs for `#23` and `#24` are complete. Downstream imple
 |---|---|---|
 | Typed domain models | [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) | In progress: intake/query, pack, citation/export, graph/version, issue/authority, run/retrieval, and review/export graph-linkage slices are landed against the canonical schema in `#24` |
 | Retrieval adapter contract tests | [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) | In progress: provider seam, notebook retrieval-state emission, citation-verify tracking, deterministic retrieval-task timing, and Exa compatibility tests landed |
-| Scenario fixture suite | [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) | Three committed scenarios now cover FL/TX/LA and feed `#27`; next step is broader breadth and comparable thresholds |
-| CI quality gate pipeline | [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) | Fresh-env + exa compatibility + offline fixture smoke now exist; release-scorecard artifact emission is now wired, and the next step is broader CI layering and release-evidence operationalization |
+| Scenario fixture suite | [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) | Three committed scenario directories now cover Florida, Texas, and Louisiana and feed `#27`; a fourth Texas matching-dispute runtime fixture is also committed, and the next step is broader breadth plus comparable thresholds |
+| CI quality gate pipeline | [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) | Fresh-env + exa compatibility + offline fixture smoke now exist; release-scorecard artifact emission and validation are wired, and the next step is broader CI layering and release-evidence operationalization |
 
 ## Phase 3: Product Core and Human Workflow
 

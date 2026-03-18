@@ -1,0 +1,21 @@
+{
+  "event_name": "Texas Hailstorm Matching Dispute",
+  "event_date": "2023-05-04",
+  "state": "TX",
+  "county": "Tarrant",
+  "carrier": "Allstate Texas Lloyds",
+  "policy_type": "DP-3 Dwelling",
+  "posture": [
+    "underpayment"
+  ],
+  "key_facts": [
+    "Golf-ball-size hail was reported in Tarrant County on the reported date of loss",
+    "Roof slope bruising and soft-metal damage were documented shortly after the storm",
+    "Carrier estimate scoped only spot repairs despite full-slope damage indicators"
+  ],
+  "coverage_issues": [
+    "matching",
+    "actual cash value vs replacement cost",
+    "scope of repair"
+  ]
+}

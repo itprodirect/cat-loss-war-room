@@ -503,6 +503,31 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q tests/test_retrieval_contracts.py tests/test_citation_verify.py` -> `18 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `189 passed`
+
+## Session 54 - Issue #8 Texas Matching Dispute Fixture
+Date: 2026-03-18
+Status: Complete
+
+- Added a fourth committed offline runtime fixture lane for a Texas hail matching dispute against Allstate Texas Lloyds, including:
+  - a committed eval intake in `eval/intakes/`
+  - cache-backed weather, carrier, and case-law fixture payloads in `cache_samples/`
+- Expanded fixture regression coverage so the offline lane now checks:
+  - the new intake file is schema-valid,
+  - committed carrier fixtures include policy-type metadata,
+  - the matching-dispute scenario resolves end-to-end through cache-first runtime execution,
+  - and preflight assertions derive scenario counts from the shared scenario map instead of hardcoded values.
+- Synced the canonical docs to the current repo state:
+  - `README.md`
+  - `docs/HANDOFF.md`
+  - `docs/FOUNDATION.md`
+  - `docs/BUILD_CHECKLIST.md`
+  - `docs/ROADMAP.md`
+  - `docs/V2_ISSUE_MAP.md`
+  - `docs/V2_RELEASE_RUBRIC.md`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_intake_validation.py tests/test_offline_demo_pack.py tests/test_preflight.py` -> `41 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `190 passed`
+  - `$env:PYTHONPATH="src"; python -m war_room --preflight --json` -> success (`scenario_count: 3`)
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `25 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `189 passed`
