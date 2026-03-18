@@ -51,6 +51,7 @@ This is research acceleration, not legal advice.
 - A first-pass release rubric now exists in `docs/V2_RELEASE_RUBRIC.md` so release-readiness language is no longer purely roadmap text.
 - The offline fixture lane now spans three committed public/redacted scenarios across Florida, Texas, and Louisiana.
 - CI now includes an explicit offline fixture smoke job, and the local release scorecard records fixture coverage from the committed scenario set.
+- The repository now has a deterministic offline demo preflight command at `python -m war_room --preflight`.
 
 ## 4) Quick run
 ```bash
@@ -59,6 +60,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 pip install -e . --no-deps --no-build-isolation
 python -m war_room
+python -m war_room --preflight
 pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```

@@ -738,6 +738,26 @@ Status: Complete
   - `$env:PYTHONPATH="src"; pytest -q tests/test_release_scorecard.py` -> `5 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `180 passed`
 
+## Session 48 - Fixture Badge Token Cleanup
+Date: 2026-03-18
+Status: Complete
+
+- Normalized the committed Milton fixture scenario under `cache_samples/milton_citizens_pinellas/` so badge tokens now use the stable ASCII values expected by the current source-scoring and citation-check contracts.
+- Replaced placeholder badge values in:
+  - `weather.json`
+  - `carrier.json`
+  - `caselaw.json`
+  - `citation_verify.json`
+- Expanded `tests/test_offline_demo_pack.py` with a cross-scenario regression guard so committed fixture badges must stay within the stable source and citation badge vocabularies.
+- Synced the current-state docs to the new suite count:
+  - `README.md`
+  - `docs/HANDOFF.md`
+  - `docs/ROADMAP.md`
+  - `docs/V2_RELEASE_RUBRIC.md`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_offline_demo_pack.py` -> `25 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `186 passed`
+
 ## Session 48 - Issue #9 Release Scorecard CI Artifact
 Date: 2026-03-18
 Status: Complete
@@ -748,3 +768,21 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH="src"; pytest -q` -> `180 passed`
   - `python -m war_room.release_scorecard --candidate codex/quality-hardening --verification-summary "180 passed"`
+
+## Session 49 - Demo Preflight Smoke Command
+Date: 2026-03-18
+Status: Complete
+
+- Added `src/war_room/preflight.py` as the deterministic offline smoke layer for the demo path.
+- Wired `python -m war_room --preflight` through the shared bootstrap CLI so contributors can verify the offline demo lane without opening Jupyter first.
+- The smoke command now checks committed scenario coverage, cache-backed module loading, citation-check summary integrity, and memo rendering for the committed fixture scenarios.
+- Added regression coverage in:
+  - `tests/test_preflight.py`
+- Updated the canonical docs so the new preflight command is visible in the supported run path and build checklist:
+  - `README.md`
+  - `docs/HANDOFF.md`
+  - `docs/ROADMAP.md`
+  - `docs/BUILD_CHECKLIST.md`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_preflight.py tests/test_release_scorecard.py` -> `8 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `186 passed`

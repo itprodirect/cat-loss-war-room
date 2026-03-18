@@ -9,6 +9,7 @@ Simple execution checklist aligned with the live GitHub roadmap.
 - [x] CI fresh-env gate live
 - [x] exa-py compatibility matrix live
 - [x] Adapter kwargs smoke-contract tests added
+- [x] Deterministic offline demo preflight command available (`python -m war_room --preflight`)
 
 ## V2 Written Specs
 

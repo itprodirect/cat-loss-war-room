@@ -49,24 +49,40 @@ def bootstrap_runtime(
     return BootstrapContext(repo_root=repo_root, settings=settings)
 
 
-def main() -> None:
-    """CLI entrypoint for verifying bootstrap behavior."""
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint for verifying bootstrap behavior or running demo preflight."""
     parser = argparse.ArgumentParser(description="Resolve CAT-Loss War Room runtime settings")
+    parser.add_argument(
+        "--preflight",
+        action="store_true",
+        help="Run the deterministic offline demo smoke instead of printing bootstrap settings",
+    )
     parser.add_argument("--json", action="store_true", help="Print the resolved settings as JSON")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     context = bootstrap_runtime()
     summary = context.settings.display_summary() | {"repo_root": str(context.repo_root)}
 
+    if args.preflight:
+        from war_room.preflight import render_demo_preflight_report, report_to_payload, run_demo_preflight
+
+        report = run_demo_preflight(context)
+        if args.json:
+            print(json.dumps(report_to_payload(report), indent=2))
+        else:
+            print(render_demo_preflight_report(report), end="")
+        return 0 if report.passed else 1
+
     if args.json:
         print(json.dumps(summary, indent=2))
-        return
+        return 0
 
     print("CAT-Loss War Room Bootstrap")
     print("=" * 32)
     for key, value in summary.items():
         print(f"{key}: {value}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
