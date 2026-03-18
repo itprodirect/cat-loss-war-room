@@ -15,7 +15,7 @@ Simple execution checklist aligned with the live GitHub roadmap.
 - [x] [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) product foundation and repo shape
 - [x] [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) workflow IA and design system source of truth
 - [x] [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) canonical evidence graph and audit schema source of truth
-- [ ] [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric and release scorecard (v0.1 rubric doc, local artifact generator, and fixture-calibrated scenario coverage landed; threshold calibration and CI/pilot operationalization still needed)
+- [ ] [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric and release scorecard (v0.1 rubric doc, local artifact generator, fixture-calibrated scenario coverage, and explicit demo-ready thresholds landed; CI/pilot operationalization still needed)
 
 ## Immediate Execution Priorities
 

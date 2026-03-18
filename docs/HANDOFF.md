@@ -15,13 +15,13 @@ Given a case intake, it assembles:
 
 This is research acceleration, not legal advice.
 
-## 2) Current status (as of March 11, 2026)
+## 2) Current status (as of March 18, 2026)
 
 | Item | Status |
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 178 passing under editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 180 passing under editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix, all using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -30,7 +30,7 @@ This is research acceleration, not legal advice.
 | Product foundation (`#22`) | Complete: packaging/bootstrap lane implemented |
 | Workflow IA spec (`#23`) | Complete as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
 | Evidence schema spec (`#24`) | Complete as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |
-| Quality rubric (`#27`) | First-pass rubric plus local artifact workflow landed in `docs/V2_RELEASE_RUBRIC.md`; fixture-calibrated scorecard now records committed scenario coverage, but thresholds and pilot calibration remain open |
+| Quality rubric (`#27`) | First-pass rubric plus local artifact workflow landed in `docs/V2_RELEASE_RUBRIC.md`; demo-ready threshold calibration is now explicit in the scorecard, while CI and pilot operationalization remain open |
 | Cache samples | Milton/Citizens/Pinellas + TX hail/Allstate/Tarrant + Ida/Lloyd's/Orleans committed |
 
 ## 3) What changed recently

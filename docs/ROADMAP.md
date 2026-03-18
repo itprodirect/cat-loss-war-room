@@ -1,13 +1,13 @@
 # Roadmap (Simple, Current)
 
-Last updated: March 11, 2026
+Last updated: March 18, 2026
 
 This is the short version. Clean, practical, no drama.
 
 ## Where we are now
 
 - Demo pipeline is stable.
-- 178 tests are passing.
+- 180 tests are passing.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job, and the `exa-py` compatibility matrix.
 - The supported test path is editable install plus `pytest -q`, or `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not supported.
 - A deeper V2 foundation layer is tracked in issues `#22` through `#27`.
@@ -15,7 +15,7 @@ This is the short version. Clean, practical, no drama.
 - Issue [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) is complete and closed.
 - Issue [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) is complete.
 - Issues [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) are complete as written source-of-truth specs.
-- Issue [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) is still open, but a first-pass rubric plus a fixture-calibrated local scorecard workflow now exist in `docs/V2_RELEASE_RUBRIC.md`.
+- Issue [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) is still open, but the local scorecard now includes explicit demo-ready threshold calibration in `docs/V2_RELEASE_RUBRIC.md`.
 - Issue [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) is in progress (slices 1-6 landed locally; run/retrieval lifecycle contract slice now added).
 - Placeholder directories under `apps/`, `packages/`, and `workers/` are planned V2 boundaries only. The active runtime remains the notebook plus `src/war_room/`.
 
@@ -59,7 +59,7 @@ Issues [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) an
   - `#9` should track CI expansion beyond the gates already in place.
   - `#11` should explicitly implement the workflow defined in `#23`.
   - `#12` should explicitly implement against the canonical schema defined in `#24`.
-  - `#27` should now focus on calibration, measurable thresholds, and operationalization rather than inventing the first rubric draft.
+  - `#27` should now focus on CI and pilot operationalization of the calibrated rubric rather than inventing the first rubric draft.
 
 ## Now (next 2-3 weeks)
 

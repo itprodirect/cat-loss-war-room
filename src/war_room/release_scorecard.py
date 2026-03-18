@@ -59,6 +59,16 @@ class FixtureCoverageSummary:
 
 
 @dataclass(frozen=True)
+class CalibrationThreshold:
+    """One measurable threshold used to calibrate release readiness."""
+
+    name: str
+    target: str
+    actual: str
+    passed: bool
+
+
+@dataclass(frozen=True)
 class ReleaseScorecard:
     """Structured release scorecard artifact."""
 
@@ -68,6 +78,7 @@ class ReleaseScorecard:
     evaluators: list[str]
     evidence_bundle: list[str]
     fixture_coverage: FixtureCoverageSummary | None
+    calibration_thresholds: list[CalibrationThreshold]
     dimensions: list[ScorecardDimension]
     must_pass_gates: list[MustPassGate]
     blocking_gaps: list[str]
@@ -127,6 +138,9 @@ def build_demo_release_scorecard(
     """Build the current demo-ready baseline scorecard."""
 
     chosen_date = artifact_date or date.today().isoformat()
+    verification_passed = _verification_summary_passed(verification_summary)
+    calibration_thresholds = _build_demo_ready_thresholds(fixture_coverage)
+    thresholds_passed = all(threshold.passed for threshold in calibration_thresholds)
     evidence_bundle = [
         f"Verification: {verification_command} -> {verification_summary}",
         "Offline demo lane uses committed cache_samples fixtures.",
@@ -137,13 +151,18 @@ def build_demo_release_scorecard(
             1,
             f"Fixture coverage: {fixture_coverage.scenario_count} committed scenarios across {', '.join(fixture_coverage.states)}.",
         )
+    evidence_bundle.append(
+        "Threshold calibration: "
+        f"{sum(1 for threshold in calibration_thresholds if threshold.passed)}/{len(calibration_thresholds)} "
+        "demo-ready thresholds passed."
+    )
 
     reliability_evidence = [
         f"Supported verification path passed ({verification_summary}).",
         "Offline demo lane is established with committed fixtures.",
     ]
     evidence_quality_evidence = [
-        "Normalization and caselaw quality improvements remain future work under #12 and #13.",
+        "Evidence quality is calibrated against explicit committed-fixture thresholds instead of narrative-only baseline text.",
     ]
     operational_evidence = [
         "Bootstrap and runtime boundaries are documented.",
@@ -165,17 +184,17 @@ def build_demo_release_scorecard(
     dimensions = [
         ScorecardDimension(
             name="Reliability",
-            score=3,
-            verdict="Strong",
+            score=3 if verification_passed and thresholds_passed else 2 if verification_passed else 0,
+            verdict="Strong" if verification_passed and thresholds_passed else "Acceptable" if verification_passed else "Blocked",
             evidence=reliability_evidence,
-            notes="Fresh-env and exa-py compatibility CI gates exist, and the local scorecard now records the supported verification lane plus committed fixture breadth.",
+            notes="Fresh-env and exa-py compatibility CI gates exist, and the scorecard now evaluates the supported verification lane against explicit demo-ready fixture thresholds.",
         ),
         ScorecardDimension(
             name="Evidence Quality",
-            score=1,
-            verdict="Weak",
+            score=2 if thresholds_passed else 1 if fixture_coverage and fixture_coverage.scenario_count else 0,
+            verdict="Acceptable" if thresholds_passed else "Weak" if fixture_coverage and fixture_coverage.scenario_count else "Blocked",
             evidence=evidence_quality_evidence,
-            notes="Fixture breadth is now measurable, but output-quality thresholds and comparative scenario scoring are still not calibrated enough for stronger release claims.",
+            notes="Demo-ready evidence quality now has explicit fixture thresholds. Broader scenario breadth and richer output-quality thresholds remain future work under #8, #12, and #13.",
         ),
         ScorecardDimension(
             name="Trust and Provenance",
@@ -228,13 +247,18 @@ def build_demo_release_scorecard(
     must_pass_gates = [
         MustPassGate(
             name="Supported test path is green",
-            passed=True,
+            passed=verification_passed,
             evidence=f"{verification_command} -> {verification_summary}",
         ),
         MustPassGate(
             name="Offline demo lane completes",
-            passed=True,
+            passed=bool(fixture_coverage and fixture_coverage.scenario_count),
             evidence=_offline_gate_evidence(fixture_coverage),
+        ),
+        MustPassGate(
+            name="Committed fixture coverage meets demo-ready threshold",
+            passed=thresholds_passed,
+            evidence=_thresholds_evidence(calibration_thresholds),
         ),
         MustPassGate(
             name="Required disclaimer language appears in outputs",
@@ -253,6 +277,12 @@ def build_demo_release_scorecard(
         ),
     ]
 
+    default_blocking_gaps = [threshold.name for threshold in calibration_thresholds if not threshold.passed]
+    merged_blocking_gaps = [*default_blocking_gaps]
+    for gap in blocking_gaps or []:
+        if gap not in merged_blocking_gaps:
+            merged_blocking_gaps.append(gap)
+
     return ReleaseScorecard(
         date=chosen_date,
         candidate=candidate,
@@ -260,9 +290,10 @@ def build_demo_release_scorecard(
         evaluators=evaluators or ["local builder"],
         evidence_bundle=evidence_bundle,
         fixture_coverage=fixture_coverage,
+        calibration_thresholds=calibration_thresholds,
         dimensions=dimensions,
         must_pass_gates=must_pass_gates,
-        blocking_gaps=blocking_gaps or [],
+        blocking_gaps=merged_blocking_gaps,
         decision=decision,
     )
 
@@ -294,6 +325,20 @@ def render_release_scorecard_markdown(scorecard: ReleaseScorecard) -> str:
         for scenario in scorecard.fixture_coverage.scenarios:
             lines.append(
                 f"- {scenario.case_key}: {scenario.event_summary} | {scenario.carrier} | issues {scenario.issue_count} | citation checks {scenario.citation_checks}"
+            )
+
+    if scorecard.calibration_thresholds:
+        lines.extend(
+            [
+                "",
+                "## Threshold Calibration",
+                "| Threshold | Target | Actual | Passed |",
+                "|---|---|---|---|",
+            ]
+        )
+        for threshold in scorecard.calibration_thresholds:
+            lines.append(
+                f"| {threshold.name} | {threshold.target} | {threshold.actual} | {'Yes' if threshold.passed else 'No'} |"
             )
 
     lines.extend(
@@ -428,6 +473,63 @@ def _offline_gate_evidence(fixture_coverage: FixtureCoverageSummary | None) -> s
         f"Committed cache_samples fixtures cover {fixture_coverage.scenario_count} scenarios: "
         f"{', '.join(fixture_coverage.scenario_keys)}."
     )
+
+
+def _build_demo_ready_thresholds(
+    fixture_coverage: FixtureCoverageSummary | None,
+) -> list[CalibrationThreshold]:
+    scenarios = fixture_coverage.scenarios if fixture_coverage else []
+    expected_modules = len(_FIXTURE_FILE_NAMES)
+    complete_module_scenarios = sum(1 for scenario in scenarios if len(scenario.module_files) == expected_modules)
+    issue_threshold_scenarios = sum(1 for scenario in scenarios if scenario.issue_count >= 2)
+    citation_threshold_scenarios = sum(1 for scenario in scenarios if scenario.citation_checks >= 3)
+    scenario_count = fixture_coverage.scenario_count if fixture_coverage else 0
+    state_count = len(fixture_coverage.states) if fixture_coverage else 0
+
+    return [
+        CalibrationThreshold(
+            name="Fixture scenario count",
+            target=">= 3 committed scenarios",
+            actual=str(scenario_count),
+            passed=scenario_count >= 3,
+        ),
+        CalibrationThreshold(
+            name="Fixture state coverage",
+            target=">= 3 states",
+            actual=str(state_count),
+            passed=state_count >= 3,
+        ),
+        CalibrationThreshold(
+            name="Module completeness per scenario",
+            target=f"all scenarios include {expected_modules}/{expected_modules} module fixtures",
+            actual=f"{complete_module_scenarios}/{scenario_count or 1} scenarios complete",
+            passed=bool(scenario_count) and complete_module_scenarios == scenario_count,
+        ),
+        CalibrationThreshold(
+            name="Issue breadth per scenario",
+            target="all scenarios include >= 2 issue buckets",
+            actual=f"{issue_threshold_scenarios}/{scenario_count or 1} scenarios meet threshold",
+            passed=bool(scenario_count) and issue_threshold_scenarios == scenario_count,
+        ),
+        CalibrationThreshold(
+            name="Citation checks per scenario",
+            target="all scenarios include >= 3 citation checks",
+            actual=f"{citation_threshold_scenarios}/{scenario_count or 1} scenarios meet threshold",
+            passed=bool(scenario_count) and citation_threshold_scenarios == scenario_count,
+        ),
+    ]
+
+
+def _thresholds_evidence(thresholds: list[CalibrationThreshold]) -> str:
+    if not thresholds:
+        return "No threshold calibration recorded."
+    passed = sum(1 for threshold in thresholds if threshold.passed)
+    return f"{passed}/{len(thresholds)} calibrated fixture thresholds passed."
+
+
+def _verification_summary_passed(summary: str) -> bool:
+    normalized = summary.strip().lower()
+    return bool(normalized) and "passed" in normalized and "failed" not in normalized and "error" not in normalized
 
 
 def _slugify(value: str) -> str:

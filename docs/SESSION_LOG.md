@@ -713,3 +713,27 @@ Status: Complete
 - Rewrote `docs/METHOD.md` in clean ASCII so the methodology narrative no longer contains mojibake and now matches current badge/status terminology.
 - Rewrote `docs/DEMO_SCRIPT.md` in clean ASCII so stakeholder-facing demo guidance reads cleanly instead of showing broken punctuation and symbol substitutions.
 - Updated `README.md` so the supported local setup path is explicit for Windows PowerShell and macOS/Linux/Git Bash, clarified the supported editable-install test path, tightened the `#23`/`#24` status wording, and updated the current-state test count from `178` to `179`.
+
+## Session 47 - Issue #27 Threshold Calibration
+Date: 2026-03-18
+Status: Complete
+
+- Updated `src/war_room/release_scorecard.py` so the local scorecard computes explicit demo-ready calibration thresholds instead of relying only on narrative baseline text.
+- Added measurable fixture thresholds for:
+  - committed scenario count,
+  - state coverage,
+  - module completeness,
+  - issue-bucket breadth,
+  - citation-check breadth.
+- Promoted threshold results into the emitted Markdown and JSON artifacts and wired a must-pass gate for calibrated fixture coverage.
+- Expanded `tests/test_release_scorecard.py` to lock threshold rendering, calibrated score changes, and failed-verification behavior.
+- Synced the canonical docs so `#27` now reads as threshold-calibrated while CI and pilot operationalization remain open:
+  - `README.md`
+  - `docs/HANDOFF.md`
+  - `docs/ROADMAP.md`
+  - `docs/BUILD_CHECKLIST.md`
+  - `docs/V2_ISSUE_MAP.md`
+  - `docs/V2_RELEASE_RUBRIC.md`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_release_scorecard.py` -> `5 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `180 passed`

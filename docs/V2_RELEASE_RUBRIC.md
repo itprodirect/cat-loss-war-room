@@ -1,12 +1,14 @@
 # V2 Quality Rubric and Release Scorecard
 
-Last updated: March 11, 2026
+Last updated: March 18, 2026
 
 This document is the first-pass output of issue `#27`.
 
 It defines a v0.1 quality rubric and release scorecard for CAT-Loss War Room so future work can be judged against one shared standard instead of ad hoc opinions.
 
 This is intentionally a first pass. It should be refined as `#8` expands fixture coverage, `#9` expands CI gates, and `#19` produces pilot feedback.
+
+Demo-ready threshold calibration is now explicit in the local scorecard workflow. CI and pilot operationalization remain open.
 
 ## 1) Purpose
 
@@ -212,6 +214,7 @@ Must pass all of the following:
 
 - supported test path is green,
 - offline demo lane completes,
+- committed fixture coverage meets the demo-ready calibration threshold,
 - required disclaimer language appears in outputs,
 - no known blocker prevents a narrated end-to-end demo,
 - and the memo remains readable enough for internal review.
@@ -265,7 +268,19 @@ Recommended minimum scores:
 - Operational Readiness: `2`
 - Security and Governance: `2`
 
-## 7) Current Baseline Snapshot (March 11, 2026)
+## 7) Demo-Ready Calibration Thresholds
+
+The local scorecard now evaluates demo-ready fixture calibration against the following minimum thresholds:
+
+- committed scenario count: `>= 3`
+- state coverage: `>= 3`
+- every scenario includes all four module fixtures (`weather`, `carrier`, `caselaw`, `citation_verify`)
+- every scenario includes at least `2` case-law issue buckets
+- every scenario includes at least `3` citation checks
+
+These thresholds are intentionally scoped to the current demo-ready release level. Beta-ready and Pilot-ready still need broader scenario coverage, stronger output-quality measures, and CI or pilot evidence beyond the local scorecard.
+
+## 8) Current Baseline Snapshot (March 18, 2026)
 
 This is the current scorecard entry using the rubric above.
 
@@ -273,8 +288,8 @@ Target release level: `Demo-ready`
 
 | Dimension | Score | Verdict | Why |
 |---|---:|---|---|
-| Reliability | 3 | Strong | `178` tests pass on the supported bootstrap path, CI covers fresh-env plus `exa-py` compatibility, the offline fixture smoke gate is explicit, and the committed offline lane now spans FL/TX/LA scenarios. |
-| Evidence Quality | 1 | Weak | Three committed scenarios now exist for calibration, but pass/fail thresholds, deeper breadth, and stronger normalization are still pending under `#8`, `#12`, and `#13`. |
+| Reliability | 3 | Strong | `180` tests pass on the supported bootstrap path, CI covers fresh-env plus `exa-py` compatibility, the offline fixture smoke gate is explicit, and the committed offline lane now spans FL/TX/LA scenarios while meeting the calibrated demo-ready thresholds. |
+| Evidence Quality | 2 | Acceptable | The committed FL/TX/LA fixture set now satisfies explicit demo-ready thresholds for scenario count, state coverage, issue breadth, citation coverage, and module completeness. Broader scenario breadth and richer normalization still remain open under `#8`, `#12`, and `#13`. |
 | Trust and Provenance | 2 | Acceptable | Disclaimers, source tiers, citation checks, evidence clusters, and claim/review trace links exist, but they are still notebook-era rather than full product workflow state. |
 | Workflow Usability | 1 | Weak | The product is still notebook-first and generally engineer-driven for setup and operation. |
 | Review and Export Quality | 2 | Acceptable | Memo/export trust signals are stronger and audit structures exist, but export quality is still not polished for repeated client-facing use. |
@@ -294,7 +309,7 @@ Why the current build still counts as demo-ready:
 - it runs offline,
 - and it produces a reviewable research memo without pretending to be a self-serve product.
 
-## 8) Scorecard Template
+## 9) Scorecard Template
 
 Use this template for future release candidates.
 
@@ -329,7 +344,7 @@ Use this template for future release candidates.
 - Ship / No ship
 ```
 
-## 8.5) Local Artifact Workflow
+## 9.5) Local Artifact Workflow
 
 The rubric now has a lightweight local operational path.
 
@@ -338,7 +353,7 @@ After running the supported verification command, generate a scorecard artifact 
 ```bash
 python -m war_room.release_scorecard \
   --candidate local-demo \
-  --verification-summary "178 passed"
+  --verification-summary "180 passed"
 ```
 
 Default verification command recorded in the artifact:
@@ -352,15 +367,15 @@ What this does now:
 - writes Markdown and JSON scorecard artifacts into `runs/release_scorecards/`
 - records the current demo-ready baseline in a repeatable format
 - captures committed fixture coverage from `cache_samples/` so the scorecard reflects the live offline scenario set
+- evaluates explicit demo-ready fixture thresholds inside the artifact
 - creates a concrete artifact that later `#9` CI work can emit automatically
 
 What it does not do yet:
 
-- replace fixture calibration from `#8`
 - replace CI-enforced evidence from `#9`
 - replace pilot benchmark inputs from `#19`
 
-## 9) What Should Improve This Rubric Next
+## 10) What Should Improve This Rubric Next
 
 This v0.1 rubric should be revised when the following land:
 
@@ -372,12 +387,12 @@ This v0.1 rubric should be revised when the following land:
 
 Likely next revisions:
 
-- add explicit threshold numbers for scenario pass rates,
+- refine demo-ready thresholds with broader scenario coverage,
 - add time-to-completion targets for the intended operator,
 - add latency and cost targets once those are measured,
 - and add pilot-specific reviewer signoff requirements.
 
-## 10) Dependency Guidance
+## 11) Dependency Guidance
 
 ### For `#8`
 
