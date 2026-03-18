@@ -93,9 +93,9 @@ def collect_fixture_coverage(cache_samples_dir: Path) -> FixtureCoverageSummary:
         return FixtureCoverageSummary(0, [], [], [])
 
     for scenario_dir in sorted(path for path in cache_samples_dir.iterdir() if path.is_dir()):
-        module_files = [name for name in _FIXTURE_FILE_NAMES if (scenario_dir / name).exists()]
-        if not module_files:
+        if not all((scenario_dir / name).exists() for name in _FIXTURE_FILE_NAMES):
             continue
+        module_files = list(_FIXTURE_FILE_NAMES)
 
         weather = _load_json_if_exists(scenario_dir / "weather.json")
         carrier = _load_json_if_exists(scenario_dir / "carrier.json")

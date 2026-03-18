@@ -288,8 +288,8 @@ Target release level: `Demo-ready`
 
 | Dimension | Score | Verdict | Why |
 |---|---:|---|---|
-| Reliability | 3 | Strong | `190` tests pass on the supported bootstrap path, CI covers fresh-env plus `exa-py` compatibility, the offline fixture smoke gate is explicit, and the committed FL/TX/LA scenario-directory lane still meets the calibrated demo-ready thresholds. |
-| Evidence Quality | 2 | Acceptable | The committed FL/TX/LA scenario-directory fixture set still satisfies explicit demo-ready thresholds for scenario count, state coverage, issue breadth, citation coverage, and module completeness. Broader scenario breadth and richer normalization still remain open under `#8`, `#12`, and `#13`. |
+| Reliability | 3 | Strong | `197` tests pass on the supported bootstrap path, CI covers fresh-env plus `exa-py` compatibility, the offline fixture smoke gate is explicit, and the committed four-scenario FL/TX/LA lane still meets the calibrated demo-ready thresholds. |
+| Evidence Quality | 2 | Acceptable | The committed four-scenario fixture set still satisfies explicit demo-ready thresholds for scenario count, state coverage, issue breadth, citation coverage, and module completeness. Broader scenario breadth and richer normalization still remain open under `#8`, `#12`, and `#13`. |
 | Trust and Provenance | 2 | Acceptable | Disclaimers, source tiers, citation checks, evidence clusters, and claim/review trace links exist, but they are still notebook-era rather than full product workflow state. |
 | Workflow Usability | 1 | Weak | The product is still notebook-first and generally engineer-driven for setup and operation. |
 | Review and Export Quality | 2 | Acceptable | Memo/export trust signals are stronger and audit structures exist, but export quality is still not polished for repeated client-facing use. |
@@ -353,7 +353,7 @@ After running the supported verification command, generate a scorecard artifact 
 ```bash
 python -m war_room.release_scorecard \
   --candidate local-demo \
-  --verification-summary "190 passed"
+  --verification-summary "197 passed"
 ```
 
 Default verification command recorded in the artifact:

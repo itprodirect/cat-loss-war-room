@@ -61,6 +61,26 @@ SCENARIOS = {
         ],
         "expected_checks": 3,
     },
+    "tx_hail_allstate_tarrant_dp3": {
+        "event_name": "Texas Hailstorm Matching Dispute",
+        "event_date": "2023-05-04",
+        "state": "TX",
+        "county": "Tarrant",
+        "carrier": "Allstate Texas Lloyds",
+        "policy_type": "DP-3 Dwelling",
+        "posture": ["underpayment"],
+        "key_facts": [
+            "Golf-ball-size hail was reported in Tarrant County on the reported date of loss",
+            "Roof slope bruising and soft-metal damage were documented shortly after the storm",
+            "Carrier estimate scoped only spot repairs despite full-slope damage indicators",
+        ],
+        "coverage_issues": [
+            "matching",
+            "actual cash value vs replacement cost",
+            "scope of repair",
+        ],
+        "expected_checks": 3,
+    },
     "ida_lloyds_orleans": {
         "event_name": "Hurricane Ida",
         "event_date": "2021-08-29",
@@ -200,7 +220,7 @@ def test_scenario_resolves_through_cache_first_runtime(case_key: str):
 
     carrier = build_carrier_doc_pack(intake, None, cache_samples_dir=cache_samples_dir)
     assert carrier["carrier_snapshot"]["name"] == SCENARIOS[case_key]["carrier"]
-    assert carrier["carrier_snapshot"]["policy_type"]
+    assert carrier["carrier_snapshot"]["policy_type"] == SCENARIOS[case_key]["policy_type"]
 
     caselaw = build_caselaw_pack(intake, None, cache_samples_dir=cache_samples_dir)
     assert len(caselaw["issues"]) > 0
@@ -252,40 +272,3 @@ def test_fixture_badges_use_stable_ascii_tokens(case_key: str):
 
     citecheck = _load(case_key, "citation_verify")
     assert {check["badge"] for check in citecheck["checks"]}.issubset(_STABLE_CITATION_BADGES)
-
-
-def test_matching_dispute_scenario_resolves_through_cache_first_runtime():
-    intake = CaseIntake(
-        event_name="Texas Hailstorm Matching Dispute",
-        event_date="2023-05-04",
-        state="TX",
-        county="Tarrant",
-        carrier="Allstate Texas Lloyds",
-        policy_type="DP-3 Dwelling",
-        posture=["underpayment"],
-        key_facts=[
-            "Golf-ball-size hail was reported in Tarrant County on the reported date of loss",
-            "Roof slope bruising and soft-metal damage were documented shortly after the storm",
-            "Carrier estimate scoped only spot repairs despite full-slope damage indicators",
-        ],
-        coverage_issues=[
-            "matching",
-            "actual cash value vs replacement cost",
-            "scope of repair",
-        ],
-    )
-    cache_samples_dir = str(CACHE_SAMPLES_ROOT)
-
-    weather = build_weather_brief(intake, None, cache_samples_dir=cache_samples_dir)
-    assert weather["event_summary"].startswith("Texas Hailstorm Matching Dispute")
-
-    carrier = build_carrier_doc_pack(intake, None, cache_samples_dir=cache_samples_dir)
-    assert carrier["carrier_snapshot"]["policy_type"] == "DP-3 Dwelling"
-    assert any("matching" in angle.lower() for angle in carrier["rebuttal_angles"])
-
-    caselaw = build_caselaw_pack(intake, None, cache_samples_dir=cache_samples_dir)
-    assert len(caselaw["issues"]) > 0
-
-    citecheck = spot_check_citations(caselaw, _FixtureProvider(), cache_samples_dir=cache_samples_dir)
-    assert citecheck["summary"]["total"] == 3
-

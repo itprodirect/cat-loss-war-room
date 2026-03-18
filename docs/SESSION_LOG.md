@@ -489,49 +489,6 @@ Status: Complete
   - `tests/test_models.py`
   - `tests/test_memo_contracts.py`
 - Verification:
-  - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `25 passed`
-  - `$env:PYTHONPATH="src"; pytest -q` -> `189 passed`
-
-## Session 53 - Issue #7 Deterministic Retrieval Task Timing
-Date: 2026-03-18
-Status: Complete
-
-- Tightened `src/war_room/retrieval.py` so `execute_retrieval_task()` now uses the provided `now` value consistently across completed, degraded, and failed execution paths.
-- This keeps `RetrievalTask.completed_at` and emitted `RunEvent.created_at` values deterministic for contract tests and replayable audit snapshots.
-- Expanded regression coverage in:
-  - `tests/test_retrieval_contracts.py`
-- Verification:
-  - `$env:PYTHONPATH="src"; pytest -q tests/test_retrieval_contracts.py tests/test_citation_verify.py` -> `18 passed`
-  - `$env:PYTHONPATH="src"; pytest -q` -> `189 passed`
-
-## Session 54 - Issue #8 Texas Matching Dispute Fixture
-Date: 2026-03-18
-Status: Complete
-
-- Added a fourth committed offline runtime fixture lane for a Texas hail matching dispute against Allstate Texas Lloyds, including:
-  - a committed eval intake in `eval/intakes/`
-  - cache-backed weather, carrier, and case-law fixture payloads in `cache_samples/`
-- Expanded fixture regression coverage so the offline lane now checks:
-  - the new intake file is schema-valid,
-  - committed carrier fixtures include policy-type metadata,
-  - the matching-dispute scenario resolves end-to-end through cache-first runtime execution,
-  - and preflight assertions derive scenario counts from the shared scenario map instead of hardcoded values.
-- Synced the canonical docs to the current repo state:
-  - `README.md`
-  - `docs/HANDOFF.md`
-  - `docs/FOUNDATION.md`
-  - `docs/BUILD_CHECKLIST.md`
-  - `docs/ROADMAP.md`
-  - `docs/V2_ISSUE_MAP.md`
-  - `docs/V2_RELEASE_RUBRIC.md`
-- Verification:
-  - `$env:PYTHONPATH="src"; pytest -q tests/test_intake_validation.py tests/test_offline_demo_pack.py tests/test_preflight.py` -> `41 passed`
-  - `$env:PYTHONPATH="src"; pytest -q` -> `190 passed`
-  - `$env:PYTHONPATH="src"; python -m war_room --preflight --json` -> success (`scenario_count: 3`)
-- Verification:
-  - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `25 passed`
-  - `$env:PYTHONPATH="src"; pytest -q` -> `189 passed`
-- Verification:
   - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `18 passed`
   - `$env:PYTHONPATH="src"; pytest -q` -> `149 passed`
 
@@ -878,3 +835,68 @@ Status: Complete
 - Expanded regression coverage in:
   - `tests/test_models.py`
   - `tests/test_memo_contracts.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_models.py tests/test_memo_contracts.py` -> `25 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `189 passed`
+
+## Session 53 - Issue #7 Deterministic Retrieval Task Timing
+Date: 2026-03-18
+Status: Complete
+
+- Tightened `src/war_room/retrieval.py` so `execute_retrieval_task()` now uses the provided `now` value consistently across completed, degraded, and failed execution paths.
+- This keeps `RetrievalTask.completed_at` and emitted `RunEvent.created_at` values deterministic for contract tests and replayable audit snapshots.
+- Expanded regression coverage in:
+  - `tests/test_retrieval_contracts.py`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_retrieval_contracts.py tests/test_citation_verify.py` -> `18 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `189 passed`
+
+## Session 54 - Issue #8 Texas Matching Dispute Fixture
+Date: 2026-03-18
+Status: Complete
+
+- Added a fourth committed offline runtime fixture lane for a Texas hail matching dispute against Allstate Texas Lloyds, including:
+  - a committed eval intake in `eval/intakes/`
+  - cache-backed weather, carrier, and case-law fixture payloads in `cache_samples/`
+- Expanded fixture regression coverage so the offline lane now checks:
+  - the new intake file is schema-valid,
+  - committed carrier fixtures include policy-type metadata,
+  - the matching-dispute scenario resolves end-to-end through cache-first runtime execution,
+  - and preflight assertions derive scenario counts from the shared scenario map instead of hardcoded values.
+- Synced the canonical docs to the repo state at that point:
+  - `README.md`
+  - `docs/HANDOFF.md`
+  - `docs/FOUNDATION.md`
+  - `docs/BUILD_CHECKLIST.md`
+  - `docs/ROADMAP.md`
+  - `docs/V2_ISSUE_MAP.md`
+  - `docs/V2_RELEASE_RUBRIC.md`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_intake_validation.py tests/test_offline_demo_pack.py tests/test_preflight.py` -> `41 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `190 passed`
+  - `$env:PYTHONPATH="src"; python -m war_room --preflight --json` -> success (`scenario_count: 3`)
+
+## Session 55 - Issue #8 Fixture Directory Alignment for Preflight and Scorecard
+Date: 2026-03-18
+Status: Complete
+
+- Promoted the Texas matching-dispute cache assets into a full committed scenario directory at `cache_samples/tx_hail_allstate_tarrant_dp3/`.
+- Restored canonical cache-first runtime coverage in `tests/test_offline_demo_pack.py` so all committed scenario directories execute through the same runtime path.
+- Tightened `src/war_room/release_scorecard.py` so scorecard fixture counting now matches preflight semantics by counting only complete scenario directories with all four module fixtures.
+- Updated regression coverage in:
+  - `tests/test_offline_demo_pack.py`
+  - `tests/test_preflight.py`
+  - `tests/test_release_scorecard.py`
+- Synced the canonical docs so `#8`, preflight, and `#27` all describe the same four-scenario committed fixture set:
+  - `README.md`
+  - `docs/HANDOFF.md`
+  - `docs/FOUNDATION.md`
+  - `docs/BUILD_CHECKLIST.md`
+  - `docs/ROADMAP.md`
+  - `docs/V2_ISSUE_MAP.md`
+  - `docs/V2_RELEASE_RUBRIC.md`
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_offline_demo_pack.py tests/test_preflight.py tests/test_release_scorecard.py` -> `41 passed`
+  - `$env:PYTHONPATH="src"; pytest -q` -> `197 passed`
+  - `$env:PYTHONPATH="src"; python -m war_room --preflight --json` -> success (`scenario_count: 4`)
+  - `$env:PYTHONPATH="src"; python -m war_room.release_scorecard --candidate codex/quality-hardening --verification-summary "197 passed"` -> success

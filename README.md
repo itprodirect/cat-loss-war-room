@@ -93,7 +93,7 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across three committed scenario directories spanning Florida, Texas, and Louisiana, with an additional Texas matching-dispute runtime fixture committed for broader cache coverage, `190` tests are passing under the supported bootstrap path, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, `197` tests are passing under the supported bootstrap path, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - Offline fixture smoke validation across committed scenarios

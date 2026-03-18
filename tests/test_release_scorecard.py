@@ -12,16 +12,36 @@ from war_room.release_scorecard import (
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE_SAMPLES_DIR = ROOT / "cache_samples"
+REQUIRED_FIXTURE_FILES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
+
+
+def _expected_scenario_keys() -> list[str]:
+    return sorted(
+        path.name
+        for path in CACHE_SAMPLES_DIR.iterdir()
+        if path.is_dir() and all((path / filename).exists() for filename in REQUIRED_FIXTURE_FILES)
+    )
 
 
 def test_collect_fixture_coverage_reads_committed_scenarios():
     summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
 
-    assert summary.scenario_count >= 3
-    assert {"FL", "TX", "LA"}.issubset(set(summary.states))
-    assert "milton_citizens_pinellas" in summary.scenario_keys
-    assert "tx_hail_allstate_tarrant" in summary.scenario_keys
-    assert "ida_lloyds_orleans" in summary.scenario_keys
+    assert summary.scenario_count == len(_expected_scenario_keys())
+    assert summary.scenario_keys == _expected_scenario_keys()
+    assert {"FL", "TX", "LA"} == set(summary.states)
+    assert all(len(scenario.module_files) == 4 for scenario in summary.scenarios)
+
+
+def test_collect_fixture_coverage_ignores_incomplete_scenarios(tmp_path: Path):
+    scenario_dir = tmp_path / "partial_case"
+    scenario_dir.mkdir()
+    (scenario_dir / "weather.json").write_text('{"module": "weather"}', encoding="utf-8")
+
+    summary = collect_fixture_coverage(tmp_path)
+
+    assert summary.scenario_count == 0
+    assert summary.scenario_keys == []
+    assert summary.states == []
 
 
 def test_default_verification_command_matches_supported_path():
@@ -49,7 +69,7 @@ def test_build_demo_release_scorecard_uses_fixture_calibration():
     assert scorecard.must_pass_gates[0].evidence == f"{DEFAULT_VERIFICATION_COMMAND} -> 179 passed"
     assert scorecard.must_pass_gates[2].passed is True
     assert scorecard.fixture_coverage is not None
-    assert scorecard.fixture_coverage.scenario_count >= 3
+    assert scorecard.fixture_coverage.scenario_count == len(_expected_scenario_keys())
 
     markdown = render_release_scorecard_markdown(scorecard)
     assert "# Release Scorecard" in markdown

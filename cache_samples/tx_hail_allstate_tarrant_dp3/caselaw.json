@@ -1,0 +1,74 @@
+{
+  "module": "caselaw",
+  "issues": [
+    {
+      "issue": "Allstate Texas Lloyds Precedent",
+      "cases": [
+        {
+          "name": "Ortiz v. State Farm Lloyds",
+          "citation": "589 S.W.3d 127",
+          "court": "Supreme Court of Texas",
+          "year": "2019",
+          "one_liner": "Texas Supreme Court decision distinguishing appraisal from liability disputes in a property-insurance case.",
+          "url": "https://casetext.com/case/ortiz-v-state-farm-lloyds",
+          "badge": "professional"
+        }
+      ],
+      "notes": [
+        "Useful for separating amount-of-loss fights from matching and scope disputes in Texas hail matters."
+      ]
+    },
+    {
+      "issue": "Hail / Causation Standards",
+      "cases": [
+        {
+          "name": "Lambros v. Standard Fire Ins. Co.",
+          "citation": "530 S.W.3d 138",
+          "court": "Texas Court of Appeals",
+          "year": "2015",
+          "one_liner": "Texas appellate decision addressing proof issues in a first-party property loss dispute.",
+          "url": "https://casetext.com/case/lambros-v-standard-fire-ins-co",
+          "badge": "professional"
+        },
+        {
+          "name": "Lyons v. Millers Cas. Ins. Co. of Texas",
+          "citation": "866 S.W.2d 597",
+          "court": "Supreme Court of Texas",
+          "year": "1993",
+          "one_liner": "Texas Supreme Court case often cited in property-insurance causation and coverage disputes.",
+          "url": "https://casetext.com/case/lyons-v-millers-cas-ins-co-of-texas",
+          "badge": "professional"
+        }
+      ],
+      "notes": [
+        "Review how Texas courts separate storm causation from excluded wear-and-tear and matching narratives."
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "title": "Ortiz v. State Farm Lloyds",
+      "url": "https://casetext.com/case/ortiz-v-state-farm-lloyds",
+      "badge": "professional",
+      "reason": "Professional source"
+    },
+    {
+      "title": "Lambros v. Standard Fire Ins. Co.",
+      "url": "https://casetext.com/case/lambros-v-standard-fire-ins-co",
+      "badge": "professional",
+      "reason": "Professional source"
+    },
+    {
+      "title": "Lyons v. Millers Cas. Ins. Co. of Texas",
+      "url": "https://casetext.com/case/lyons-v-millers-cas-ins-co-of-texas",
+      "badge": "professional",
+      "reason": "Professional source"
+    },
+    {
+      "title": "Texas Insurance Code Chapter 542A",
+      "url": "https://statutes.capitol.texas.gov/Docs/IN/htm/IN.542A.htm",
+      "badge": "official",
+      "reason": "Official source"
+    }
+  ]
+}

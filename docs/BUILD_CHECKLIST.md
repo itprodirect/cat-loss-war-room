@@ -24,7 +24,7 @@ Simple execution checklist aligned with the live GitHub roadmap.
 - [x] [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) intake schema alignment
 - [ ] [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) typed domain models (slices 1-7 complete: intake/query + module packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts)
 - [ ] [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) retrieval contracts (provider seam + notebook retrieval-state + citation-verify + deterministic retrieval-task timing slices landed)
-- [ ] [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) scenario fixtures + snapshots (three committed scenario directories now cover Florida, Texas, and Louisiana, and a fourth Texas matching-dispute runtime fixture is committed; broader breadth and snapshot thresholds still needed)
+- [ ] [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) scenario fixtures + snapshots (four committed scenario directories now cover Florida, Texas, and Louisiana; broader breadth and snapshot thresholds still needed)
 - [ ] [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) expanded CI gates (offline fixture smoke gate and release-scorecard artifact emission plus validation landed; broader CI layering still needed)
 
 ## Product Core (queued)
