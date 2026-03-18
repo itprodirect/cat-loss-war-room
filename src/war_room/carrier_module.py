@@ -9,15 +9,46 @@ from __future__ import annotations
 from typing import Any
 
 from war_room.cache_io import cache_get, cached_call
-from war_room.exa_client import ExaClient
-from war_room.models import carrier_doc_pack_to_payload
-from war_room.query_plan import CaseIntake, generate_query_plan
+from war_room.retrieval import (
+    RetrievalProvider,
+    RetrievalSearchRequest,
+    execute_retrieval_task,
+    notebook_run_id_from_intake,
+    query_spec_to_retrieval_task,
+)
+from war_room.models import CaseIntake, carrier_doc_pack_to_payload
+from war_room.query_plan import generate_query_plan
 from war_room.source_scoring import score_url
+
+_HIGH_VALUE_DOC_TERMS = (
+    "complaint",
+    "consent",
+    "exam",
+    "final report",
+    "guideline",
+    "handbook",
+    "manual",
+    "market conduct",
+    "memorandum",
+    "order",
+    "report",
+    "settlement",
+)
+
+_LOW_VALUE_PAGE_TERMS = (
+    "about us",
+    "brochure",
+    "contact us",
+    "consumer",
+    "faq",
+    "home",
+    "organization and operation",
+)
 
 
 def build_carrier_doc_pack(
     intake: CaseIntake,
-    client: ExaClient | None,
+    client: RetrievalProvider | None,
     *,
     use_cache: bool = True,
     cache_dir: str = "cache",
@@ -42,18 +73,42 @@ def build_carrier_doc_pack(
     def _fetch() -> dict[str, Any]:
         queries = [q for q in generate_query_plan(intake) if q.module == "carrier_docs"]
         all_results: list[dict] = []
+        retrieval_tasks = []
+        run_events = []
+        warnings: list[str] = []
+        run_id = notebook_run_id_from_intake(intake)
+        stage_id = f"{run_id}:carrier"
 
-        for query in queries:
-            hits = client.search(
-                query.query,
-                k=5,
-                include_domains=query.preferred_domains or None,
+        for index, query in enumerate(queries, 1):
+            task = query_spec_to_retrieval_task(
+                query,
+                run_id=run_id,
+                stage_id=stage_id,
+                provider=client.provider_name,
+                retrieval_task_id=f"{stage_id}:{query.category}:{index}",
             )
-            for hit in hits:
+            execution = execute_retrieval_task(
+                client,
+                RetrievalSearchRequest(
+                    task=task,
+                    k=5,
+                    include_domains=query.preferred_domains,
+                ),
+            )
+            retrieval_tasks.append(execution.task)
+            run_events.extend(execution.run_events)
+            if execution.warning:
+                warnings.append(execution.warning)
+            for hit in execution.hits:
                 hit["category"] = query.category
-            all_results.extend(hits)
+            all_results.extend(execution.hits)
 
-        return _assemble_pack(intake, all_results)
+        payload = _assemble_pack(intake, all_results)
+        if warnings:
+            payload["warnings"] = list(dict.fromkeys((payload.get("warnings") or []) + warnings))
+        payload["retrieval_tasks"] = retrieval_tasks
+        payload["run_events"] = run_events
+        return carrier_doc_pack_to_payload(payload)
 
     return cached_call(
         case_key,
@@ -95,11 +150,16 @@ def _assemble_pack(
             seen.add(result["url"])
             unique.append(result)
 
-    # Score
+    # Score, filter, and rank for evidence quality.
     scored = []
     for result in unique:
         score = score_url(result["url"])
-        scored.append({**result, "_score": score})
+        enriched = {**result, "_score": score}
+        if _is_low_value_carrier_result(enriched):
+            continue
+        scored.append(enriched)
+
+    scored.sort(key=_carrier_result_priority)
 
     # Categorize into document types
     doc_type_map = {
@@ -155,6 +215,46 @@ def _assemble_pack(
         "rebuttal_angles": rebuttal_angles,
         "sources": sources,
     })
+
+
+def _carrier_result_priority(result: dict[str, Any]) -> tuple[int, int, int, str]:
+    """Prefer official, document-like sources over general navigation pages."""
+    tier_rank = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
+    title = (result.get("title", "") or "").lower()
+    url = (result.get("url", "") or "").lower()
+
+    high_value_bonus = 0 if _contains_any(title, _HIGH_VALUE_DOC_TERMS) or _contains_any(
+        url,
+        _HIGH_VALUE_DOC_TERMS,
+    ) or url.endswith(".pdf") else 1
+    category_bonus = 0 if result.get("category") in {"doi_complaints", "regulatory_action"} else 1
+
+    return (
+        tier_rank.get(result["_score"]["tier"], 9),
+        high_value_bonus,
+        category_bonus,
+        title,
+    )
+
+
+def _is_low_value_carrier_result(result: dict[str, Any]) -> bool:
+    """Reject generic navigation pages that do not add carrier evidence."""
+    title = (result.get("title", "") or "").lower()
+    url = (result.get("url", "") or "").lower()
+    category = result.get("category", "")
+
+    if category in {"doi_complaints", "regulatory_action"}:
+        if _contains_any(title, _LOW_VALUE_PAGE_TERMS) or _contains_any(url, _LOW_VALUE_PAGE_TERMS):
+            return True
+
+    if category == "claims_manual" and _contains_any(title, ("brochure", "faq")):
+        return True
+
+    return False
+
+
+def _contains_any(text: str, needles: tuple[str, ...]) -> bool:
+    return any(needle in text for needle in needles)
 
 
 def _why_it_matters(category: str, result: dict, intake: CaseIntake) -> str:

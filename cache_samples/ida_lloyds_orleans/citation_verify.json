@@ -1,0 +1,36 @@
+{
+  "module": "citation_verify",
+  "disclaimer": "CITATION SPOT-CHECK ONLY - These are confidence signals, not verification. KeyCite / Shepardize every citation before reliance.",
+  "checks": [
+    {
+      "status": "uncertain",
+      "badge": "warning",
+      "source_url": "https://casetext.com/case/sher-v-lafayette-ins-co",
+      "note": "Found on professional source: casetext.com - verify independently",
+      "case_name": "Sher v. Lafayette Ins. Co.",
+      "citation": "988 So. 2d 186"
+    },
+    {
+      "status": "uncertain",
+      "badge": "warning",
+      "source_url": "https://casetext.com/case/dickerson-v-lexington-ins-co",
+      "note": "Found on professional source: casetext.com - verify independently",
+      "case_name": "Dickerson v. Lexington Ins. Co.",
+      "citation": "556 F.3d 290"
+    },
+    {
+      "status": "verified",
+      "badge": "verified",
+      "source_url": "https://www.ca5.uscourts.gov/opinions/pub/05/05-4181-CV0.wpd.pdf",
+      "note": "Found on official source: ca5.uscourts.gov",
+      "case_name": "In re Katrina Canal Breaches Litig.",
+      "citation": "495 F.3d 191"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "verified": 1,
+    "uncertain": 2,
+    "not_found": 0
+  }
+}

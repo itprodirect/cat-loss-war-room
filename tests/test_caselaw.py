@@ -1,10 +1,9 @@
-﻿"""Tests for caselaw_module - no network calls."""
+"""Tests for caselaw_module - no network calls."""
 
 import tempfile
-from pathlib import Path
 
 from war_room.caselaw_module import _assemble_pack, _extract_case_info, build_caselaw_pack
-from war_room.query_plan import CaseIntake
+from war_room.models import CaseIntake
 
 
 def _sample_intake() -> CaseIntake:
@@ -55,10 +54,10 @@ def test_pack_limits_cases() -> None:
     """Pack should return at most 12 cases total."""
     results = [
         {
-            "url": f"https://example.com/case{i}",
-            "title": f"Case {i}",
+            "url": f"https://scholar.google.com/case{i}",
+            "title": f"Carrier v. Insured {i}",
             "snippet": f"Case {i} snippet",
-            "text": f"Case {i} text about insurance in 2024",
+            "text": f"Carrier v. Insured {i}, 123 So. 3d {400 + i} (Fla. App. 2024).",
             "category": "coverage_law",
         }
         for i in range(30)
@@ -67,6 +66,65 @@ def test_pack_limits_cases() -> None:
     total = sum(len(issue["cases"]) for issue in pack["issues"])
     assert total <= 12
 
+
+def test_pack_excludes_commentary_titles_from_cases() -> None:
+    results = [
+        {
+            "url": "https://www.jdsupra.com/legalnews/hurricane-irma-the-state-of-concurrent-52284",
+            "title": "Hurricane Irma - The State of Concurrent Causation and ACC Clauses in Florida | JD Supra",
+            "snippet": "Commentary article citing Sebo",
+            "text": "Discusses Sebo, 208 So. 3d 694, and policy clauses.",
+            "category": "concurrent_causation",
+        },
+        {
+            "url": "https://casetext.com/case/sebo-v-am-home-assur-co",
+            "title": "Sebo v. American Home Assurance Co.",
+            "snippet": "Florida concurrent causation case",
+            "text": "Sebo v. American Home Assurance Co., 208 So. 3d 694 (Fla. 2016).",
+            "category": "concurrent_causation",
+        },
+    ]
+
+    pack = _assemble_pack(_sample_intake(), results)
+    case_names = [case["name"] for issue in pack["issues"] for case in issue["cases"]]
+
+    assert "Sebo v. American Home Assurance Co." in case_names
+    assert all("JD Supra" not in name for name in case_names)
+
+
+
+
+class _CaselawProvider:
+    provider_name = "exa"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def search(self, query: str, **kwargs: object) -> list[dict[str, object]]:
+        self.calls += 1
+        return [{
+            "url": f"https://scholar.google.com/case{self.calls}",
+            "title": f"Carrier v. Insured {self.calls}",
+            "snippet": "Coverage dispute involving wind damage.",
+            "text": f"Carrier v. Insured {self.calls}, 123 So. 3d {450 + self.calls} (Fla. App. 2024).",
+        }]
+
+    def get_contents(self, urls: list[str], **kwargs: object) -> list[dict[str, object]]:
+        return []
+
+
+def test_build_caselaw_pack_emits_retrieval_state() -> None:
+    pack = build_caselaw_pack(
+        _sample_intake(),
+        client=_CaselawProvider(),
+        use_cache=False,
+    )
+
+    assert pack["retrieval_tasks"]
+    assert all(task["status"] == "completed" for task in pack["retrieval_tasks"])
+    assert all(task["stage_id"].endswith(":caselaw") for task in pack["retrieval_tasks"])
+    assert len(pack["run_events"]) == len(pack["retrieval_tasks"]) * 2
+    assert {event["event_type"] for event in pack["run_events"]} == {"retrieval_started", "retrieval_completed"}
 
 def test_build_caselaw_pack_without_client_returns_structured_fallback() -> None:
     intake = _sample_intake()

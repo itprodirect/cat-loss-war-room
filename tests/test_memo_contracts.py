@@ -10,6 +10,8 @@ from war_room.models import (
     adapt_citation_verify_pack,
     citation_verify_pack_to_payload,
     memo_render_input_from_parts,
+    run_audit_snapshot_from_parts,
+    run_audit_snapshot_to_payload,
 )
 
 
@@ -113,9 +115,7 @@ def _sample_payloads():
         "summary": {"total": 1, "verified": 1, "uncertain": 0, "not_found": 0},
     }
 
-    query_plan = [
-        QuerySpec(module="weather", query="test query", category="test"),
-    ]
+    query_plan = [QuerySpec(module="weather", query="test query", category="test")]
 
     return intake, weather, carrier, caselaw, citecheck, query_plan
 
@@ -150,9 +150,95 @@ def test_memo_render_input_from_parts_accepts_mixed_shapes():
         [query_plan[0].model_dump()],
     )
 
+    assert memo_input.schema_version == "v2alpha1"
     assert memo_input.intake.event_name == "Hurricane Milton"
     assert memo_input.citecheck.summary.verified == 1
     assert memo_input.query_plan[0].module == "weather"
+
+
+def test_run_audit_snapshot_builds_canonical_entities():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        [query_plan[0].model_dump()],
+    )
+    payload = run_audit_snapshot_to_payload(snapshot)
+
+    assert len(snapshot.evidence_items) == 4
+    assert len(snapshot.evidence_clusters) == 3
+    assert len(snapshot.memo_claims) == 4
+    assert snapshot.review_events == []
+    assert snapshot.schema_version == "v2alpha1"
+    assert snapshot.export_artifact.artifact_type == "markdown_memo"
+    assert snapshot.export_artifact.run_id == "run-notebook-hurricane-milton-fl-pinellas-citizens-property-insurance"
+    assert (
+        snapshot.export_artifact.artifact_id
+        == "run-notebook-hurricane-milton-fl-pinellas-citizens-property-insurance:artifact:markdown-memo"
+    )
+    assert snapshot.export_artifact.review_required is False
+    assert snapshot.export_artifact.uri == "runs/run-notebook-hurricane-milton-fl-pinellas-citizens-property-insurance/research-memo.md"
+    assert "Appendix: Evidence Clusters" in snapshot.export_artifact.section_titles
+    assert "Appendix: Evidence Index" in snapshot.export_artifact.section_titles
+    assert snapshot.export_artifact.section_ids[:3] == ["trust-snapshot", "case-intake", "weather-corroboration"]
+    assert payload["schema_version"] == "v2alpha1"
+    assert payload["evidence_items"][0]["evidence_id"] == "weather-source-1"
+    assert payload["evidence_clusters"][0]["cluster_id"] == "cluster-1"
+    assert payload["evidence_clusters"][2]["cluster_type"] == "citation"
+    assert snapshot.memo_claims[0].cluster_ids == ["cluster-1"]
+    assert snapshot.memo_claims[2].cluster_ids == ["cluster-3"]
+    assert payload["memo_claims"][3]["cluster_ids"] == ["cluster-3"]
+    assert payload["export_artifact"]["artifact_id"].endswith(":artifact:markdown-memo")
+
+
+def test_run_audit_snapshot_tracks_review_events_and_claim_status():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    weather["warnings"] = ["County-specific weather corroboration is limited."]
+    citecheck["checks"][0]["status"] = "uncertain"
+    citecheck["summary"] = {"total": 1, "verified": 0, "uncertain": 1, "not_found": 0}
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    assert {event.event_type for event in snapshot.review_events} == {"warning", "citation_uncertain"}
+    assert any(
+        claim.claim_id == "weather-corroboration" and claim.status == "review_required"
+        for claim in snapshot.memo_claims
+    )
+    assert any(
+        claim.claim_id == "citation-check-status" and claim.status == "review_required"
+        for claim in snapshot.memo_claims
+    )
+    assert any(
+        claim.claim_id == "citation-check-status" and claim.cluster_ids == ["cluster-3"]
+        for claim in snapshot.memo_claims
+    )
+    assert any(
+        event.event_id == "weather-warning-1" and event.related_cluster_ids == ["cluster-1"]
+        for event in snapshot.review_events
+    )
+    assert all(
+        event.run_id == "run-notebook-hurricane-milton-fl-pinellas-citizens-property-insurance"
+        for event in snapshot.review_events
+    )
+    assert all(event.target_type == "memo_claim" for event in snapshot.review_events)
+    assert any(event.related_claim_ids == ["weather-corroboration"] for event in snapshot.review_events)
+    assert any(
+        event.event_id == "citation-uncertain" and event.related_cluster_ids == ["cluster-3"]
+        for event in snapshot.review_events
+    )
+    assert snapshot.export_artifact.review_required is True
+    assert snapshot.export_artifact.section_ids[8] == "appendix-review-log"
 
 
 def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():
@@ -169,4 +255,129 @@ def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():
 
     assert "Case Intake" in markdown
     assert "Citation Spot-Check" in markdown
-    assert "Summary:" in markdown
+    assert "Citation Confidence" in markdown
+    assert "Trust Snapshot" in markdown
+    assert "Evidence Clusters" in markdown
+    assert "Evidence Index" in markdown
+
+
+
+def test_run_audit_snapshot_preserves_schema_version_override():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+        schema_version="v2alpha2",
+    )
+
+    payload = run_audit_snapshot_to_payload(snapshot)
+
+    assert snapshot.schema_version == "v2alpha2"
+    assert payload["schema_version"] == "v2alpha2"
+
+def test_run_audit_snapshot_aggregates_retrieval_state_from_module_payloads():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    weather["retrieval_tasks"] = [
+        {
+            "retrieval_task_id": "run-weather-1",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:weather",
+            "provider": "exa",
+            "query_text": "milton weather",
+            "status": "completed",
+            "attempt_count": 1,
+            "review_required": False,
+            "raw_artifact_refs": [],
+            "requested_at": None,
+            "completed_at": None,
+        }
+    ]
+    weather["run_events"] = [
+        {
+            "run_event_id": "run-weather-1:completed",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:weather",
+            "event_type": "retrieval_completed",
+            "severity": "info",
+            "message": "exa returned 1 hit.",
+            "created_at": None,
+            "artifact_refs": [],
+        }
+    ]
+    carrier["retrieval_tasks"] = [
+        {
+            "retrieval_task_id": "run-carrier-1",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:carrier",
+            "provider": "exa",
+            "query_text": "citizens claims manual",
+            "status": "completed",
+            "attempt_count": 1,
+            "review_required": False,
+            "raw_artifact_refs": [],
+            "requested_at": None,
+            "completed_at": None,
+        }
+    ]
+    carrier["run_events"] = [
+        {
+            "run_event_id": "run-carrier-1:completed",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:carrier",
+            "event_type": "retrieval_completed",
+            "severity": "info",
+            "message": "exa returned 1 hit.",
+            "created_at": None,
+            "artifact_refs": [],
+        }
+    ]
+
+    citecheck["retrieval_tasks"] = [
+        {
+            "retrieval_task_id": "run-cite-1",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:citation_verify",
+            "provider": "exa",
+            "query_text": "Doe v. Ins 123 So.3d 456",
+            "status": "completed",
+            "attempt_count": 1,
+            "review_required": False,
+            "raw_artifact_refs": ["https://example.com/case"],
+            "requested_at": None,
+            "completed_at": None,
+        }
+    ]
+    citecheck["run_events"] = [
+        {
+            "run_event_id": "run-cite-1:completed",
+            "run_id": "run-milton",
+            "stage_id": "run-milton:citation_verify",
+            "event_type": "retrieval_completed",
+            "severity": "info",
+            "message": "exa returned 1 hit.",
+            "created_at": None,
+            "artifact_refs": ["https://example.com/case"],
+        }
+    ]
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    payload = run_audit_snapshot_to_payload(snapshot)
+
+    assert len(snapshot.retrieval_tasks) == 3
+    assert len(snapshot.run_events) == 3
+    assert payload["retrieval_tasks"][0]["retrieval_task_id"] == "run-weather-1"
+    assert payload["run_events"][2]["stage_id"] == "run-milton:citation_verify"
+

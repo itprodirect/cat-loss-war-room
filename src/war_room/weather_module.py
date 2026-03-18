@@ -10,9 +10,15 @@ import re
 from typing import Any
 
 from war_room.cache_io import cache_get, cached_call
-from war_room.exa_client import ExaClient
-from war_room.models import weather_brief_to_payload
-from war_room.query_plan import CaseIntake, generate_query_plan
+from war_room.retrieval import (
+    RetrievalProvider,
+    RetrievalSearchRequest,
+    execute_retrieval_task,
+    notebook_run_id_from_intake,
+    query_spec_to_retrieval_task,
+)
+from war_room.models import CaseIntake, weather_brief_to_payload
+from war_room.query_plan import generate_query_plan
 from war_room.source_scoring import score_url
 
 GOV_WEATHER_DOMAINS = [
@@ -20,10 +26,40 @@ GOV_WEATHER_DOMAINS = [
     "fema.gov", "usgs.gov", "nasa.gov",
 ]
 
+_HIGH_VALUE_WEATHER_TERMS = (
+    "advisory",
+    "damage",
+    "declaration",
+    "event details",
+    "pdf",
+    "post tropical cyclone report",
+    "report",
+    "storm events",
+    "summary",
+)
+
+_LOW_VALUE_WEATHER_TERMS = (
+    "costs",
+    "fast facts",
+    "historic events",
+    "lessons from",
+    "news-media",
+    "news and media",
+    "public notice",
+)
+
+_NAVIGATION_MARKERS = (
+    "[home]",
+    "[mobile site]",
+    "[text version]",
+    "skip navigation",
+    "storm events database - event details",
+)
+
 
 def build_weather_brief(
     intake: CaseIntake,
-    client: ExaClient | None,
+    client: RetrievalProvider | None,
     *,
     use_cache: bool = True,
     cache_dir: str = "cache",
@@ -51,18 +87,42 @@ def build_weather_brief(
     def _fetch() -> dict[str, Any]:
         queries = [q for q in generate_query_plan(intake) if q.module == "weather"]
         all_results: list[dict] = []
+        retrieval_tasks = []
+        run_events = []
+        warnings: list[str] = []
+        run_id = notebook_run_id_from_intake(intake)
+        stage_id = f"{run_id}:weather"
 
-        for q in queries:
-            hits = client.search(
-                q.query,
-                k=5,
-                include_domains=q.preferred_domains or None,
+        for index, q in enumerate(queries, 1):
+            task = query_spec_to_retrieval_task(
+                q,
+                run_id=run_id,
+                stage_id=stage_id,
+                provider=client.provider_name,
+                retrieval_task_id=f"{stage_id}:{q.category}:{index}",
             )
-            for h in hits:
-                h["category"] = q.category
-            all_results.extend(hits)
+            execution = execute_retrieval_task(
+                client,
+                RetrievalSearchRequest(
+                    task=task,
+                    k=5,
+                    include_domains=q.preferred_domains,
+                ),
+            )
+            retrieval_tasks.append(execution.task)
+            run_events.extend(execution.run_events)
+            if execution.warning:
+                warnings.append(execution.warning)
+            for hit in execution.hits:
+                hit["category"] = q.category
+            all_results.extend(execution.hits)
 
-        return _assemble_brief(intake, all_results)
+        payload = _assemble_brief(intake, all_results)
+        if warnings:
+            payload["warnings"] = list(dict.fromkeys((payload.get("warnings") or []) + warnings))
+        payload["retrieval_tasks"] = retrieval_tasks
+        payload["run_events"] = run_events
+        return weather_brief_to_payload(payload)
 
     return cached_call(
         case_key,
@@ -105,28 +165,32 @@ def _assemble_brief(
             seen_urls.add(result["url"])
             unique.append(result)
 
-    # Score and sort: official first, then professional, then unvetted
-    tier_order = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
+    # Score and sort: official first, then relevance to the matter.
     scored: list[dict[str, Any]] = []
     for result in unique:
         score = score_url(result["url"])
-        scored.append({**result, "_score": score})
-    scored.sort(key=lambda item: tier_order.get(item["_score"]["tier"], 9))
+        enriched = {**result, "_score": score}
+        if _is_low_value_weather_result(enriched):
+            continue
+        scored.append(enriched)
+    scored.sort(key=lambda item: _weather_result_priority(item, intake))
 
-    # Build observations from top results
+    # Build observations from top, matter-relevant results.
     observations = []
     for result in scored[:10]:
-        snippet = result.get("snippet", "").strip()
-        if snippet:
-            observations.append(snippet[:300])
+        observation = _extract_observation(result, intake)
+        if observation and observation not in observations:
+            observations.append(observation)
 
-    # Extract metrics defensively from all text
-    all_text = " ".join(result.get("text", "") for result in scored[:15])
+    # Extract metrics, preferring county-anchored texts when available.
+    metric_candidates = [result for result in scored if _has_location_signal(result, intake)]
+    metric_pool = metric_candidates or scored[:8]
+    all_text = " ".join(result.get("text", "") for result in metric_pool)
     metrics = _extract_metrics(all_text)
 
     # Build source list
     sources = []
-    for result in scored[:15]:
+    for result in scored[:12]:
         score = result["_score"]
         sources.append({
             "title": result.get("title", ""),
@@ -141,10 +205,72 @@ def _assemble_brief(
             f"{intake.event_name} - {intake.county} County, {intake.state} "
             f"({intake.event_date})"
         ),
-        "key_observations": observations[:8],
+        "key_observations": observations[:6],
         "metrics": metrics,
         "sources": sources,
     })
+
+
+def _weather_result_priority(result: dict[str, Any], intake: CaseIntake) -> tuple[int, int, int, int, str]:
+    """Prefer official, county-specific, report-like weather evidence."""
+    tier_order = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
+    title = (result.get("title", "") or "").lower()
+    url = (result.get("url", "") or "").lower()
+
+    county_bonus = 0 if _has_location_signal(result, intake) else 1
+    doc_bonus = 0 if _contains_any(title, _HIGH_VALUE_WEATHER_TERMS) or _contains_any(url, _HIGH_VALUE_WEATHER_TERMS) or url.endswith(".pdf") else 1
+    generic_penalty = 1 if _contains_any(title, _LOW_VALUE_WEATHER_TERMS) or _contains_any(url, _LOW_VALUE_WEATHER_TERMS) else 0
+
+    return (
+        tier_order.get(result["_score"]["tier"], 9),
+        county_bonus,
+        doc_bonus,
+        generic_penalty,
+        title,
+    )
+
+
+def _is_low_value_weather_result(result: dict[str, Any]) -> bool:
+    """Reject generic official pages that do not advance county-level corroboration."""
+    title = (result.get("title", "") or "").lower()
+    url = (result.get("url", "") or "").lower()
+    return _contains_any(title, _LOW_VALUE_WEATHER_TERMS) or _contains_any(url, _LOW_VALUE_WEATHER_TERMS)
+
+
+def _has_location_signal(result: dict[str, Any], intake: CaseIntake) -> bool:
+    text = " ".join(
+        [
+            result.get("title", "") or "",
+            result.get("snippet", "") or "",
+            (result.get("text", "") or "")[:800],
+        ]
+    ).lower()
+    county_token = intake.county.lower()
+    office_token = "tampa bay" if county_token == "pinellas" else ""
+    return county_token in text or (office_token and office_token in text)
+
+
+def _extract_observation(result: dict[str, Any], intake: CaseIntake) -> str | None:
+    snippet = " ".join((result.get("snippet", "") or "").split())
+    if not snippet:
+        return None
+
+    lowered = snippet.lower()
+    if any(marker in lowered for marker in _NAVIGATION_MARKERS):
+        return None
+    if not (_has_location_signal(result, intake) or _is_report_like(result)):
+        return None
+    return snippet[:300]
+
+
+def _is_report_like(result: dict[str, Any]) -> bool:
+    title = (result.get("title", "") or "").lower()
+    url = (result.get("url", "") or "").lower()
+    return _contains_any(title, _HIGH_VALUE_WEATHER_TERMS) or _contains_any(url, _HIGH_VALUE_WEATHER_TERMS) or url.endswith(".pdf")
+
+
+def _contains_any(text: str, needles: tuple[str, ...]) -> bool:
+    return any(needle in text for needle in needles)
 
 
 def _extract_metrics(text: str) -> dict[str, Any]:
@@ -169,6 +295,13 @@ def _extract_metrics(text: str) -> dict[str, Any]:
         r"(?:storm\s*surge|surge)[^\d]{0,30}(\d+(?:\.\d+)?)\s*(?:feet|ft|foot)",
         text,
         re.IGNORECASE,
+    )
+    surge_matches.extend(
+        re.findall(
+            r"(\d+(?:\.\d+)?)\s*(?:feet|ft|foot)[^\d]{0,20}(?:storm\s*surge|surge)",
+            text,
+            re.IGNORECASE,
+        )
     )
     if surge_matches:
         metrics["storm_surge_ft"] = max(float(surge) for surge in surge_matches)

@@ -1,0 +1,323 @@
+"""Deterministic offline demo preflight checks."""
+
+from __future__ import annotations
+
+import json
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, UTC
+from pathlib import Path
+from typing import Any
+
+from war_room.bootstrap import BootstrapContext
+from war_room.caselaw_module import build_caselaw_pack
+from war_room.carrier_module import build_carrier_doc_pack
+from war_room.citation_verify import spot_check_citations
+from war_room.export_md import render_markdown_memo
+from war_room.models import CaseIntake
+from war_room.query_plan import generate_query_plan, load_case_intake
+from war_room.weather_module import build_weather_brief
+
+_REQUIRED_FIXTURE_FILES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
+_FALLBACK_INTAKES: dict[str, dict[str, Any]] = {
+    "milton_citizens_pinellas": {
+        "event_name": "Hurricane Milton",
+        "event_date": "2024-10-09",
+        "state": "FL",
+        "county": "Pinellas",
+        "carrier": "Citizens Property Insurance",
+        "policy_type": "HO-3 Dwelling",
+        "posture": ["denial", "bad_faith"],
+        "key_facts": [
+            "Category 3 at landfall near Siesta Key",
+            "Roof damage and water intrusion reported within 48 hours",
+            "Claim denied citing pre-existing conditions",
+        ],
+        "coverage_issues": [
+            "wind vs water causation",
+            "anti-concurrent causation clause",
+            "duty to investigate",
+        ],
+    },
+}
+_EXPECTED_MEMO_SECTIONS = (
+    "## Trust Snapshot",
+    "## Case Intake",
+    "## Weather Corroboration",
+    "## Carrier Document Pack",
+    "## Case Law",
+    "## Appendix: Query Plan",
+    "## Appendix: Evidence Clusters",
+    "## Appendix: Evidence Index",
+    "## Appendix: All Sources",
+    "## Methodology & Limitations",
+)
+_REQUIRED_DISCLAIMERS = (
+    "DRAFT - ATTORNEY WORK PRODUCT",
+    "DEMO RESEARCH MEMO - VERIFY CITATIONS - NOT LEGAL ADVICE",
+    "DRAFT - ATTORNEY WORK PRODUCT - VERIFY ALL CITATIONS",
+)
+
+
+@dataclass(frozen=True)
+class PreflightCheck:
+    """One deterministic offline smoke assertion."""
+
+    name: str
+    passed: bool
+    evidence: str
+
+
+@dataclass(frozen=True)
+class PreflightScenarioReport:
+    """Smoke results for a single committed fixture scenario."""
+
+    case_key: str
+    intake_path: str
+    checks: list[PreflightCheck] = field(default_factory=list)
+    memo_length: int = 0
+    memo_sections: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class DemoPreflightReport:
+    """Aggregate offline demo preflight report."""
+
+    created_at: str
+    repo_root: str
+    cache_samples_dir: str
+    scenario_count: int
+    scenarios: list[PreflightScenarioReport]
+
+    @property
+    def passed(self) -> bool:
+        return all(check.passed for scenario in self.scenarios for check in scenario.checks)
+
+
+def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
+    """Run the deterministic offline demo smoke against committed fixtures."""
+
+    scenario_reports: list[PreflightScenarioReport] = []
+    for scenario_dir in _discover_scenario_dirs(context.settings.cache_samples_dir):
+        case_key = scenario_dir.name
+        intake_path = context.repo_root / "eval" / "intakes" / f"{case_key}.json"
+        checks: list[PreflightCheck] = []
+        memo_length = 0
+        memo_sections: list[str] = []
+
+        try:
+            intake, intake_evidence = _load_intake(case_key, intake_path)
+            checks.append(PreflightCheck("intake payload loads", True, intake_evidence))
+
+            weather = build_weather_brief(
+                intake,
+                None,
+                cache_samples_dir=str(context.settings.cache_samples_dir),
+            )
+            checks.extend(_module_checks("weather", weather))
+
+            carrier = build_carrier_doc_pack(
+                intake,
+                None,
+                cache_samples_dir=str(context.settings.cache_samples_dir),
+            )
+            checks.extend(_module_checks("carrier", carrier))
+
+            caselaw = build_caselaw_pack(
+                intake,
+                None,
+                cache_samples_dir=str(context.settings.cache_samples_dir),
+            )
+            checks.extend(_module_checks("caselaw", caselaw))
+
+            citecheck = _load_json(scenario_dir / "citation_verify.json")
+            checks.extend(_citation_checks(citecheck))
+
+            memo = render_markdown_memo(
+                intake,
+                weather,
+                carrier,
+                caselaw,
+                citecheck,
+                generate_query_plan(intake),
+            )
+            memo_length = len(memo)
+            memo_sections = [section for section in _EXPECTED_MEMO_SECTIONS if section in memo]
+            checks.extend(_memo_checks(memo, memo_sections))
+        except Exception as exc:
+            checks.append(
+                PreflightCheck(
+                    name="offline smoke execution",
+                    passed=False,
+                    evidence=f"{type(exc).__name__}: {exc}",
+                )
+            )
+
+        scenario_reports.append(
+            PreflightScenarioReport(
+                case_key=case_key,
+                intake_path=str(intake_path),
+                checks=checks,
+                memo_length=memo_length,
+                memo_sections=memo_sections,
+            )
+        )
+
+    return DemoPreflightReport(
+        created_at=datetime.now(UTC).isoformat(),
+        repo_root=str(context.repo_root),
+        cache_samples_dir=str(context.settings.cache_samples_dir),
+        scenario_count=len(scenario_reports),
+        scenarios=scenario_reports,
+    )
+
+
+def render_demo_preflight_report(report: DemoPreflightReport) -> str:
+    """Render the offline demo smoke report as Markdown-like text."""
+
+    lines = [
+        "# Demo Preflight",
+        "",
+        f"- Created at: {report.created_at}",
+        f"- Repo root: {report.repo_root}",
+        f"- Cache samples dir: {report.cache_samples_dir}",
+        f"- Scenario count: {report.scenario_count}",
+        f"- Passed: {'Yes' if report.passed else 'No'}",
+        "",
+    ]
+
+    for scenario in report.scenarios:
+        lines.append(f"## {scenario.case_key}")
+        lines.append(f"- Intake: {scenario.intake_path}")
+        lines.append(f"- Memo length: {scenario.memo_length}")
+        if scenario.memo_sections:
+            lines.append(f"- Memo sections: {', '.join(scenario.memo_sections)}")
+        for check in scenario.checks:
+            marker = "x" if check.passed else " "
+            lines.append(f"- [{marker}] {check.name} - {check.evidence}")
+        lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def report_to_payload(report: DemoPreflightReport) -> dict[str, Any]:
+    """Return a JSON-serializable preflight payload."""
+
+    return {
+        "created_at": report.created_at,
+        "repo_root": report.repo_root,
+        "cache_samples_dir": report.cache_samples_dir,
+        "scenario_count": report.scenario_count,
+        "passed": report.passed,
+        "scenarios": [
+            {
+                "case_key": scenario.case_key,
+                "intake_path": scenario.intake_path,
+                "memo_length": scenario.memo_length,
+                "memo_sections": scenario.memo_sections,
+                "checks": [asdict(check) for check in scenario.checks],
+            }
+            for scenario in report.scenarios
+        ],
+    }
+
+
+def _discover_scenario_dirs(cache_samples_dir: Path) -> list[Path]:
+    if not cache_samples_dir.exists():
+        return []
+
+    scenario_dirs = []
+    for candidate in sorted(path for path in cache_samples_dir.iterdir() if path.is_dir()):
+        if all((candidate / filename).exists() for filename in _REQUIRED_FIXTURE_FILES):
+            scenario_dirs.append(candidate)
+    return scenario_dirs
+
+
+def _load_intake(case_key: str, intake_path: Path) -> tuple[CaseIntake, str]:
+    if intake_path.exists():
+        return load_case_intake(intake_path), str(intake_path)
+
+    fallback = _FALLBACK_INTAKES.get(case_key)
+    if fallback is None:
+        raise FileNotFoundError(f"Intake file not found: {intake_path}")
+
+    return CaseIntake.model_validate(fallback), f"fallback:{case_key}"
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def _module_checks(module: str, payload: dict[str, Any]) -> list[PreflightCheck]:
+    checks = [
+        PreflightCheck(
+            name=f"{module} module loaded from cache",
+            passed=payload.get("module") == module,
+            evidence=f"module={payload.get('module', '')}",
+        ),
+    ]
+    if module == "weather":
+        checks.append(
+            PreflightCheck(
+                name="weather sources present",
+                passed=bool(payload.get("sources")),
+                evidence=f"sources={len(payload.get('sources', []))}",
+            )
+        )
+    elif module == "carrier":
+        checks.append(
+            PreflightCheck(
+                name="carrier documents present",
+                passed=bool(payload.get("document_pack")),
+                evidence=f"documents={len(payload.get('document_pack', []))}",
+            )
+        )
+    elif module == "caselaw":
+        checks.append(
+            PreflightCheck(
+                name="caselaw issues present",
+                passed=bool(payload.get("issues")),
+                evidence=f"issues={len(payload.get('issues', []))}",
+            )
+        )
+    return checks
+
+
+def _citation_checks(payload: dict[str, Any]) -> list[PreflightCheck]:
+    summary = payload.get("summary", {})
+    total = int(summary.get("total", 0))
+    return [
+        PreflightCheck(
+            name="citation verify module loaded from cache",
+            passed=payload.get("module") == "citation_verify",
+            evidence=f"module={payload.get('module', '')}",
+        ),
+        PreflightCheck(
+            name="citation checks present",
+            passed=total > 0,
+            evidence=f"checks={total}",
+        ),
+        PreflightCheck(
+            name="citation summary is internally consistent",
+            passed=total == int(summary.get("verified", 0)) + int(summary.get("uncertain", 0)) + int(summary.get("not_found", 0)),
+            evidence=(
+                f"total={total}, verified={summary.get('verified', 0)}, "
+                f"uncertain={summary.get('uncertain', 0)}, not_found={summary.get('not_found', 0)}"
+            ),
+        ),
+    ]
+
+
+def _memo_checks(memo: str, memo_sections: list[str]) -> list[PreflightCheck]:
+    checks = [
+        PreflightCheck(
+            name="memo includes disclaimer language",
+            passed=all(marker in memo for marker in _REQUIRED_DISCLAIMERS),
+            evidence="; ".join(_REQUIRED_DISCLAIMERS),
+        ),
+        PreflightCheck(
+            name="memo includes expected major sections",
+            passed=len(memo_sections) == len(_EXPECTED_MEMO_SECTIONS),
+            evidence=f"{len(memo_sections)}/{len(_EXPECTED_MEMO_SECTIONS)} sections present",
+        ),
+    ]
+    return checks

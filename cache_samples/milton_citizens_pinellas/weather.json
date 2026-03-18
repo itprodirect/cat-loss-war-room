@@ -1,111 +1,51 @@
 {
-  "module": "weather",
-  "event_summary": "Hurricane Milton \u2014 Pinellas County, FL (2024-10-09)",
-  "key_observations": [
-    "NATIONAL HURRICANE CENTER\nTROPICAL CYCLONE REPORT\nHURRICANE MILTON\n(AL142024)\n5\u201310 October 2024\nJohn L. Beven II, Laura Alaka, and Cody Fritz\nNational Hurricane Center\n31 March 2025\nGOES-16 DAY CONVECTION IMAGE OF HURRICANE MILTON AT 1730 UTC 7 OCTOBER 2024.\nIMAGE COURTESY OF NOAA/NESDIS STAR.\nMilto",
-    "Storm Events Database - Event Details | National Centers for Environmental Information\n[National Centers for Environmental Information] \n[] \n* [Home] \n* [Contact Us] \n* [About NCEI] \n* [Help] \n[NCEI] &gt; [Storm Events Database (Select State)] \n#### Storm Events Database\n* Data Access\n* [Search] \n* ",
-    "POST TROPICAL CYCLONE REPORT\nStorm Name Hurricane Milton\nNWS Office Tampa Bay Area/Ruskin\nBegin/End Date 10/08/2024-10/10/2024\nFatalities 3 - Direct\n7 - Indirect\nTornadoes 12\nEvent Summary\nHurricane Milton made landfall along the west-central Florida peninsula coast as a category 3\nhurricane and bro",
-    "Storm Events Database - Event Details | National Centers for Environmental Information\n[National Centers for Environmental Information] \n[] \n* [Home] \n* [Contact Us] \n* [About NCEI] \n* [Help] \n[NCEI] &gt; [Storm Events Database (Select State)] \n#### Storm Events Database\n* Data Access\n* [Search] \n* ",
-    "Department of Commerce // National Oceanic and Atmospheric Administration // 1\nNational \nWeather \nService \nLessons from the 2024 Hurricane \nSeason and 2025 NHC Product \nand Service Updates\nRobbie Berg\nWarning Coordination Meteorologist\nNational Hurricane Center\nNOAA Southeast and Caribbean Regional ",
-    "[![Skip Navigation Links]] \n[Home] \n[Mobile Site] \n[Text Version] \n[RSS] \n[Local Forecast] \n[![National Oceanic and Atmospheric Administration logo]] [![National Weather Service logo]] [![United States Department of Commerce]] \n[NATIONAL HURRICANE CENTER and\nCENTRAL PACIFIC HURRICANE CENTER] \nNation",
-    "[Home] \n\n[Mobile Site] \n\n[Text Version] \n\n[RSS] \n\n[Local Forecast] \n\n## Hurricane MILTON\n\n```\nZCZC MIATCPAT4 ALL\nTTAA00 KNHC DDHHMM\n\nBULLETIN\nHurricane Milton Advisory Number  19\nNWS National Hurricane Center Miami FL       AL142024\n500 PM EDT Wed Oct 09 2024\n\n...MILTON APPROACHING THE COAST OF WEST",
-    "Hurricane Costs\nMenu\n[ ![NOAA Logo] \n## Office for\nCoastal Management\n] \n[Fast Facts] / Hurricane Costs\n# Hurricane Costs\nOf all recorded weather disasters in U.S. history, tropical cyclones\u2014known as hurricanes when occurring in the North Atlantic, central North Pacific, and Eastern North Pacific Oc"
-  ],
-  "metrics": {
-    "max_wind_mph": 180,
-    "storm_surge_ft": 10.0,
-    "rain_in": null
-  },
-  "sources": [
-    {
-      "title": "[PDF] Hurricane Milton",
-      "url": "https://www.nhc.noaa.gov/data/tcr/AL142024_Milton.pdf",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
+    "module": "weather",
+    "event_summary": "Hurricane Milton \u2014 Pinellas County, FL (2024-10-09)",
+    "key_observations": [
+        "Pinellas County was within the Tampa Bay Area/Ruskin post-tropical summary footprint for Hurricane Milton, supporting county-level storm corroboration.",
+        "Official weather reporting for the event includes Tampa Bay area documentation and FEMA disaster designation tied to Hurricane Milton in Florida."
+    ],
+    "metrics": {
+        "max_wind_mph": 180,
+        "storm_surge_ft": 10.0,
+        "rain_in": null
     },
-    {
-      "title": "Storm Events Database - Event Details | National Centers for ...",
-      "url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=1221581",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "[PDF] POST TROPICAL CYCLONE REPORT",
-      "url": "https://www.weather.gov/media/tbw/TropicalEventSummary/PSHTBW_2024AL14_Milton_Summary.pdf",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "Storm Events Database",
-      "url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=1221569",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "[PDF] Lessons from the 2024 Hurricane Season and 2025 NHC Product ...",
-      "url": "https://www.nhc.noaa.gov/outreach/presentations/2025_SECART.pdf",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "Hurricane MILTON",
-      "url": "https://www.nhc.noaa.gov/archive/2024/al14/al142024.wndprb.021.shtml",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "Hurricane MILTON",
-      "url": "https://www.nhc.noaa.gov/archive/2024/al14/al142024.public.019.shtml",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "Hurricane Costs",
-      "url": "https://coast.noaa.gov/states/fast-facts/hurricane-costs.html",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "Storm Surge - Historic Events - MDL - Virtual Lab - NOAA VLab",
-      "url": "https://vlab.noaa.gov/web/mdl/storm-surge-events",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "[PDF] Storm Data - National Centers for Environmental Information",
-      "url": "https://www.ncei.noaa.gov/pub/data/swdi/stormevents/pub-pdf/storm_1971_08.pdf",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "Florida Hurricane Milton (DR-4834-FL) - FEMA.gov",
-      "url": "https://www.fema.gov/disaster/4834",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "Seminole Tribe of Florida Hurricane Milton (DR-4844) - FEMA.gov",
-      "url": "https://www.fema.gov/disaster/4844",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "News and Media: Disaster 4834 - FEMA",
-      "url": "https://www.fema.gov/disaster/4834/news-media",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "DR-4834 Public Notice 001 - FEMA.gov",
-      "url": "https://www.fema.gov/disaster-federal-register-notice/dr-4834-public-notice-001",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    },
-    {
-      "title": "Hurricane Milton",
-      "url": "https://floir.gov/home/hurricane-milton",
-      "badge": "\ud83d\udfe2",
-      "reason": "Official source"
-    }
-  ]
+    "sources": [
+        {
+            "title": "[PDF] Hurricane Milton",
+            "url": "https://www.nhc.noaa.gov/data/tcr/AL142024_Milton.pdf",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "Storm Events Database - Event Details | National Centers for ...",
+            "url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=1221581",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "[PDF] POST TROPICAL CYCLONE REPORT",
+            "url": "https://www.weather.gov/media/tbw/TropicalEventSummary/PSHTBW_2024AL14_Milton_Summary.pdf",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "Storm Events Database",
+            "url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=1221569",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "[PDF] Storm Data - National Centers for Environmental Information",
+            "url": "https://www.ncei.noaa.gov/pub/data/swdi/stormevents/pub-pdf/storm_1971_08.pdf",
+            "badge": "official",
+            "reason": "Official source"
+        },
+        {
+            "title": "Florida Hurricane Milton (DR-4834-FL) - FEMA.gov",
+            "url": "https://www.fema.gov/disaster/4834",
+            "badge": "official",
+            "reason": "Official source"
+        }
+    ]
 }

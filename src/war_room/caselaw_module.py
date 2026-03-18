@@ -12,9 +12,15 @@ from typing import Any
 from urllib.parse import urlparse
 
 from war_room.cache_io import cache_get, cached_call
-from war_room.exa_client import ExaClient
-from war_room.models import caselaw_pack_to_payload
-from war_room.query_plan import CaseIntake, generate_query_plan
+from war_room.retrieval import (
+    RetrievalProvider,
+    RetrievalSearchRequest,
+    execute_retrieval_task,
+    notebook_run_id_from_intake,
+    query_spec_to_retrieval_task,
+)
+from war_room.models import CaseIntake, caselaw_pack_to_payload
+from war_room.query_plan import generate_query_plan
 from war_room.source_scoring import PAYWALLED_DOMAINS, score_url
 
 CASELAW_EXCLUDE_DOMAINS = list(PAYWALLED_DOMAINS)
@@ -29,6 +35,20 @@ LEGAL_CASE_HOST_SUFFIXES = {
     "justia.com",
     "leagle.com",
 }
+
+_COMMENTARY_TITLE_TERMS = (
+    "blog",
+    "faq",
+    "guide",
+    "how to",
+    "in the wake of",
+    "jd supra",
+    "lessons",
+    "must know",
+    "overview",
+    "state of",
+    "what homeowners must know",
+)
 
 
 def _is_legal_case_host(url: str) -> bool:
@@ -49,29 +69,40 @@ def _is_legal_case_host(url: str) -> bool:
     return False
 
 
+def _looks_like_commentary_title(name: str) -> bool:
+    normalized = name.lower()
+    if " | " in name or " - " in name:
+        return True
+    return any(term in normalized for term in _COMMENTARY_TITLE_TERMS)
+
+
 def _is_case_like(result: dict) -> bool:
     """Conservative guard: keep only results that look like actual cases.
 
     Rules:
-    - Case-name pattern is sufficient (e.g., "Smith v. Jones").
+    - Case-name pattern is sufficient only on trusted legal/court hosts or when the
+      title does not look like commentary.
     - Citation-only results must also come from a known legal/court host.
     """
     name = result.get("name", "") or result.get("title", "") or ""
+    url = (result.get("url") or "").strip()
+    legal_host = bool(url) and _is_legal_case_host(url)
+
     if _CASE_NAME_RE.search(name):
-        return True
+        if legal_host:
+            return True
+        return not _looks_like_commentary_title(name)
 
     citation = (result.get("citation") or "").strip()
-    if citation:
-        url = (result.get("url") or "").strip()
-        if url and _is_legal_case_host(url):
-            return True
+    if citation and legal_host and not _looks_like_commentary_title(name):
+        return True
 
     return False
 
 
 def build_caselaw_pack(
     intake: CaseIntake,
-    client: ExaClient | None,
+    client: RetrievalProvider | None,
     *,
     use_cache: bool = True,
     cache_dir: str = "cache",
@@ -95,19 +126,43 @@ def build_caselaw_pack(
     def _fetch() -> dict[str, Any]:
         queries = [q for q in generate_query_plan(intake) if q.module == "caselaw"]
         all_results: list[dict] = []
+        retrieval_tasks = []
+        run_events = []
+        warnings: list[str] = []
+        run_id = notebook_run_id_from_intake(intake)
+        stage_id = f"{run_id}:caselaw"
 
-        for query in queries:
-            hits = client.search(
-                query.query,
-                k=5,
-                include_domains=query.preferred_domains or None,
-                exclude_domains=CASELAW_EXCLUDE_DOMAINS,
+        for index, query in enumerate(queries, 1):
+            task = query_spec_to_retrieval_task(
+                query,
+                run_id=run_id,
+                stage_id=stage_id,
+                provider=client.provider_name,
+                retrieval_task_id=f"{stage_id}:{query.category}:{index}",
             )
-            for hit in hits:
+            execution = execute_retrieval_task(
+                client,
+                RetrievalSearchRequest(
+                    task=task,
+                    k=5,
+                    include_domains=query.preferred_domains,
+                    exclude_domains=CASELAW_EXCLUDE_DOMAINS,
+                ),
+            )
+            retrieval_tasks.append(execution.task)
+            run_events.extend(execution.run_events)
+            if execution.warning:
+                warnings.append(execution.warning)
+            for hit in execution.hits:
                 hit["category"] = query.category
-            all_results.extend(hits)
+            all_results.extend(execution.hits)
 
-        return _assemble_pack(intake, all_results)
+        payload = _assemble_pack(intake, all_results)
+        if warnings:
+            payload["warnings"] = list(dict.fromkeys((payload.get("warnings") or []) + warnings))
+        payload["retrieval_tasks"] = retrieval_tasks
+        payload["run_events"] = run_events
+        return caselaw_pack_to_payload(payload)
 
     return cached_call(
         case_key,
@@ -141,12 +196,14 @@ def _assemble_pack(
             seen.add(result["url"])
             unique.append(result)
 
-    # Score and filter out paywalled
+    # Score and filter out paywalled.
     scored = []
     for result in unique:
         score = score_url(result["url"])
         if score["tier"] != "paywalled":
             scored.append({**result, "_score": score})
+
+    scored.sort(key=_case_result_priority)
 
     # Map categories to legal issues
     issue_map = {
@@ -161,14 +218,23 @@ def _assemble_pack(
 
     # Group by issue
     issues_dict: dict[str, list[dict]] = {}
+    supporting_sources: list[dict[str, Any]] = []
+    seen_supporting_urls: set[str] = set()
     for result in scored:
         category = result.get("category", "general")
         issue_label = issue_map.get(category, category.replace("_", " ").title())
-        issues_dict.setdefault(issue_label, []).append(result)
+        case_info = _extract_case_info(result)
+        if _is_case_like(case_info):
+            issues_dict.setdefault(issue_label, []).append(result)
+            continue
+        if result["url"] not in seen_supporting_urls:
+            seen_supporting_urls.add(result["url"])
+            supporting_sources.append(result)
 
     # Build issues list, limit to 6-12 cases total
     issues = []
     total_cases = 0
+    used_case_urls: set[str] = set()
     for issue_label, issue_results in issues_dict.items():
         if total_cases >= 12:
             break
@@ -180,6 +246,7 @@ def _assemble_pack(
             if not _is_case_like(case_info):
                 continue
             cases.append(case_info)
+            used_case_urls.add(case_info["url"])
             total_cases += 1
 
         if cases:
@@ -191,7 +258,13 @@ def _assemble_pack(
 
     # Sources
     sources = []
-    for result in scored[:15]:
+    source_candidates = [result for result in scored if result["url"] in used_case_urls]
+    source_candidates.extend(supporting_sources)
+    seen_source_urls: set[str] = set()
+    for result in source_candidates:
+        if result["url"] in seen_source_urls:
+            continue
+        seen_source_urls.add(result["url"])
         score = result["_score"]
         sources.append({
             "title": result.get("title", ""),
@@ -199,12 +272,33 @@ def _assemble_pack(
             "badge": score["badge"],
             "reason": score["label"],
         })
+        if len(sources) >= 15:
+            break
 
     return caselaw_pack_to_payload({
         "module": "caselaw",
         "issues": issues,
         "sources": sources,
     })
+
+
+def _case_result_priority(result: dict[str, Any]) -> tuple[int, int, int, str]:
+    """Prefer legal-host cases with explicit citations over commentary."""
+    tier_rank = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
+    case_info = _extract_case_info(result)
+    title = (case_info.get("name", "") or "").lower()
+
+    legal_host_bonus = 0 if _is_legal_case_host(result["url"]) else 1
+    citation_bonus = 0 if case_info.get("citation") else 1
+    commentary_penalty = 1 if _looks_like_commentary_title(case_info.get("name", "")) else 0
+
+    return (
+        tier_rank.get(result["_score"]["tier"], 9),
+        legal_host_bonus,
+        commentary_penalty,
+        citation_bonus,
+        title,
+    )
 
 
 def _extract_case_info(result: dict) -> dict[str, Any]:
@@ -244,7 +338,7 @@ def _extract_case_info(result: dict) -> dict[str, Any]:
 
     # Year
     year = ""
-    year_match = re.search(r"\b(19|20)\d{2}\b", text[:500])
+    year_match = re.search(r"\b(?:19|20)\d{2}\b", text[:500])
     if year_match:
         year = year_match.group(0)
 

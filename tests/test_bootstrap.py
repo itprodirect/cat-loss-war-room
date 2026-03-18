@@ -1,8 +1,11 @@
 """Tests for repo bootstrap helpers."""
 
+import subprocess
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
-from war_room.bootstrap import bootstrap_runtime, discover_repo_root
+from war_room.bootstrap import bootstrap_runtime, discover_repo_root, main as bootstrap_main
 from war_room.settings import RuntimeEnvironment
 
 
@@ -35,3 +38,36 @@ def test_bootstrap_runtime_creates_runtime_directories(tmp_path: Path):
     assert context.settings.cache_samples_dir.exists()
     assert context.settings.output_dir.exists()
     assert context.settings.runs_dir.exists()
+
+
+def test_bootstrap_verify_runs_supported_test_command(monkeypatch, capsys):
+    commands: list[list[str]] = []
+
+    def _fake_run(command: list[str], cwd: Path, check: bool) -> SimpleNamespace:
+        commands.append(command)
+        assert cwd == Path(__file__).resolve().parent.parent
+        assert check is False
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.chdir(Path(__file__).resolve().parent.parent)
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+
+    exit_code = bootstrap_main(["--verify"])
+
+    assert exit_code == 0
+    assert commands == [[sys.executable, "-m", "pytest", "-q"]]
+    output = capsys.readouterr().out
+    assert "CAT-Loss War Room Verification" in output
+    assert "Verification passed." in output
+
+
+def test_bootstrap_verify_returns_nonzero_when_tests_fail(monkeypatch):
+    def _fake_run(command: list[str], cwd: Path, check: bool) -> SimpleNamespace:
+        return SimpleNamespace(returncode=3)
+
+    monkeypatch.chdir(Path(__file__).resolve().parent.parent)
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+
+    exit_code = bootstrap_main(["--verify"])
+
+    assert exit_code == 3

@@ -1,4 +1,4 @@
-"""Tests for strict case intake ingestion and schema validation."""
+﻿"""Tests for strict case intake ingestion and schema validation."""
 
 import json
 from pathlib import Path
@@ -126,3 +126,16 @@ def test_load_case_intake_rejects_invalid_json(tmp_path: Path):
 
     with pytest.raises(IntakeValidationError, match="Invalid JSON in intake file"):
         load_case_intake(intake_path)
+
+def test_committed_eval_intakes_validate_against_canonical_schema():
+    intakes_dir = Path(__file__).resolve().parent.parent / "eval" / "intakes"
+    intake_paths = sorted(path for path in intakes_dir.glob("*.json"))
+
+    assert len(intake_paths) >= 3
+    assert any(path.name == "tx_hail_allstate_tarrant_dp3.json" for path in intake_paths)
+
+    for intake_path in intake_paths:
+        intake = load_case_intake(intake_path)
+        assert intake.event_name
+        assert intake.state
+        assert intake.carrier

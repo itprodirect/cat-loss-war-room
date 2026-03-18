@@ -9,21 +9,23 @@ Simple execution checklist aligned with the live GitHub roadmap.
 - [x] CI fresh-env gate live
 - [x] exa-py compatibility matrix live
 - [x] Adapter kwargs smoke-contract tests added
+- [x] Deterministic offline demo preflight command available (`python -m war_room --preflight`)
+- [x] Supported local verification wrapper available (`python -m war_room --verify`)
 
-## V2 Foundation (in progress)
+## V2 Written Specs
 
-- [ ] [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) product foundation and repo shape
-- [ ] [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) workflow IA and design system
-- [ ] [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) canonical evidence graph and audit schema
-- [ ] [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric and release scorecard
+- [x] [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) product foundation and repo shape
+- [x] [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) workflow IA and design system source of truth
+- [x] [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) canonical evidence graph and audit schema source of truth
+- [ ] [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric and release scorecard (v0.1 rubric doc, local artifact generator, fixture-calibrated scenario coverage, explicit demo-ready thresholds, and CI artifact emission plus validation landed; pilot operationalization still needed)
 
-## In Progress / Next
+## Immediate Execution Priorities
 
 - [x] [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) intake schema alignment
-- [ ] [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) typed domain models (slices 1-3 complete: intake/query + module packs + citation/export contracts)
-- [ ] [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) retrieval contracts
-- [ ] [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) scenario fixtures + snapshots
-- [ ] [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) expanded CI gates
+- [ ] [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) typed domain models (slices 1-7 complete: intake/query + module packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts)
+- [ ] [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) retrieval contracts (provider seam + notebook retrieval-state + citation-verify + deterministic retrieval-task timing slices landed)
+- [ ] [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) scenario fixtures + snapshots (four committed scenario directories now cover Florida, Texas, and Louisiana; broader breadth and snapshot thresholds still needed)
+- [ ] [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) expanded CI gates (offline fixture smoke gate and release-scorecard artifact emission plus validation landed; broader CI layering still needed)
 
 ## Product Core (queued)
 

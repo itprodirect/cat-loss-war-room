@@ -1,0 +1,62 @@
+{
+  "module": "carrier",
+  "carrier_snapshot": {
+    "name": "Certain Underwriters at Lloyd's, London",
+    "state": "LA",
+    "event": "Hurricane Ida",
+    "policy_type": "HO-3 Dwelling"
+  },
+  "document_pack": [
+    {
+      "doc_type": "Claims Handling Guideline",
+      "title": "Lloyd's catastrophe claims guidance for U.S. property losses",
+      "url": "https://www.lloyds.com/resources-and-services/claims/us-property-cat-guidance.pdf",
+      "badge": "unvetted",
+      "why_it_matters": "Provides catastrophe-adjusting context relevant to timing, documentation, and delegated-claims handling."
+    },
+    {
+      "doc_type": "DOI/Regulatory Complaint",
+      "title": "Louisiana Department of Insurance Hurricane Ida claims data call",
+      "url": "https://ldi.la.gov/docs/default-source/documents/publicaffairs/ida-claims-data-call.pdf",
+      "badge": "official",
+      "why_it_matters": "Shows regulator focus on carrier responsiveness and claim-volume handling after Ida."
+    },
+    {
+      "doc_type": "Denial Pattern Analysis",
+      "title": "Louisiana policyholder suit over Lloyd's Hurricane Ida adjustment",
+      "url": "https://www.insurancejournal.com/news/southcentral/2023/11/15/788888.htm",
+      "badge": "unvetted",
+      "why_it_matters": "Surfaces recurring dispute themes around flood attribution, delay, and under-scoping after Ida."
+    }
+  ],
+  "common_defenses": [
+    "Flood exclusion - wind vs. water causation dispute",
+    "Late notice / failure to mitigate defense"
+  ],
+  "rebuttal_angles": [
+    "Key fact undermines carrier position: Hurricane-force winds were documented in Orleans Parish during Ida landfall.",
+    "Key fact undermines carrier position: Interior water intrusion was reported immediately after roof and window-envelope damage.",
+    "Counter flood-causation defense: contemporaneous wind reporting supports a covered wind-driven opening before later water intrusion.",
+    "Potential bad-faith signal: investigate Lloyd's adjusting timeline, engineer retention, and scope revisions after the initial inspection."
+  ],
+  "sources": [
+    {
+      "title": "Lloyd's catastrophe claims guidance for U.S. property losses",
+      "url": "https://www.lloyds.com/resources-and-services/claims/us-property-cat-guidance.pdf",
+      "badge": "unvetted",
+      "reason": "Unvetted source"
+    },
+    {
+      "title": "Louisiana Department of Insurance Hurricane Ida claims data call",
+      "url": "https://ldi.la.gov/docs/default-source/documents/publicaffairs/ida-claims-data-call.pdf",
+      "badge": "official",
+      "reason": "Official source"
+    },
+    {
+      "title": "Louisiana policyholder suit over Lloyd's Hurricane Ida adjustment",
+      "url": "https://www.insurancejournal.com/news/southcentral/2023/11/15/788888.htm",
+      "badge": "unvetted",
+      "reason": "Unvetted source"
+    }
+  ]
+}

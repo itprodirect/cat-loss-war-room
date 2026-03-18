@@ -1,7 +1,7 @@
 """Tests for query_plan module."""
 
-
-from war_room.query_plan import CaseIntake, QuerySpec, generate_query_plan, format_query_plan
+from war_room.models import CaseIntake, QuerySpec
+from war_room.query_plan import generate_query_plan, format_query_plan
 
 
 def _sample_intake() -> CaseIntake:
@@ -56,8 +56,17 @@ def test_format_query_plan_output():
     assert "CASE LAW" in output
 
 
+def test_format_query_plan_accepts_dict_payloads():
+    output = format_query_plan(
+        [QuerySpec(module="weather", query="storm report", category="damage_report").model_dump()]
+    )
+
+    assert "QUERY PLAN - 1 queries" in output
+    assert "storm report" in output
+
+
 def test_bad_faith_posture_adds_query():
-    intake_with = _sample_intake()  # has bad_faith
+    intake_with = _sample_intake()
     intake_without = CaseIntake(
         event_name="Hurricane Milton",
         event_date="2024-10-09",
@@ -70,3 +79,39 @@ def test_bad_faith_posture_adds_query():
     queries_with = generate_query_plan(intake_with)
     queries_without = generate_query_plan(intake_without)
     assert len(queries_with) > len(queries_without)
+
+
+def test_coverage_issue_queries_are_deduped_and_specific():
+    intake = CaseIntake(
+        event_name="Hurricane Milton",
+        event_date="2024-10-09",
+        state="FL",
+        county="Pinellas",
+        carrier="Citizens Property Insurance",
+        policy_type="HO-3 Dwelling",
+        posture=["denial"],
+        coverage_issues=["wind vs water causation", "wind   vs water causation"],
+    )
+
+    queries = generate_query_plan(intake)
+    coverage_queries = [q for q in queries if q.category == "coverage_issue"]
+
+    assert len(coverage_queries) == 1
+    assert '"wind vs water causation"' in coverage_queries[0].query
+    assert "Hurricane Milton" in coverage_queries[0].query
+
+
+def test_legal_queries_prefer_legal_hosts():
+    queries = generate_query_plan(_sample_intake())
+    law_queries = [q for q in queries if q.module == "caselaw"]
+
+    assert any("courtlistener.com" in q.preferred_domains for q in law_queries)
+    assert any("law.cornell.edu" in q.preferred_domains for q in law_queries)
+
+
+def test_carrier_queries_include_higher_value_domain_hints():
+    queries = generate_query_plan(_sample_intake())
+    regulatory_queries = [q for q in queries if q.category in {"regulatory_action", "claims_manual"}]
+
+    assert any("floir.com" in q.preferred_domains for q in regulatory_queries)
+    assert any("citizensfla.com" in q.preferred_domains for q in regulatory_queries)

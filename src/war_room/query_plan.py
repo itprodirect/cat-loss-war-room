@@ -12,7 +12,7 @@ import re
 from pathlib import Path
 from typing import Any, Mapping
 
-from war_room.models import CaseIntake, QuerySpec
+from war_room.models import CaseIntake, QuerySpec, adapt_query_plan
 
 CASE_INTAKE_REQUIRED_FIELDS = (
     "event_name",
@@ -217,6 +217,7 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
         query=f"{intake.event_name} damage assessment {intake.county} County insured losses",
         category="loss_estimate",
         date_start=intake.event_date,
+        preferred_domains=["fema.gov", "noaa.gov", "weather.gov"],
     ))
 
     queries.append(QuerySpec(
@@ -236,70 +237,100 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
         query=f"{intake.carrier} {intake.event_name} regulatory action {intake.state}",
         category="regulatory_action",
         date_start=intake.event_date,
+        preferred_domains=["floir.com", "naic.org", "insurance.ca.gov"],
     ))
     queries.append(QuerySpec(
         module="carrier_docs",
         query=f"{intake.carrier} claims handling guidelines {intake.policy_type}",
         category="claims_manual",
+        preferred_domains=["floir.com", "citizensfla.com", "naic.org"],
     ))
     queries.append(QuerySpec(
         module="carrier_docs",
         query=f"{intake.carrier} bad faith insurance {intake.state} settlement practices",
         category="bad_faith_history",
+        preferred_domains=["floir.com", "naic.org", "insurancejournal.com"],
     ))
 
-    _posture_str = " ".join(intake.posture)
+    posture_terms = " ".join(intake.posture)
     queries.append(QuerySpec(
         module="caselaw",
-        query=f"{intake.carrier} {intake.policy_type} {_posture_str} {intake.state}",
+        query=f"{intake.carrier} {intake.policy_type} {posture_terms} {intake.state}",
         category="carrier_precedent",
-        preferred_domains=["scholar.google.com", "law.cornell.edu", "casetext.com"],
+        preferred_domains=["scholar.google.com", "law.cornell.edu", "casetext.com", "courtlistener.com"],
     ))
     queries.append(QuerySpec(
         module="caselaw",
-        query=f"hurricane wind damage insurance coverage {_posture_str} {intake.state}",
+        query=(
+            f"{intake.event_name} wind damage insurance coverage {intake.policy_type} "
+            f"{intake.state}"
+        ),
         category="coverage_law",
-        preferred_domains=["scholar.google.com", "casetext.com"],
+        preferred_domains=["scholar.google.com", "casetext.com", "courtlistener.com"],
     ))
     queries.append(QuerySpec(
         module="caselaw",
-        query=f"concurrent causation wind water damage insurance {intake.state}",
+        query=(
+            f"concurrent causation wind water damage insurance {intake.state} "
+            f"{intake.event_name}"
+        ),
         category="concurrent_causation",
+        preferred_domains=["scholar.google.com", "law.cornell.edu", "courtlistener.com"],
     ))
     queries.append(QuerySpec(
         module="caselaw",
-        query=f"insurance bad faith {intake.state} {intake.carrier} penalty damages",
+        query=(
+            f"insurance bad faith {intake.state} {intake.carrier} failure to investigate "
+            f"penalty damages"
+        ),
         category="bad_faith_precedent",
+        preferred_domains=["scholar.google.com", "casetext.com", "courtlistener.com"],
     ))
 
+    seen_issue_queries: set[str] = set()
     for issue in intake.coverage_issues:
+        normalized_issue = " ".join(issue.lower().split())
+        if normalized_issue in seen_issue_queries:
+            continue
+        seen_issue_queries.add(normalized_issue)
         queries.append(QuerySpec(
             module="caselaw",
-            query=f"{issue} insurance coverage {intake.state} {intake.policy_type}",
+            query=(
+                f'"{issue}" insurance coverage {intake.state} {intake.policy_type} '
+                f'{intake.event_name}'
+            ),
             category="coverage_issue",
+            preferred_domains=["scholar.google.com", "law.cornell.edu", "casetext.com", "courtlistener.com"],
         ))
 
     if "bad_faith" in intake.posture:
         queries.append(QuerySpec(
             module="caselaw",
-            query=f"bad faith failure to investigate insurance claim {intake.state}",
+            query=(
+                f"bad faith failure to investigate insurance claim {intake.state} "
+                f"{intake.carrier} {intake.event_name}"
+            ),
             category="bad_faith_law",
+            preferred_domains=["scholar.google.com", "casetext.com", "courtlistener.com"],
         ))
     if "underpayment" in intake.posture:
         queries.append(QuerySpec(
             module="caselaw",
             query=f"insurance underpayment {intake.event_name} appraisal {intake.state}",
             category="underpayment_law",
+            preferred_domains=["scholar.google.com", "casetext.com", "courtlistener.com"],
         ))
 
     return queries
 
 
-def format_query_plan(queries: list[QuerySpec]) -> str:
+def format_query_plan(queries: list[Mapping[str, Any] | QuerySpec]) -> str:
     """Format the query plan grouped by module for display."""
+    typed_queries = adapt_query_plan(queries)
+
     lines = [
         "=" * 60,
-        f"QUERY PLAN — {len(queries)} queries",
+        f"QUERY PLAN - {len(typed_queries)} queries",
         "=" * 60,
     ]
 
@@ -311,7 +342,7 @@ def format_query_plan(queries: list[QuerySpec]) -> str:
     }
 
     for mod in modules:
-        mod_queries = [q for q in queries if q.module == mod]
+        mod_queries = [q for q in typed_queries if q.module == mod]
         if mod_queries:
             lines.append(f"\n  [{module_labels.get(mod, mod)}] ({len(mod_queries)} queries)")
             lines.append("  " + "-" * 40)

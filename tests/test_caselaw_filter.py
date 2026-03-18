@@ -1,6 +1,4 @@
-﻿"""Tests for caselaw_module case-like filter."""
-
-from pathlib import Path
+"""Tests for caselaw_module case-like filter."""
 
 from war_room.caselaw_module import _is_case_like
 
@@ -39,6 +37,16 @@ def test_case_with_in_re_passes() -> None:
 
 def test_case_with_ex_rel_passes() -> None:
     assert _is_case_like({"name": "State ex rel. Smith v. Dept of Insurance"})
+
+
+def test_commentary_title_with_v_dot_is_excluded() -> None:
+    assert not _is_case_like(
+        {
+            "name": "Wind v. Flood in the Wake of Hurricane Ian - Butler Weihmuller Katz Craig LLP",
+            "citation": "",
+            "url": "https://www.butler.legal/wind-v-flood-in-the-wake-of-hurricane-ian/",
+        }
+    )
 
 
 def test_non_case_article_excluded() -> None:

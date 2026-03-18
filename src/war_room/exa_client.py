@@ -24,6 +24,8 @@ class BudgetExhausted(Exception):
 class ExaClient:
     """Thin wrapper around exa-py with retry + budget guard."""
 
+    provider_name = "exa"
+
     def __init__(
         self,
         api_key: str | None = None,

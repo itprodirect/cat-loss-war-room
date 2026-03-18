@@ -1,0 +1,33 @@
+{
+  "module": "weather",
+  "event_summary": "Hurricane Ida - Orleans Parish, LA (2021-08-29)",
+  "key_observations": [
+    "National Hurricane Center and New Orleans weather reporting document extreme wind and surge impacts tied to Hurricane Ida across Orleans Parish.",
+    "Federal disaster reporting for Louisiana ties widespread roof, water-intrusion, and infrastructure damage in Orleans Parish to Ida landfall conditions."
+  ],
+  "metrics": {
+    "max_wind_mph": 150,
+    "storm_surge_ft": 8.0,
+    "rain_in": 11.2
+  },
+  "sources": [
+    {
+      "title": "Tropical Cyclone Report: Hurricane Ida",
+      "url": "https://www.nhc.noaa.gov/data/tcr/AL092021_Ida.pdf",
+      "badge": "official",
+      "reason": "Official source"
+    },
+    {
+      "title": "NWS New Orleans/Baton Rouge Hurricane Ida event summary",
+      "url": "https://www.weather.gov/lix/HurricaneIda2021",
+      "badge": "official",
+      "reason": "Official source"
+    },
+    {
+      "title": "Louisiana Hurricane Ida major disaster declaration",
+      "url": "https://www.fema.gov/disaster/4611",
+      "badge": "official",
+      "reason": "Official source"
+    }
+  ]
+}

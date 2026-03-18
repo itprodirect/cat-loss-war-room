@@ -1,60 +1,60 @@
 {
-  "module": "citation_verify",
-  "disclaimer": "CITATION SPOT-CHECK ONLY \u2014 These are confidence signals, not verification. KeyCite / Shepardize every citation before reliance.",
-  "checks": [
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
-      "source_url": "https://casetext.com/case/sapuppo-v-allstate-floridian-ins-co",
-      "note": "Found on professional source: casetext.com \u2014 verify independently",
-      "case_name": "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678",
-      "citation": "739 F.3d 678"
-    },
-    {
-      "status": "verified",
-      "badge": "\u2705",
-      "source_url": "https://supremecourt.flcourts.gov/content/download/343992/file/01-1219_ini.pdf",
-      "note": "Found on official source: supremecourt.flcourts.gov",
-      "case_name": "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732",
-      "citation": "819 So. 2d 732"
-    },
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
-      "source_url": "https://casetext.com/case/quesada-v-director-fed-emergency-agency",
-      "note": "Found on professional source: casetext.com \u2014 verify independently",
-      "case_name": "Quesada v. Director, Fed. Emergency Agency, 753 F.2d 1011",
-      "citation": "753 F.2d 1011"
-    },
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
-      "source_url": "https://casetext.com/case/quesada-v-director-federal-emergency-mgmt-agency",
-      "note": "Found on professional source: casetext.com \u2014 verify independently",
-      "case_name": "Quesada v. Director, Federal Emergency Mgmt. Agency, 577 F. Supp. 695",
-      "citation": "577 F. Supp. 695"
-    },
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
-      "source_url": "https://casetext.com/case/johnson-v-davis-20",
-      "note": "Found on professional source: casetext.com \u2014 verify independently",
-      "case_name": "Johnson v. Davis, 480 So. 2d 625",
-      "citation": "480 So. 2d 625"
-    },
-    {
-      "status": "uncertain",
-      "badge": "\u26a0\ufe0f",
-      "source_url": "https://www.propertyinsurancecoveragelaw.com/blog/concurrent-causation-in-florida/",
-      "note": "Found on professional source: www.propertyinsurancecoveragelaw.com \u2014 verify independently",
-      "case_name": "Hurricane Irma \u2013 The State of Concurrent Causation and ACC Clauses in Florida | JD Supra",
-      "citation": "208 So. 3d 694"
+    "module": "citation_verify",
+    "disclaimer": "CITATION SPOT-CHECK ONLY \u2014 These are confidence signals, not verification. KeyCite / Shepardize every citation before reliance.",
+    "checks": [
+        {
+            "status": "uncertain",
+            "badge": "warning",
+            "source_url": "https://casetext.com/case/sapuppo-v-allstate-floridian-ins-co",
+            "note": "Found on professional source: casetext.com \u2014 verify independently",
+            "case_name": "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678",
+            "citation": "739 F.3d 678"
+        },
+        {
+            "status": "verified",
+            "badge": "verified",
+            "source_url": "https://supremecourt.flcourts.gov/content/download/343992/file/01-1219_ini.pdf",
+            "note": "Found on official source: supremecourt.flcourts.gov",
+            "case_name": "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732",
+            "citation": "819 So. 2d 732"
+        },
+        {
+            "status": "uncertain",
+            "badge": "warning",
+            "source_url": "https://casetext.com/case/quesada-v-director-fed-emergency-agency",
+            "note": "Found on professional source: casetext.com \u2014 verify independently",
+            "case_name": "Quesada v. Director, Fed. Emergency Agency, 753 F.2d 1011",
+            "citation": "753 F.2d 1011"
+        },
+        {
+            "status": "uncertain",
+            "badge": "warning",
+            "source_url": "https://casetext.com/case/quesada-v-director-federal-emergency-mgmt-agency",
+            "note": "Found on professional source: casetext.com \u2014 verify independently",
+            "case_name": "Quesada v. Director, Federal Emergency Mgmt. Agency, 577 F. Supp. 695",
+            "citation": "577 F. Supp. 695"
+        },
+        {
+            "status": "uncertain",
+            "badge": "warning",
+            "source_url": "https://casetext.com/case/johnson-v-davis-20",
+            "note": "Found on professional source: casetext.com \u2014 verify independently",
+            "case_name": "Johnson v. Davis, 480 So. 2d 625",
+            "citation": "480 So. 2d 625"
+        },
+        {
+            "status": "uncertain",
+            "badge": "warning",
+            "source_url": "https://casetext.com/case/sebo-v-american-home-assurance-co",
+            "note": "Found on professional source: casetext.com - verify independently",
+            "case_name": "Sebo v. American Home Assurance Co.",
+            "citation": "208 So. 3d 694"
+        }
+    ],
+    "summary": {
+        "total": 6,
+        "verified": 1,
+        "uncertain": 5,
+        "not_found": 0
     }
-  ],
-  "summary": {
-    "total": 6,
-    "verified": 1,
-    "uncertain": 5,
-    "not_found": 0
-  }
 }

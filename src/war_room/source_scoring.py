@@ -1,4 +1,4 @@
-"""Source credibility scoring — deterministic, domain-based."""
+"""Source credibility scoring - deterministic, domain-based."""
 
 from __future__ import annotations
 
@@ -35,6 +35,11 @@ PROFESSIONAL_DOMAINS: set[str] = {
     "law.cornell.edu",
     "scholar.google.com",
     "casetext.com",
+    "justia.com",
+    "leagle.com",
+    "jdsupra.com",
+    "propublica.org",
+    "citizensfla.com",
 }
 
 PAYWALLED_DOMAINS: set[str] = {
@@ -44,6 +49,20 @@ PAYWALLED_DOMAINS: set[str] = {
     "heinonline.org",
     "next.westlaw.com",
     "advance.lexis.com",
+}
+
+_BADGES = {
+    "official": "green",
+    "professional": "yellow",
+    "unvetted": "red",
+    "paywalled": "locked",
+}
+
+_LABELS = {
+    "official": "Official source",
+    "professional": "Professional source",
+    "unvetted": "Unvetted source",
+    "paywalled": "Paywalled - verify with subscription access",
 }
 
 
@@ -83,29 +102,15 @@ def score_url(url: str) -> dict:
 
     tier = _classify_domain(hostname)
 
-    badges = {
-        "official": "🟢",
-        "professional": "🟡",
-        "unvetted": "🔴",
-        "paywalled": "🔒",
-    }
-
-    labels = {
-        "official": "Official source",
-        "professional": "Professional source",
-        "unvetted": "Unvetted source",
-        "paywalled": "Paywalled — verify with subscription access",
-    }
-
     return {
         "url": url,
         "hostname": hostname,
         "tier": tier,
-        "badge": badges[tier],
-        "label": labels[tier],
+        "badge": _BADGES[tier],
+        "label": _LABELS[tier],
     }
 
 
 def format_badge(score: dict) -> str:
     """Format a score dict as a display string."""
-    return f"{score['badge']} {score['label']} ({score['hostname']})"
+    return f"[{score['badge']}] {score['label']} ({score['hostname']})"

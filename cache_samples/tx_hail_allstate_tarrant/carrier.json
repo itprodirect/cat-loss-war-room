@@ -1,0 +1,61 @@
+{
+  "module": "carrier",
+  "carrier_snapshot": {
+    "name": "Allstate Texas Lloyds",
+    "state": "TX",
+    "event": "Texas Hailstorm",
+    "policy_type": "HO-B Homeowners"
+  },
+  "document_pack": [
+    {
+      "doc_type": "Claims Handling Guideline",
+      "title": "Allstate Texas Lloyds Homeowners Policy Form",
+      "url": "https://www.allstate.com/resources/home-insurance/texas-homeowners-policy.pdf",
+      "badge": "unvetted",
+      "why_it_matters": "Policy form language helps frame hail, cosmetic damage, and actual cash value disputes."
+    },
+    {
+      "doc_type": "DOI/Regulatory Complaint",
+      "title": "Texas Department of Insurance market conduct action involving Allstate Texas Lloyds",
+      "url": "https://www.tdi.texas.gov/orders/documents/allstate-market-conduct-order.pdf",
+      "badge": "official",
+      "why_it_matters": "Regulatory findings may support questions about claims handling discipline."
+    },
+    {
+      "doc_type": "Denial Pattern Analysis",
+      "title": "North Texas hail claim dispute involving Allstate Texas Lloyds",
+      "url": "https://www.insurancejournal.com/news/southcentral/2024/06/10/777777.htm",
+      "badge": "unvetted",
+      "why_it_matters": "Shows recurring disagreement themes around scope, matching, and wear-and-tear defenses after hail events."
+    }
+  ],
+  "common_defenses": [
+    "Wear and tear / maintenance exclusion defense",
+    "Late notice / failure to mitigate defense"
+  ],
+  "rebuttal_angles": [
+    "Key fact undermines carrier position: Golf-ball-size hail was reported in Tarrant County on the reported date of loss.",
+    "Key fact undermines carrier position: Roof slope bruising and soft-metal damage were documented shortly after the storm.",
+    "Counter wear-and-tear defense: contemporaneous storm reports align with the claimed hail damage window."
+  ],
+  "sources": [
+    {
+      "title": "Allstate Texas Lloyds Homeowners Policy Form",
+      "url": "https://www.allstate.com/resources/home-insurance/texas-homeowners-policy.pdf",
+      "badge": "unvetted",
+      "reason": "Unvetted source"
+    },
+    {
+      "title": "Texas Department of Insurance market conduct action involving Allstate Texas Lloyds",
+      "url": "https://www.tdi.texas.gov/orders/documents/allstate-market-conduct-order.pdf",
+      "badge": "official",
+      "reason": "Official source"
+    },
+    {
+      "title": "North Texas hail claim dispute involving Allstate Texas Lloyds",
+      "url": "https://www.insurancejournal.com/news/southcentral/2024/06/10/777777.htm",
+      "badge": "unvetted",
+      "reason": "Unvetted source"
+    }
+  ]
+}
