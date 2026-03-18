@@ -900,3 +900,12 @@ Status: Complete
   - `$env:PYTHONPATH="src"; pytest -q` -> `197 passed`
   - `$env:PYTHONPATH="src"; python -m war_room --preflight --json` -> success (`scenario_count: 4`)
   - `$env:PYTHONPATH="src"; python -m war_room.release_scorecard --candidate codex/quality-hardening --verification-summary "197 passed"` -> success
+
+## Session 56 - Issue Status and Docs Sync
+Date: 2026-03-18
+Status: Complete
+
+- Audited the live GitHub issue tracker against the canonical roadmap docs after the merge back to `main`.
+- Confirmed issue drift: `#23` and `#24` were still open in GitHub even though the repo already treated them as completed written source-of-truth specs.
+- Synced the canonical status docs so `README.md`, `docs/HANDOFF.md`, `docs/ROADMAP.md`, `docs/V2_ISSUE_MAP.md`, `docs/PROJECT_HEALTH_AUDIT_2026-03-10.md`, and `CLAUDE.md` all describe `#23` and `#24` as complete-and-closed definition issues.
+- Left `#27`, `#6`, `#7`, `#8`, and `#9` open because the docs still show real remaining implementation and operationalization scope.

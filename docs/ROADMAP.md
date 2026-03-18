@@ -13,10 +13,10 @@ This is the short version. Clean, practical, no drama.
 - The supported test path is editable install plus `pytest -q`, or `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not supported.
 - The offline demo path now has a deterministic preflight command: `python -m war_room --preflight`.
 - A deeper V2 foundation layer is tracked in issues `#22` through `#27`.
-- Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is complete.
+- Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is complete and closed.
 - Issue [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) is complete and closed.
-- Issue [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) is complete.
-- Issues [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) are complete as written source-of-truth specs.
+- Issue [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) is complete and closed.
+- Issues [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) are complete and closed as written source-of-truth specs.
 - Issue [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) is still open, but the local scorecard now includes explicit demo-ready threshold calibration in `docs/V2_RELEASE_RUBRIC.md`.
 - Issue [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) is in progress (slices 1-7 landed locally; review/export graph-linkage contract slice now added).
 - Placeholder directories under `apps/`, `packages/`, and `workers/` are planned V2 boundaries only. The active runtime remains the notebook plus `src/war_room/`.
@@ -32,7 +32,7 @@ This is the short version. Clean, practical, no drama.
 This is the current best-to-worst order for active work on the current build.
 Issue [#3](https://github.com/itprodirect/cat-loss-war-room-demo/issues/3) remains the umbrella epic and is not ranked with execution tickets.
 
-Issues [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) are not ranked here because their written source-of-truth docs already landed. Their downstream implementation work lives in `#10`, `#11`, and `#12`.
+Issues [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) are not ranked here because their written source-of-truth docs already landed and those definition issues are closed. Their downstream implementation work lives in `#10`, `#11`, and `#12`.
 
 1. [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) Refine and operationalize the first-pass quality rubric and release scorecard
 2. [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) Complete remaining typed domain contracts

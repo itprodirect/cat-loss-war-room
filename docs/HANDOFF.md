@@ -27,9 +27,9 @@ This is research acceleration, not legal advice.
 | Intake schema alignment (`#5`) | Complete and closed |
 | Typed domain contracts (#6) | Slices 1-7 complete (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts) |
 | Retrieval contracts (#7) | Four slices landed: provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing |
-| Product foundation (`#22`) | Complete: packaging/bootstrap lane implemented |
-| Workflow IA spec (`#23`) | Complete as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
-| Evidence schema spec (`#24`) | Complete as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |
+| Product foundation (`#22`) | Complete and closed: packaging/bootstrap lane implemented |
+| Workflow IA spec (`#23`) | Complete and closed as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
+| Evidence schema spec (`#24`) | Complete and closed as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |
 | Quality rubric (`#27`) | First-pass rubric plus local artifact workflow landed in `docs/V2_RELEASE_RUBRIC.md`; demo-ready threshold calibration is now explicit in the scorecard, while CI and pilot operationalization remain open |
 | Cache samples | Milton/Citizens/Pinellas + TX hail/Allstate/Tarrant + TX hail matching/Allstate Texas Lloyds/Tarrant DP-3 + Ida/Lloyd's/Orleans committed |
 
