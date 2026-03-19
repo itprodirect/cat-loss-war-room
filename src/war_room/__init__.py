@@ -60,6 +60,15 @@ from war_room.models import (
     run_to_payload,
     weather_brief_to_payload,
 )
+from war_room.notebook_runtime import (
+    NotebookScenarioSelection,
+    build_intake_from_scenario,
+    ensure_runtime_context,
+    load_selected_scenario,
+    prepare_notebook_scenario,
+    resolve_live_retrieval_enabled,
+    scenario_warning_message,
+)
 from war_room.query_plan import (
     CASE_INTAKE_ALLOWED_FIELDS,
     CASE_INTAKE_OPTIONAL_FIELDS,
@@ -165,6 +174,7 @@ __all__ = [
     "legal_issue_to_payload",
     "memo_render_input_from_parts",
     "WarRoomSettings",
+    "NotebookScenarioSelection",
     "RetrievalContentsRequest",
     "RetrievalExecutionResult",
     "RetrievalProvider",
@@ -181,4 +191,10 @@ __all__ = [
     "load_scenario",
     "load_scenario_for_fixture_case",
     "validate_scenario",
+    "build_intake_from_scenario",
+    "ensure_runtime_context",
+    "load_selected_scenario",
+    "prepare_notebook_scenario",
+    "resolve_live_retrieval_enabled",
+    "scenario_warning_message",
 ]

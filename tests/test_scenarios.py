@@ -96,3 +96,15 @@ def test_notebook_default_scenario_exists_in_registry():
     scenario_cell = next(source for source in cell_sources if "SCENARIO_ID" in source)
 
     assert 'SCENARIO_ID = "milton_pinellas_citizens_ho3"' in scenario_cell
+
+
+def test_notebook_uses_helper_driven_scenario_prep_and_has_no_stale_hardcoded_intake():
+    notebook = json.loads(NOTEBOOK_PATH.read_text(encoding="utf-8"))
+    code_cells = ["".join(cell.get("source", [])) for cell in notebook["cells"] if cell.get("cell_type") == "code"]
+    scenario_cells = [source for source in code_cells if "SCENARIO_ID" in source]
+
+    assert len(scenario_cells) == 1
+    assert "prepare_notebook_scenario" in scenario_cells[0]
+    assert "SETTINGS.live_retrieval_enabled" not in scenario_cells[0]
+    assert sum("CaseIntake(" in source for source in code_cells) == 0
+    assert sum("write_markdown(" in source for source in code_cells) == 1

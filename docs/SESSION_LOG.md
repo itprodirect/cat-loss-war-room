@@ -1055,3 +1055,46 @@ Status: Complete
 - Recommended next issue / sprint:
   - seed committed cache fixtures for the remaining four Florida hurricane benchmarks under `#8`
   - then teach release-scorecard and benchmark reporting to surface registry coverage alongside cache fixture coverage
+
+## Session 61 - Scenario Settings Stability
+Date: 2026-03-19
+Status: Complete
+
+- What broke:
+  - the new scenario-selection notebook cell directly referenced `SETTINGS.live_retrieval_enabled`
+  - if the bootstrap/config cell had not already run, notebook execution could fail with `NameError: SETTINGS is not defined`
+  - the tracked notebook had also drifted into an inconsistent state with both the new scenario cell and stale hard-coded intake/export cells still present
+- Root cause:
+  - scenario prep logic lived partly in notebook globals instead of one reusable runtime helper
+  - the notebook assumed cell execution order for settings/bootstrap state instead of resolving runtime context safely
+- What changed:
+  - added `src/war_room/notebook_runtime.py` as the shared notebook-support layer
+  - added helper APIs for:
+    - `ensure_runtime_context()`
+    - `resolve_live_retrieval_enabled()`
+    - `load_selected_scenario()`
+    - `build_intake_from_scenario()`
+    - `scenario_warning_message()`
+    - `prepare_notebook_scenario()`
+  - notebook scenario prep now bootstraps safely even if `SETTINGS` is missing from globals
+  - notebook scenario warnings are now deterministic:
+    - Milton stays silent in offline mode because it is fixture-backed
+    - Ian / Irma / Michael / Idalia warn in cache-only mode
+    - those warnings clear when live retrieval is enabled
+  - rewrote the tracked notebook back to one clean path:
+    - bootstrap/config cell
+    - helper-driven scenario cell
+    - no stale hard-coded `CaseIntake(...)` cell
+    - no duplicate export cell
+  - later notebook cells now read runtime settings from `ensure_runtime_context()` instead of assuming earlier globals exist
+- Tests added or expanded:
+  - `tests/test_notebook_runtime.py`
+  - `tests/test_scenarios.py`
+  - existing preflight/bootstrap/settings coverage re-run against the new helper flow
+- Remaining limitations:
+  - only Milton is currently fully offline-ready because it is the only Florida benchmark with committed cache fixtures
+  - non-Milton Florida scenarios still need live retrieval or future fixture seeding for end-to-end cache-only runs
+  - the notebook still assumes scenario/intake cells run before module cells, which is reasonable for the demo surface; this fix targeted settings/bootstrap robustness rather than arbitrary cell-order support for every downstream cell
+- Recommended next step:
+  - seed committed cache fixtures for the remaining four Florida hurricane benchmarks under `#8`
+  - then add a small benchmark-facing summary surface so notebook users can see offline-ready vs live-only scenario status before execution
