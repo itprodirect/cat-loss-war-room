@@ -116,6 +116,7 @@ def test_render_contains_all_sections():
     assert "Case Law" in md
     assert "Citation Spot-Check" in md
     assert "Query Plan" in md
+    assert "Quality Snapshot" in md
     assert "Evidence Clusters" in md
     assert "Evidence Index" in md
     assert "All Sources" in md
@@ -134,6 +135,9 @@ def test_render_includes_trust_snapshot_and_source_reasons():
     assert "Weather sources: 1" in md
     assert "Carrier documents: 1" in md
     assert "Case authorities: 1" in md
+    assert "Sources by class:" in md
+    assert "Primary vs secondary:" in md
+    assert "Canonical authorities:" in md
     assert "Professional source" in md
 
 
@@ -159,7 +163,26 @@ def test_render_includes_evidence_clusters():
     assert "cluster-1" in md
     assert "cluster-2" in md
     assert "cluster-3" in md
-    assert "citation | 123 So.3d 456" in md
+    assert "Members" in md
+    assert "Provenance URLs" in md
+    assert "citation | 123 so. 3d 456" in md
+
+
+def test_render_shows_citation_confidence_and_source_type_columns():
+    md = render_markdown_memo(*_sample_data())
+
+    assert "| Badge | Case | Citation | Confidence | Source Type | Note |" in md
+    assert "unknown" in md
+
+
+def test_render_shows_canonical_authority_and_alternate_counts():
+    intake, weather, carrier, caselaw, citecheck, queries = _sample_data()
+    citecheck["checks"][0]["alternate_candidate_count"] = 2
+
+    md = render_markdown_memo(intake, weather, carrier, caselaw, citecheck, queries)
+
+    assert "duplicates collapsed 1" in md
+    assert "Alternate aligned candidates: 2" in md
 
 
 def test_render_surfaces_claim_cluster_references():

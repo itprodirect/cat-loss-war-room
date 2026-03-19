@@ -104,6 +104,9 @@ def test_prefers_official_source_among_hits():
     )
     assert result["status"] == "verified"
     assert "flcourts.gov" in result["source_url"]
+    assert result["confidence"] == "high"
+    assert result["status_reason"] == "official_citation_match"
+    assert result["alternate_candidate_count"] == 2
 
 
 def test_prefers_citation_aligned_result_over_unrelated_official_hit():
@@ -131,6 +134,29 @@ def test_prefers_citation_aligned_result_over_unrelated_official_hit():
 
     assert result["status"] == "uncertain"
     assert "casetext.com" in result["source_url"]
+    assert result["status_reason"] == "secondary_authority_match"
+
+
+def test_normalized_citation_spacing_still_matches_primary_authority():
+    client = _mock_client_with_hits(
+        [
+            {
+                "url": "https://www.flcourts.gov/case/123",
+                "title": "Doe v. Carrier",
+                "text": "Doe v. Carrier 123 So. 3d 456",
+            }
+        ]
+    )
+
+    result = _do_check(
+        "Doe v. Carrier 123 So.3d 456",
+        client,
+        case_name="Doe v. Carrier",
+        citation="123 So.3d 456",
+    )
+
+    assert result["status"] == "verified"
+    assert result["status_reason"] == "official_citation_match"
 
 
 def test_professional_source_is_uncertain():
@@ -147,6 +173,8 @@ def test_professional_source_is_uncertain():
     )
     assert result["status"] == "uncertain"
     assert result["badge"] == "warning"
+    assert result["status_reason"] == "non_authoritative_match"
+    assert result["source_class"] == "news"
 
 
 def test_irrelevant_hits_are_not_found():
@@ -180,6 +208,7 @@ def test_budget_exhausted_is_uncertain():
     result = _do_check("Smith v. Jones", client)
     assert result["status"] == "uncertain"
     assert "Budget" in result["note"]
+    assert result["status_reason"] == "budget_exhausted"
 
 
 def test_search_error_is_uncertain():
@@ -190,6 +219,58 @@ def test_search_error_is_uncertain():
     result = _do_check("Smith v. Jones", client)
     assert result["status"] == "uncertain"
     assert "ConnectionError" in result["note"]
+    assert result["status_reason"] == "search_error"
+
+
+def test_name_only_match_stays_uncertain():
+    client = _mock_client_with_hits(
+        [
+            {
+                "url": "https://www.flcourts.gov/case/123",
+                "title": "Doe v. Carrier",
+                "text": "Opinion page for Doe v. Carrier with abbreviated header only.",
+            }
+        ]
+    )
+
+    result = _do_check(
+        "Doe v. Carrier 456 F.3d 789",
+        client,
+        case_name="Doe v. Carrier",
+        citation="456 F.3d 789",
+    )
+
+    assert result["status"] == "uncertain"
+    assert result["confidence"] == "low"
+    assert result["status_reason"] == "name_match_only"
+
+
+def test_multiple_conflicting_aligned_hits_surface_ambiguity_reason():
+    client = _mock_client_with_hits(
+        [
+            {
+                "url": "https://www.flcourts.gov/general/search",
+                "title": "Case lookup",
+                "text": "Doe v. Carrier 456 F.3d 789",
+            },
+            {
+                "url": "https://casetext.com/case/doe-v-carrier",
+                "title": "Doe v. Carrier",
+                "text": "Doe v. Carrier 456 F.3d 789",
+            },
+        ]
+    )
+
+    result = _do_check(
+        "Doe v. Carrier 456 F.3d 789",
+        client,
+        case_name="Doe v. Carrier",
+        citation="456 F.3d 789",
+    )
+
+    assert result["status"] == "uncertain"
+    assert result["status_reason"] == "multiple_conflicting_hits"
+    assert result["alternate_candidate_count"] == 1
 
 def test_spot_check_citations_emits_retrieval_state_and_artifact_refs():
     pack = {

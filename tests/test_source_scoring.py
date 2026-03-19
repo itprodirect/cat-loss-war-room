@@ -1,6 +1,6 @@
 """Tests for source_scoring module."""
 
-from war_room.source_scoring import format_badge, score_url
+from war_room.source_scoring import classify_source, format_badge, score_url
 
 
 def test_gov_is_official():
@@ -86,3 +86,24 @@ def test_courtlistener_is_official():
     result = score_url("https://www.courtlistener.com/opinion/12345/")
     assert result["tier"] == "official"
     assert result["badge"] == "green"
+
+
+def test_case_law_source_class_is_primary_law():
+    result = score_url("https://www.courtlistener.com/opinion/12345/sebo-v-american-home/")
+    assert result["source_class"] == "court_opinion"
+    assert result["is_primary_authority"] is True
+
+
+def test_court_host_without_opinion_path_is_guidance():
+    result = score_url("https://www.flcourts.gov/general/search", "Case lookup")
+    assert result["source_class"] == "government_guidance"
+    assert result["is_primary_authority"] is False
+
+
+def test_commentary_title_classifies_as_commentary():
+    result = classify_source(
+        "https://www.merlinlawgroup.com/blog/post",
+        "Wind vs. Water Damage: What Homeowners Must Know",
+    )
+    assert result["source_class"] == "commentary"
+    assert result["is_primary_authority"] is False

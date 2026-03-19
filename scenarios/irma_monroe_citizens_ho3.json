@@ -1,0 +1,40 @@
+{
+  "schema_version": "scenario.v1",
+  "slug": "irma_monroe_citizens_ho3",
+  "title": "Hurricane Irma (Monroe mature/legal benchmark)",
+  "benchmark_focus": "Mature Florida hurricane benchmark for Monroe County with deeper appellate history and ACC-heavy legal questions.",
+  "fixture_case_key": null,
+  "offline_demo_ready": false,
+  "event_name": "Hurricane Irma",
+  "event_date": "2017-09-10",
+  "state": "FL",
+  "county": "Monroe",
+  "carrier": "Citizens Property Insurance",
+  "policy_type": "HO-3 Dwelling",
+  "posture": [
+    "denial",
+    "bad_faith"
+  ],
+  "key_facts": [
+    "The property sustained wind damage to the roof system and envelope during Irma's passage through the Keys.",
+    "The carrier relied on excluded flood or water-path arguments and disputed the extent of covered direct physical loss.",
+    "The claim file reflects delay and adequacy-of-investigation concerns after repeated requests for reinspection."
+  ],
+  "coverage_issues": [
+    "anti-concurrent causation clause",
+    "wind vs water causation",
+    "duty to investigate"
+  ],
+  "tags": [
+    "florida",
+    "hurricane",
+    "monroe",
+    "mature-benchmark",
+    "citizens",
+    "legal-depth"
+  ],
+  "notes": [
+    "Use this benchmark when the goal is to stress case-law quality and citation verification against a more developed Florida legal record.",
+    "Helpful for testing whether the case-law lane prefers primary authorities over commentary about Irma and ACC clauses."
+  ]
+}

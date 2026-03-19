@@ -182,6 +182,7 @@ def test_run_audit_snapshot_builds_canonical_entities():
     )
     assert snapshot.export_artifact.review_required is False
     assert snapshot.export_artifact.uri == "runs/run-notebook-hurricane-milton-fl-pinellas-citizens-property-insurance/research-memo.md"
+    assert "Appendix: Quality Snapshot" in snapshot.export_artifact.section_titles
     assert "Appendix: Evidence Clusters" in snapshot.export_artifact.section_titles
     assert "Appendix: Evidence Index" in snapshot.export_artifact.section_titles
     assert snapshot.export_artifact.section_ids[:3] == ["trust-snapshot", "case-intake", "weather-corroboration"]
@@ -191,6 +192,12 @@ def test_run_audit_snapshot_builds_canonical_entities():
     assert payload["evidence_clusters"][2]["cluster_type"] == "citation"
     assert snapshot.memo_claims[0].cluster_ids == ["cluster-1"]
     assert snapshot.memo_claims[2].cluster_ids == ["cluster-3"]
+    assert snapshot.quality_snapshot.source_class_counts["government_guidance"] == 1
+    assert snapshot.quality_snapshot.grouped_evidence_count == 1
+    assert snapshot.quality_snapshot.normalized_authority_count == 3
+    assert snapshot.quality_snapshot.duplicate_authority_count == 1
+    assert snapshot.evidence_clusters[2].authority_key == "citation:123 so. 3d 456"
+    assert snapshot.evidence_clusters[2].provenance_urls == ["https://example.com/case"]
     assert payload["memo_claims"][3]["cluster_ids"] == ["cluster-3"]
     assert payload["export_artifact"]["artifact_id"].endswith(":artifact:markdown-memo")
 
@@ -238,7 +245,7 @@ def test_run_audit_snapshot_tracks_review_events_and_claim_status():
         for event in snapshot.review_events
     )
     assert snapshot.export_artifact.review_required is True
-    assert snapshot.export_artifact.section_ids[8] == "appendix-review-log"
+    assert snapshot.export_artifact.section_ids[9] == "appendix-review-log"
 
 
 def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():
@@ -381,3 +388,22 @@ def test_run_audit_snapshot_aggregates_retrieval_state_from_module_payloads():
     assert payload["retrieval_tasks"][0]["retrieval_task_id"] == "run-weather-1"
     assert payload["run_events"][2]["stage_id"] == "run-milton:citation_verify"
 
+
+def test_run_audit_snapshot_tracks_duplicate_authority_counts_when_case_and_check_share_citation():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    citecheck["checks"][0]["source_url"] = "https://alt.example.com/case"
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    assert snapshot.quality_snapshot.raw_evidence_count == 4
+    assert snapshot.quality_snapshot.normalized_authority_count == 3
+    assert snapshot.quality_snapshot.duplicate_authority_count == 1
+    assert snapshot.quality_snapshot.provenance_link_count == 4
+    assert snapshot.evidence_clusters[2].provenance_urls == ["https://example.com/case", "https://alt.example.com/case"]
