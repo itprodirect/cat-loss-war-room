@@ -161,6 +161,16 @@ def spot_check_citations(
 _TIER_RANK = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
 
 
+def _normalize_citation_text(value: str | None) -> str:
+    if not value:
+        return ""
+    normalized = value.lower()
+    normalized = re.sub(r"(?<=\D)\.(?=\S)", ". ", normalized)
+    normalized = normalized.replace(",", " ")
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    return normalized
+
+
 def _do_check(
     query: str,
     client: RetrievalProvider,
@@ -182,108 +192,227 @@ def _do_check(
         run_events = execution.run_events
         hits = execution.hits
         if task.status == "failed":
-            return {
-                "status": "uncertain",
-                "badge": "warning",
-                "source_url": None,
-                "note": execution.warning or "Search error - could not verify",
-                "_retrieval_task": task,
-                "_run_events": run_events,
-            }
+            return _result_payload(
+                status="uncertain",
+                badge="warning",
+                source_url=None,
+                note=execution.warning or "Search error - could not verify",
+                confidence="low",
+                status_reason="retrieval_failed",
+                trust_explanation="Live citation retrieval failed, so this result requires manual verification.",
+                retrieval_task=task,
+                run_events=run_events,
+            )
         if not hits:
-            return {
-                "status": "not_found",
-                "badge": "not_found",
-                "source_url": None,
-                "note": execution.warning or "No results found",
-                "_retrieval_task": task,
-                "_run_events": run_events,
-            }
+            return _result_payload(
+                status="not_found",
+                badge="not_found",
+                source_url=None,
+                note=execution.warning or "No results found",
+                confidence="low",
+                status_reason="no_results",
+                trust_explanation="No citation-check search results were returned for this authority.",
+                retrieval_task=task,
+                run_events=run_events,
+            )
     else:
         try:
             hits = client.search(query, k=5)
         except BudgetExhausted:
-            return {
-                "status": "uncertain",
-                "badge": "warning",
-                "source_url": None,
-                "note": "Budget exhausted - could not verify",
-            }
+            return _result_payload(
+                status="uncertain",
+                badge="warning",
+                source_url=None,
+                note="Budget exhausted - could not verify",
+                confidence="low",
+                status_reason="budget_exhausted",
+                trust_explanation="Citation verification stopped because the live retrieval budget was exhausted.",
+            )
         except Exception as exc:
-            return {
-                "status": "uncertain",
-                "badge": "warning",
-                "source_url": None,
-                "note": f"Search error - could not verify: {type(exc).__name__}",
-            }
+            return _result_payload(
+                status="uncertain",
+                badge="warning",
+                source_url=None,
+                note=f"Search error - could not verify: {type(exc).__name__}",
+                confidence="low",
+                status_reason="search_error",
+                trust_explanation="Citation verification hit a live-search error and should be reviewed manually.",
+            )
 
         if not hits:
-            return {
-                "status": "not_found",
-                "badge": "not_found",
-                "source_url": None,
-                "note": "No results found",
-            }
+            return _result_payload(
+                status="not_found",
+                badge="not_found",
+                source_url=None,
+                note="No results found",
+                confidence="low",
+                status_reason="no_results",
+                trust_explanation="No citation-check search results were returned for this authority.",
+            )
 
     scored_hits = []
     for hit in hits:
-        score = score_url(hit["url"])
+        score = score_url(hit["url"], hit.get("title", ""))
         scored_hits.append((hit, score, _match_strength(hit, case_name, citation)))
 
     if citation or case_name:
         scored_hits = [item for item in scored_hits if item[2][0] > 0 or item[2][1] > 0]
         if not scored_hits:
-            result = {
-                "status": "not_found",
-                "badge": "not_found",
-                "source_url": None,
-                "note": "No relevant citation match found",
-            }
-            if task is not None:
-                result["_retrieval_task"] = task
-                result["_run_events"] = run_events
-            return result
+            return _result_payload(
+                status="not_found",
+                badge="not_found",
+                source_url=None,
+                note="No relevant citation match found",
+                confidence="low",
+                status_reason="no_relevant_match",
+                trust_explanation="The reviewed hits did not contain a matching citation or sufficient case-name overlap.",
+                retrieval_task=task,
+                run_events=run_events,
+            )
 
-    scored_hits.sort(key=lambda item: _hit_priority(item[0], item[1], item[2]))
+    citation_aligned_hits = [item for item in scored_hits if item[2][0] > 0]
+    candidate_hits = citation_aligned_hits or scored_hits
+    candidate_hits.sort(key=lambda item: _hit_priority(item[0], item[1], item[2]))
 
-    best_hit, best_score, best_match = scored_hits[0]
+    best_hit, best_score, best_match = candidate_hits[0]
+    citation_match, name_match, legal_host = best_match
+    alternate_candidate_count = max(0, len(candidate_hits) - 1)
+    ambiguous_aligned_hits = _has_material_alignment_conflict(citation_aligned_hits)
 
-    result: dict[str, Any]
-    if best_score["tier"] == "official":
-        result = {
-            "status": "verified",
-            "badge": "verified",
-            "source_url": best_hit["url"],
-            "note": f"Found on official source: {best_score['hostname']}",
-        }
-    elif best_score["tier"] == "professional":
-        detail = "citation-aligned result" if best_match[0] > 0 else "professional source"
-        result = {
-            "status": "uncertain",
-            "badge": "warning",
-            "source_url": best_hit["url"],
-            "note": f"Found on {detail}: {best_score['hostname']} - verify independently",
-        }
-    else:
-        result = {
-            "status": "uncertain",
-            "badge": "warning",
-            "source_url": best_hit["url"],
-            "note": f"Found on {best_score['hostname']} - unvetted source, verify independently",
-        }
-    if task is not None:
-        result["_retrieval_task"] = task
-        result["_run_events"] = run_events
+    if citation_match and best_score["tier"] == "official" and best_score["is_primary_authority"]:
+        return _result_payload(
+            status="verified",
+            badge="verified",
+            source_url=best_hit["url"],
+            note=f"Found on primary authority: {best_score['hostname']}",
+            confidence="high",
+            status_reason="official_citation_match",
+            trust_explanation="Citation text matched on a primary legal authority source.",
+            source_tier=best_score["tier"],
+            source_class=best_score["source_class"],
+            is_primary_authority=bool(best_score["is_primary_authority"]),
+            alternate_candidate_count=alternate_candidate_count,
+            retrieval_task=task,
+            run_events=run_events,
+        )
+
+    if citation_match and legal_host and best_score["tier"] in {"official", "professional"}:
+        if ambiguous_aligned_hits:
+            reason = "multiple_conflicting_hits"
+            explanation = "Multiple citation-aligned hits were found with conflicting authority strength, so manual review is still required."
+        else:
+            reason = (
+                "official_non_primary_match"
+                if best_score["tier"] == "official" and not best_score["is_primary_authority"]
+                else "secondary_authority_match"
+            )
+            explanation = "Citation text matched, but the best hit is not a primary court-opinion authority."
+        return _result_payload(
+            status="uncertain",
+            badge="warning",
+            source_url=best_hit["url"],
+            note=f"Found on reviewable legal source: {best_score['hostname']} - verify independently",
+            confidence="medium",
+            status_reason=reason,
+            trust_explanation=explanation,
+            source_tier=best_score["tier"],
+            source_class=best_score["source_class"],
+            is_primary_authority=bool(best_score["is_primary_authority"]),
+            alternate_candidate_count=alternate_candidate_count,
+            retrieval_task=task,
+            run_events=run_events,
+        )
+
+    if not citation_match and name_match and best_score["tier"] in {"official", "professional"}:
+        return _result_payload(
+            status="uncertain",
+            badge="warning",
+            source_url=best_hit["url"],
+            note=f"Case-name match only on {best_score['hostname']} - citation text not confirmed",
+            confidence="low",
+            status_reason="name_match_only",
+            trust_explanation="The case name matched a reviewable source, but the citation text was not confirmed in the reviewed hit.",
+            source_tier=best_score["tier"],
+            source_class=best_score["source_class"],
+            is_primary_authority=bool(best_score["is_primary_authority"]),
+            alternate_candidate_count=alternate_candidate_count,
+            retrieval_task=task,
+            run_events=run_events,
+        )
+
+    return _result_payload(
+        status="uncertain",
+        badge="warning",
+        source_url=best_hit["url"],
+        note=f"Found on {best_score['hostname']} - non-authoritative source, verify independently",
+        confidence="low",
+        status_reason="non_authoritative_match",
+        trust_explanation="Only commentary, news, or otherwise non-authoritative sources aligned with this citation search.",
+        source_tier=best_score["tier"],
+        source_class=best_score["source_class"],
+        is_primary_authority=bool(best_score["is_primary_authority"]),
+        alternate_candidate_count=alternate_candidate_count,
+        retrieval_task=task,
+        run_events=run_events,
+    )
+
+
+def _result_payload(
+    *,
+    status: str,
+    badge: str,
+    source_url: str | None,
+    note: str,
+    confidence: str,
+    status_reason: str,
+    trust_explanation: str,
+    source_tier: str | None = None,
+    source_class: str | None = None,
+    is_primary_authority: bool = False,
+    alternate_candidate_count: int = 0,
+    retrieval_task=None,
+    run_events: list[Any] | None = None,
+) -> dict[str, Any]:
+    result = {
+        "status": status,
+        "badge": badge,
+        "source_url": source_url,
+        "note": note,
+        "confidence": confidence,
+        "status_reason": status_reason,
+        "trust_explanation": trust_explanation,
+        "source_tier": source_tier,
+        "source_class": source_class,
+        "is_primary_authority": is_primary_authority,
+        "alternate_candidate_count": alternate_candidate_count,
+    }
+    if retrieval_task is not None:
+        result["_retrieval_task"] = retrieval_task
+        result["_run_events"] = run_events or []
     return result
 
 
-def _hit_priority(hit: dict[str, Any], score: dict[str, Any], match: tuple[int, int, int]) -> tuple[int, int, int, int, str]:
+def _hit_priority(
+    hit: dict[str, Any],
+    score: dict[str, Any],
+    match: tuple[int, int, int],
+) -> tuple[int, int, int, int, int, int, str]:
     """Prefer citation-aligned legal hosts over generic domain-tier ranking alone."""
     citation_match, name_match, legal_host = match
     title = (hit.get("title", "") or "").lower()
+    source_class_rank = {
+        "court_opinion": 0,
+        "statute_regulation": 1,
+        "government_guidance": 2,
+        "commentary": 3,
+        "news": 4,
+        "other": 5,
+    }
     return (
         0 if citation_match else 1,
+        0 if score.get("is_primary_authority") else 1,
         0 if legal_host else 1,
+        source_class_rank.get(score.get("source_class"), 9),
         _TIER_RANK.get(score["tier"], 9),
         0 if name_match else 1,
         title,
@@ -302,7 +431,9 @@ def _match_strength(hit: dict[str, Any], case_name: str | None, citation: str | 
     ).lower()
 
     citation_match = 0
-    if citation and citation.lower() in combined_text:
+    normalized_citation = _normalize_citation_text(citation)
+    normalized_text = _normalize_citation_text(combined_text)
+    if normalized_citation and normalized_citation in normalized_text:
         citation_match = 1
 
     name_match = 0
@@ -315,6 +446,22 @@ def _match_strength(hit: dict[str, Any], case_name: str | None, citation: str | 
 
     legal_host = 1 if _is_legal_host(hit.get("url", "") or "") else 0
     return (citation_match, name_match, legal_host)
+
+
+def _has_material_alignment_conflict(
+    citation_aligned_hits: list[tuple[dict[str, Any], dict[str, Any], tuple[int, int, int]]],
+) -> bool:
+    if len(citation_aligned_hits) < 2:
+        return False
+    signatures = {
+        (
+            item[1].get("tier"),
+            item[1].get("source_class"),
+            bool(item[1].get("is_primary_authority")),
+        )
+        for item in citation_aligned_hits
+    }
+    return len(signatures) > 1
 
 
 def _significant_tokens(case_name: str) -> list[str]:

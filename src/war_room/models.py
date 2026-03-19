@@ -5,8 +5,10 @@ from __future__ import annotations
 import datetime as dt
 import re
 from typing import Any, Literal, Mapping, Sequence
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from war_room.source_scoring import score_url
 
 POSTURE_VALUE_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 SCHEMA_VERSION_DEFAULT = "v2alpha1"
@@ -286,6 +288,8 @@ class SourceReference(BaseModel):
     url: str = Field(min_length=1)
     badge: str = Field(min_length=1)
     reason: str | None = None
+    source_class: str | None = None
+    is_primary_authority: bool = False
 
 
 class WeatherMetrics(BaseModel):
@@ -364,6 +368,9 @@ class CaseEntry(BaseModel):
     one_liner: str = ""
     url: str = Field(min_length=1)
     badge: str = Field(min_length=1)
+    source_class: str | None = None
+    source_tier: str | None = None
+    is_primary_authority: bool = False
 
 
 class CaseIssue(BaseModel):
@@ -438,6 +445,13 @@ class CitationCheck(BaseModel):
     note: str = Field(min_length=1)
     case_name: str = ""
     citation: str = ""
+    confidence: Literal["high", "medium", "low"] = "low"
+    status_reason: str = ""
+    trust_explanation: str = ""
+    source_tier: str | None = None
+    source_class: str | None = None
+    is_primary_authority: bool = False
+    alternate_candidate_count: int = Field(default=0, ge=0)
 
 
 class CitationSummary(BaseModel):
@@ -483,6 +497,10 @@ class EvidenceItem(BaseModel):
     url: str | None = None
     badge: str = Field(min_length=1)
     source_reason: str | None = None
+    source_class: str | None = None
+    source_tier: str | None = None
+    is_primary_authority: bool = False
+    authority_key: str | None = None
     issue: str | None = None
     citation: str | None = None
     review_required: bool = False
@@ -500,7 +518,29 @@ class EvidenceCluster(BaseModel):
     modules: list[str] = Field(default_factory=list)
     citation: str | None = None
     url: str | None = None
+    authority_key: str | None = None
+    provenance_urls: list[str] = Field(default_factory=list)
+    member_count: int = Field(default=0, ge=0)
     review_required: bool = False
+
+
+class QualitySnapshot(BaseModel):
+    """Lightweight structured retrieval-quality telemetry for one memo run."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    source_class_counts: dict[str, int] = Field(default_factory=dict)
+    primary_source_count: int = Field(default=0, ge=0)
+    secondary_source_count: int = Field(default=0, ge=0)
+    citation_status_counts: dict[str, int] = Field(default_factory=dict)
+    citation_reason_counts: dict[str, int] = Field(default_factory=dict)
+    evidence_item_count: int = Field(default=0, ge=0)
+    evidence_cluster_count: int = Field(default=0, ge=0)
+    grouped_evidence_count: int = Field(default=0, ge=0)
+    raw_evidence_count: int = Field(default=0, ge=0)
+    normalized_authority_count: int = Field(default=0, ge=0)
+    duplicate_authority_count: int = Field(default=0, ge=0)
+    provenance_link_count: int = Field(default=0, ge=0)
 
 
 class MemoClaim(BaseModel):
@@ -586,6 +626,7 @@ class RunAuditSnapshot(BaseModel):
     evidence_clusters: list[EvidenceCluster] = Field(default_factory=list)
     memo_claims: list[MemoClaim] = Field(default_factory=list)
     review_events: list[ReviewEvent] = Field(default_factory=list)
+    quality_snapshot: QualitySnapshot = Field(default_factory=QualitySnapshot)
     export_artifact: ExportArtifact
 
     @field_validator("schema_version")
@@ -756,6 +797,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
     weather_observations = weather_payload.get("key_observations", [])
     for index, source in enumerate(weather_payload.get("sources", []), 1):
         evidence_id = f"weather-source-{index}"
+        source_profile = score_url(source.get("url", ""), source.get("title", ""))
         summary = (
             weather_observations[index - 1]
             if index <= len(weather_observations)
@@ -771,6 +813,15 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
                 url=source.get("url"),
                 badge=source.get("badge", ""),
                 source_reason=source.get("reason"),
+                source_class=source.get("source_class") or source_profile.get("source_class"),
+                source_tier=source_profile.get("tier"),
+                is_primary_authority=bool(
+                    source.get("is_primary_authority", source_profile.get("is_primary_authority"))
+                ),
+                authority_key=_authority_key_from_parts(
+                    url=source.get("url"),
+                    title=source.get("title"),
+                ),
             )
         )
         evidence_ids_by_module["weather"].append(evidence_id)
@@ -782,6 +833,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
     }
     for index, document in enumerate(carrier_payload.get("document_pack", []), 1):
         evidence_id = f"carrier-document-{index}"
+        source_profile = score_url(document.get("url", ""), document.get("title", ""))
         evidence_items.append(
             EvidenceItem(
                 evidence_id=evidence_id,
@@ -792,6 +844,13 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
                 url=document.get("url"),
                 badge=document.get("badge", ""),
                 source_reason=carrier_source_reasons.get(document.get("url")),
+                source_class=source_profile.get("source_class"),
+                source_tier=source_profile.get("tier"),
+                is_primary_authority=bool(source_profile.get("is_primary_authority")),
+                authority_key=_authority_key_from_parts(
+                    url=document.get("url"),
+                    title=document.get("title"),
+                ),
             )
         )
         evidence_ids_by_module["carrier"].append(evidence_id)
@@ -804,6 +863,8 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
     for issue_index, issue in enumerate(caselaw_payload.get("issues", []), 1):
         for case_index, case in enumerate(issue.get("cases", []), 1):
             evidence_id = f"caselaw-case-{issue_index}-{case_index}"
+            source_profile = score_url(case.get("url", ""), case.get("name", ""))
+            normalized_citation = _normalize_citation_value(case.get("citation"))
             evidence_items.append(
                 EvidenceItem(
                     evidence_id=evidence_id,
@@ -814,14 +875,32 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
                     url=case.get("url"),
                     badge=case.get("badge", ""),
                     source_reason=caselaw_source_reasons.get(case.get("url")),
+                    source_class=case.get("source_class") or source_profile.get("source_class"),
+                    source_tier=case.get("source_tier") or source_profile.get("tier"),
+                    is_primary_authority=bool(
+                        case.get("is_primary_authority", source_profile.get("is_primary_authority"))
+                    ),
+                    authority_key=_authority_key_from_parts(
+                        citation=normalized_citation,
+                        title=case.get("name"),
+                        court=case.get("court"),
+                        year=case.get("year"),
+                        url=case.get("url"),
+                    ),
                     issue=issue.get("issue"),
-                    citation=case.get("citation") or None,
+                    citation=normalized_citation,
                 )
             )
             evidence_ids_by_module["caselaw"].append(evidence_id)
 
     for index, check in enumerate(citecheck_payload.get("checks", []), 1):
         evidence_id = f"citation-check-{index}"
+        has_source_url = bool(check.get("source_url"))
+        normalized_citation = _normalize_citation_value(check.get("citation"))
+        source_profile = score_url(
+            check.get("source_url") or "",
+            check.get("case_name") or check.get("citation") or f"Citation Check {index}",
+        )
         evidence_items.append(
             EvidenceItem(
                 evidence_id=evidence_id,
@@ -832,13 +911,24 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
                 url=check.get("source_url"),
                 badge=check.get("badge", ""),
                 source_reason=check.get("status"),
-                citation=check.get("citation") or None,
+                source_class=check.get("source_class") or (source_profile.get("source_class") if has_source_url else None),
+                source_tier=check.get("source_tier") or (source_profile.get("tier") if has_source_url else None),
+                is_primary_authority=bool(
+                    check.get("is_primary_authority", source_profile.get("is_primary_authority")) if has_source_url else False
+                ),
+                authority_key=_authority_key_from_parts(
+                    citation=normalized_citation,
+                    title=check.get("case_name"),
+                    url=check.get("source_url"),
+                ),
+                citation=normalized_citation,
                 review_required=check.get("status") != "verified",
             )
         )
         evidence_ids_by_module["citation_verify"].append(evidence_id)
 
     evidence_clusters = _build_evidence_clusters(evidence_items)
+    quality_snapshot = _build_quality_snapshot(evidence_items, evidence_clusters, citecheck_payload)
 
     evidence_cluster_ids_by_evidence_id = {
         evidence_id: cluster.cluster_id
@@ -1008,13 +1098,14 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         "Carrier Document Pack",
         "Case Law",
         "Appendix: Query Plan",
+        "Appendix: Quality Snapshot",
         "Appendix: Evidence Clusters",
         "Appendix: Evidence Index",
         "Appendix: All Sources",
         "Methodology & Limitations",
     ]
     if review_events:
-        section_titles.insert(8, "Appendix: Review Log")
+        section_titles.insert(9, "Appendix: Review Log")
 
     section_ids = [_stable_token(title) for title in section_titles]
 
@@ -1028,6 +1119,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         evidence_clusters=evidence_clusters,
         memo_claims=memo_claims,
         review_events=review_events,
+        quality_snapshot=quality_snapshot,
         export_artifact=ExportArtifact(
             artifact_id=f"{run_id}:artifact:markdown-memo",
             run_id=run_id,
@@ -1084,6 +1176,9 @@ def _build_evidence_clusters(evidence_items: list[EvidenceItem]) -> list[Evidenc
         first = items[0]
         modules = list(dict.fromkeys(item.module for item in items))
         label = first.citation or first.title or first.summary or first.evidence_type
+        provenance_urls = list(
+            dict.fromkeys(item.url for item in items if item.url)
+        )
         clusters.append(
             EvidenceCluster(
                 cluster_id=f"cluster-{index}",
@@ -1093,6 +1188,9 @@ def _build_evidence_clusters(evidence_items: list[EvidenceItem]) -> list[Evidenc
                 modules=modules,
                 citation=first.citation,
                 url=first.url,
+                authority_key=first.authority_key,
+                provenance_urls=provenance_urls,
+                member_count=len(items),
                 review_required=any(item.review_required for item in items),
             )
         )
@@ -1100,7 +1198,129 @@ def _build_evidence_clusters(evidence_items: list[EvidenceItem]) -> list[Evidenc
     return clusters
 
 
+def _build_quality_snapshot(
+    evidence_items: list[EvidenceItem],
+    evidence_clusters: list[EvidenceCluster],
+    citecheck_payload: Mapping[str, Any],
+) -> QualitySnapshot:
+    evidence_items_by_id = {item.evidence_id: item for item in evidence_items}
+    source_class_counts: dict[str, int] = {}
+    primary_source_count = 0
+    classified_cluster_count = 0
+    source_class_rank = {
+        "court_opinion": 0,
+        "statute_regulation": 1,
+        "government_guidance": 2,
+        "commentary": 3,
+        "news": 4,
+        "other": 5,
+    }
+
+    for cluster in evidence_clusters:
+        cluster_items = [
+            evidence_items_by_id[evidence_id]
+            for evidence_id in cluster.evidence_ids
+            if evidence_id in evidence_items_by_id
+        ]
+        if not cluster_items:
+            continue
+        classified_items = [item for item in cluster_items if item.source_class]
+        if not classified_items:
+            continue
+        classified_cluster_count += 1
+        best_class = min(
+            (
+                item.source_class or "other"
+                for item in classified_items
+            ),
+            key=lambda value: source_class_rank.get(value, 9),
+        )
+        source_class_counts[best_class] = source_class_counts.get(best_class, 0) + 1
+        if any(item.is_primary_authority for item in classified_items):
+            primary_source_count += 1
+
+    citation_status_counts: dict[str, int] = {}
+    citation_reason_counts: dict[str, int] = {}
+    for check in citecheck_payload.get("checks", []):
+        status = (check.get("status") or "").strip()
+        if status:
+            citation_status_counts[status] = citation_status_counts.get(status, 0) + 1
+        reason = (check.get("status_reason") or "").strip()
+        if reason:
+            citation_reason_counts[reason] = citation_reason_counts.get(reason, 0) + 1
+
+    evidence_item_count = len(evidence_items)
+    evidence_cluster_count = len(evidence_clusters)
+    normalized_authority_count = sum(1 for cluster in evidence_clusters if cluster.authority_key)
+    provenance_link_count = sum(len(cluster.provenance_urls) for cluster in evidence_clusters)
+
+    return QualitySnapshot(
+        source_class_counts=source_class_counts,
+        primary_source_count=primary_source_count,
+        secondary_source_count=max(0, classified_cluster_count - primary_source_count),
+        citation_status_counts=citation_status_counts,
+        citation_reason_counts=citation_reason_counts,
+        evidence_item_count=evidence_item_count,
+        evidence_cluster_count=evidence_cluster_count,
+        grouped_evidence_count=max(0, evidence_item_count - evidence_cluster_count),
+        raw_evidence_count=evidence_item_count,
+        normalized_authority_count=normalized_authority_count,
+        duplicate_authority_count=max(0, evidence_item_count - normalized_authority_count),
+        provenance_link_count=provenance_link_count,
+    )
+
+
+def _authority_key_from_parts(
+    *,
+    citation: str | None = None,
+    title: str | None = None,
+    court: str | None = None,
+    year: str | None = None,
+    url: str | None = None,
+) -> str | None:
+    normalized_citation = _normalize_citation_value(citation)
+    if normalized_citation:
+        return f"citation:{normalized_citation}"
+
+    normalized_name = _normalize_authority_name(title)
+    if normalized_name:
+        parts = [normalized_name]
+        normalized_court = _normalize_authority_name(court)
+        if normalized_court:
+            parts.append(normalized_court)
+        if year:
+            parts.append(str(year).strip())
+        return "authority:" + "|".join(parts)
+
+    normalized_url = _normalize_cluster_url(url or "")
+    if normalized_url:
+        return f"url:{normalized_url}"
+    return None
+
+
+def _normalize_citation_value(value: str | None) -> str | None:
+    if not value:
+        return None
+    normalized = value.lower()
+    normalized = normalized.replace(",", " ")
+    normalized = normalized.replace(".", ". ")
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    normalized = re.sub(r"\s+\.\s+", ". ", normalized)
+    return normalized or None
+
+
+def _normalize_authority_name(value: str | None) -> str:
+    if not value:
+        return ""
+    normalized = re.sub(r"[^a-z0-9]+", " ", value.lower())
+    return re.sub(r"\s+", " ", normalized).strip()
+
+
 def _cluster_key_for_item(item: EvidenceItem) -> tuple[str, str]:
+    if item.authority_key:
+        if item.authority_key.startswith("citation:"):
+            return ("citation", item.authority_key.removeprefix("citation:"))
+        return ("derived", item.authority_key)
     if item.citation:
         return ("citation", item.citation.lower())
     if item.url:
@@ -1110,7 +1330,17 @@ def _cluster_key_for_item(item: EvidenceItem) -> tuple[str, str]:
 
 
 def _normalize_cluster_url(url: str) -> str:
-    return url.strip().rstrip("/").lower()
+    if not url:
+        return ""
+    try:
+        parsed = urlparse(url.strip())
+    except Exception:
+        return url.strip().rstrip("/").lower()
+
+    hostname = (parsed.hostname or "").lower().removeprefix("www.")
+    path = re.sub(r"/+", "/", (parsed.path or "").rstrip("/"))
+    normalized = f"{hostname}{path}".strip("/")
+    return normalized.lower()
 
 
 def _cluster_ids_for_evidence_ids(

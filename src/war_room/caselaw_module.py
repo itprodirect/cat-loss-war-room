@@ -87,6 +87,10 @@ def _is_case_like(result: dict) -> bool:
     name = result.get("name", "") or result.get("title", "") or ""
     url = (result.get("url") or "").strip()
     legal_host = bool(url) and _is_legal_case_host(url)
+    source_class = result.get("source_class")
+
+    if source_class in {"commentary", "news"}:
+        return False
 
     if _CASE_NAME_RE.search(name):
         if legal_host:
@@ -98,6 +102,54 @@ def _is_case_like(result: dict) -> bool:
         return True
 
     return False
+
+
+def _normalized_result_url(url: str) -> str:
+    return url.strip().rstrip("/").lower()
+
+
+def _normalize_case_citation(citation: str) -> str:
+    return " ".join((citation or "").lower().split())
+
+
+def _normalize_case_name(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", (name or "").lower()).strip()
+
+
+def _case_dedupe_key(case_info: dict[str, Any]) -> tuple[str, str]:
+    citation = _normalize_case_citation(case_info.get("citation", ""))
+    if citation:
+        return ("citation", citation)
+    url = _normalized_result_url(case_info.get("url", ""))
+    if url:
+        return ("url", url)
+    return ("name", _normalize_case_name(case_info.get("name", "")))
+
+
+def _dedupe_case_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Collapse duplicate authorities by citation first, then normalized URL/name."""
+    deduped: dict[tuple[str, str], dict[str, Any]] = {}
+    order: list[tuple[str, str]] = []
+
+    for result in results:
+        url = (result.get("url") or "").strip()
+        if not url:
+            continue
+        score = score_url(url, result.get("title", ""))
+        if score["tier"] == "paywalled":
+            continue
+        enriched = {**result, "_score": score}
+        case_info = _extract_case_info(enriched)
+        enriched["_case_info"] = case_info
+        key = _case_dedupe_key(case_info if _is_case_like(case_info) else {"url": url, "name": result.get("title", "")})
+        if key not in deduped:
+            deduped[key] = enriched
+            order.append(key)
+            continue
+        if _case_result_priority(enriched) < _case_result_priority(deduped[key]):
+            deduped[key] = enriched
+
+    return [deduped[key] for key in order]
 
 
 def build_caselaw_pack(
@@ -188,21 +240,7 @@ def _assemble_pack(
     results: list[dict],
 ) -> dict[str, Any]:
     """Organize results by legal issue."""
-    # Deduplicate
-    seen: set[str] = set()
-    unique: list[dict] = []
-    for result in results:
-        if result["url"] and result["url"] not in seen:
-            seen.add(result["url"])
-            unique.append(result)
-
-    # Score and filter out paywalled.
-    scored = []
-    for result in unique:
-        score = score_url(result["url"])
-        if score["tier"] != "paywalled":
-            scored.append({**result, "_score": score})
-
+    scored = _dedupe_case_results(results)
     scored.sort(key=_case_result_priority)
 
     # Map categories to legal issues
@@ -223,7 +261,7 @@ def _assemble_pack(
     for result in scored:
         category = result.get("category", "general")
         issue_label = issue_map.get(category, category.replace("_", " ").title())
-        case_info = _extract_case_info(result)
+        case_info = result.get("_case_info") or _extract_case_info(result)
         if _is_case_like(case_info):
             issues_dict.setdefault(issue_label, []).append(result)
             continue
@@ -242,7 +280,7 @@ def _assemble_pack(
         for result in issue_results[:6]:  # scan up to 6, keep max 3
             if total_cases >= 12 or len(cases) >= 3:
                 break
-            case_info = _extract_case_info(result)
+            case_info = result.get("_case_info") or _extract_case_info(result)
             if not _is_case_like(case_info):
                 continue
             cases.append(case_info)
@@ -270,7 +308,9 @@ def _assemble_pack(
             "title": result.get("title", ""),
             "url": result["url"],
             "badge": score["badge"],
-            "reason": score["label"],
+            "reason": f"{score['label']} - {score['source_class_label']}",
+            "source_class": score["source_class"],
+            "is_primary_authority": score["is_primary_authority"],
         })
         if len(sources) >= 15:
             break
@@ -282,21 +322,35 @@ def _assemble_pack(
     })
 
 
-def _case_result_priority(result: dict[str, Any]) -> tuple[int, int, int, str]:
-    """Prefer legal-host cases with explicit citations over commentary."""
+def _case_result_priority(result: dict[str, Any]) -> tuple[int, int, int, int, int, int, str]:
+    """Prefer primary-law authorities with citations over commentary and news."""
     tier_rank = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
-    case_info = _extract_case_info(result)
+    source_class_rank = {
+        "court_opinion": 0,
+        "statute_regulation": 1,
+        "government_guidance": 2,
+        "commentary": 3,
+        "news": 4,
+        "other": 5,
+    }
+    case_info = result.get("_case_info") or _extract_case_info(result)
     title = (case_info.get("name", "") or "").lower()
 
+    primary_authority_penalty = 0 if result["_score"].get("is_primary_authority") else 1
+    source_class_penalty = source_class_rank.get(result["_score"].get("source_class"), 9)
     legal_host_bonus = 0 if _is_legal_case_host(result["url"]) else 1
     citation_bonus = 0 if case_info.get("citation") else 1
+    metadata_penalty = _thin_case_metadata_penalty(case_info)
     commentary_penalty = 1 if _looks_like_commentary_title(case_info.get("name", "")) else 0
 
     return (
+        primary_authority_penalty,
+        source_class_penalty,
         tier_rank.get(result["_score"]["tier"], 9),
         legal_host_bonus,
         commentary_penalty,
         citation_bonus,
+        metadata_penalty,
         title,
     )
 
@@ -355,7 +409,21 @@ def _extract_case_info(result: dict) -> dict[str, Any]:
         "one_liner": one_liner,
         "url": result["url"],
         "badge": score["badge"],
+        "source_class": score["source_class"],
+        "source_tier": score["tier"],
+        "is_primary_authority": score["is_primary_authority"],
     }
+
+
+def _thin_case_metadata_penalty(case_info: dict[str, Any]) -> int:
+    penalty = 0
+    if not case_info.get("citation"):
+        penalty += 2
+    if not case_info.get("court"):
+        penalty += 1
+    if not case_info.get("year"):
+        penalty += 1
+    return penalty
 
 
 def _issue_note(issue_label: str, intake: CaseIntake) -> str:

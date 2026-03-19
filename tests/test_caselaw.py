@@ -40,7 +40,12 @@ def test_extract_case_info() -> None:
         "title": "Smith v. Insurance Co",
         "snippet": "Wind damage coverage case",
         "text": "Smith v. Insurance Co, 234 So. 3d 789 (Fla. App. 2022). The court found coverage...",
-        "_score": {"tier": "professional", "badge": "X"},
+        "_score": {
+            "tier": "professional",
+            "badge": "X",
+            "source_class": "court_opinion",
+            "is_primary_authority": True,
+        },
     }
     info = _extract_case_info(result)
     assert info["name"] == "Smith v. Insurance Co"
@@ -48,6 +53,7 @@ def test_extract_case_info() -> None:
     assert info["badge"] == "X"
     assert "citation" in info
     assert "year" in info
+    assert info["source_tier"] == "professional"
 
 
 def test_pack_limits_cases() -> None:
@@ -90,6 +96,58 @@ def test_pack_excludes_commentary_titles_from_cases() -> None:
 
     assert "Sebo v. American Home Assurance Co." in case_names
     assert all("JD Supra" not in name for name in case_names)
+
+
+def test_pack_dedupes_duplicate_citations_and_prefers_primary_authority() -> None:
+    results = [
+        {
+            "url": "https://casetext.com/case/sebo-v-american-home-assurance-co",
+            "title": "Sebo v. American Home Assurance Co.",
+            "snippet": "Florida concurrent causation case",
+            "text": "Sebo v. American Home Assurance Co., 208 So. 3d 694 (Fla. 2016).",
+            "category": "concurrent_causation",
+        },
+        {
+            "url": "https://www.courtlistener.com/opinion/4296801/sebo-v-american-home-assurance-company-inc/",
+            "title": "Sebo v. American Home Assurance Company, Inc.",
+            "snippet": "Florida concurrent causation case",
+            "text": "Sebo v. American Home Assurance Co., 208 So. 3d 694 (Fla. 2016).",
+            "category": "concurrent_causation",
+        },
+    ]
+
+    pack = _assemble_pack(_sample_intake(), results)
+    cases = [case for issue in pack["issues"] for case in issue["cases"]]
+
+    assert len(cases) == 1
+    assert cases[0]["is_primary_authority"] is True
+    assert cases[0]["source_class"] == "court_opinion"
+    assert "courtlistener.com" in cases[0]["url"]
+
+
+def test_pack_prefers_richer_case_metadata_when_authority_class_is_equal() -> None:
+    results = [
+        {
+            "url": "https://www.courtlistener.com/opinion/111/example-v-carrier/",
+            "title": "Example v. Carrier",
+            "snippet": "thin result",
+            "text": "Example v. Carrier.",
+            "category": "coverage_law",
+        },
+        {
+            "url": "https://www.courtlistener.com/opinion/222/example-v-carrier-full/",
+            "title": "Example v. Carrier",
+            "snippet": "full result",
+            "text": "Example v. Carrier, 123 So. 3d 456 (Fla. App. 2022).",
+            "category": "coverage_law",
+        },
+    ]
+
+    pack = _assemble_pack(_sample_intake(), results)
+    case = pack["issues"][0]["cases"][0]
+
+    assert case["citation"] == "123 So. 3d 456"
+    assert case["year"] == "2022"
 
 
 

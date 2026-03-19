@@ -909,3 +909,109 @@ Status: Complete
 - Confirmed issue drift: `#23` and `#24` were still open in GitHub even though the repo already treated them as completed written source-of-truth specs.
 - Synced the canonical status docs so `README.md`, `docs/HANDOFF.md`, `docs/ROADMAP.md`, `docs/V2_ISSUE_MAP.md`, `docs/PROJECT_HEALTH_AUDIT_2026-03-10.md`, and `CLAUDE.md` all describe `#23` and `#24` as complete-and-closed definition issues.
 - Left `#27`, `#6`, `#7`, `#8`, and `#9` open because the docs still show real remaining implementation and operationalization scope.
+
+## Session 57 - Blueprint Follow-Up Sync
+Date: 2026-03-18
+Status: Complete
+
+- Updated `docs/V2_BLUEPRINT.md` so the immediate-next-actions section no longer treats `#23` and `#24` as future work.
+- Confirmed the remaining active foundation sequence still centers on `#27` plus the unfinished `#6` to `#9` slices before major V2 implementation.
+
+## Session 58 - Retrieval Quality Tranche 1
+Date: 2026-03-19
+Status: Complete
+
+- Implemented a first coherent retrieval-quality tranche across the notebook-era runtime without breaking offline/demo support:
+  - stronger deterministic source-class tagging in `src/war_room/source_scoring.py`
+  - primary-authority-biased case-law ranking and citation-based dedup in `src/war_room/caselaw_module.py`
+  - safer citation-check degradation with structured confidence/reason fields in `src/war_room/citation_verify.py`
+  - lightweight run-level quality telemetry plus explainable evidence clustering in `src/war_room/models.py`
+  - memo trust-snapshot and quality appendix updates in `src/war_room/export_md.py`
+- Case-law outputs now distinguish authority classes more cleanly:
+  - `court_opinion`
+  - `statute_regulation`
+  - `government_guidance`
+  - `commentary`
+  - `news`
+  - `other`
+- Core case-law ranking now prefers primary authorities over commentary-style legal explainers and collapses duplicate authorities by citation before memo assembly.
+- Citation spot-check outputs now keep the existing top-level buckets (`verified`, `uncertain`, `not_found`) but add:
+  - `confidence`
+  - `status_reason`
+  - `trust_explanation`
+  - `source_tier`
+  - `source_class`
+  - `is_primary_authority`
+- Audit snapshots now emit a structured `quality_snapshot` with:
+  - normalized source-class counts
+  - primary vs secondary source counts
+  - citation status and reason buckets
+  - evidence item / cluster counts
+  - grouped-evidence count
+- Memo export now surfaces the new quality hooks in:
+  - `Trust Snapshot`
+  - `Appendix: Quality Snapshot`
+  - expanded citation review table columns
+  - evidence-cluster member counts
+- Added regression coverage in:
+  - `tests/test_source_scoring.py`
+  - `tests/test_caselaw.py`
+  - `tests/test_citation_verify.py`
+  - `tests/test_export.py`
+  - `tests/test_memo_contracts.py`
+- Why this tranche:
+  - the local live retrieval notebook already worked end-to-end
+  - the largest trust gaps were authority mixing, weak citation uncertainty routing, noisy duplicate support, and missing retrieval-quality telemetry
+- What remains:
+  - broader fixture refresh so committed samples expose the richer source-class and citation-reason fields
+  - additional evidence-normalization work under `#12` beyond citation/url grouping
+  - stronger benchmark and release-evidence wiring for these new quality signals
+- Recommended next sprint / issue:
+  - continue `#12` evidence normalization with fixture-backed output calibration
+  - then tighten `#13` and `#14` against refreshed live/fixture comparisons
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_source_scoring.py tests/test_caselaw.py tests/test_citation_verify.py tests/test_export.py tests/test_memo_contracts.py` -> `52 passed`
+  - `.venv\Scripts\python.exe -m war_room --verify` -> `202 passed` and offline preflight success
+
+## Session 59 - Retrieval Quality Tranche 2
+Date: 2026-03-19
+Status: Complete
+
+- Implemented the next retrieval-quality tranche as a normalization-first follow-through on `#12`, with narrow supporting work in `#13`, `#14`, and lightweight `#17` telemetry:
+  - canonical authority-key normalization in `src/war_room/models.py`
+  - provenance-aware evidence clustering and dedup metrics in `src/war_room/models.py`
+  - tighter court-host source classification in `src/war_room/source_scoring.py`
+  - citation-spacing normalization and ambiguity tracking in `src/war_room/citation_verify.py`
+  - stronger thin-metadata penalties in `src/war_room/caselaw_module.py`
+  - memo/export visibility for canonical-authority counts, provenance counts, and alternate citation candidates in `src/war_room/export_md.py`
+- What changed:
+  - evidence items now carry deterministic `authority_key` values where possible
+  - evidence clusters now preserve `provenance_urls` and `authority_key`
+  - quality snapshots now report:
+    - `raw_evidence_count`
+    - `normalized_authority_count`
+    - `duplicate_authority_count`
+    - `provenance_link_count`
+  - citation checks now normalize reporter spacing before match evaluation and report `alternate_candidate_count`
+  - court-host `.gov` pages are no longer treated as primary law unless the path or title actually looks opinion-like
+- Why:
+  - tranche 1 improved ranking and telemetry, but normalization still leaned cluster-first instead of canonical-authority-first
+  - citation ambiguity still needed more explicit routing
+  - official court hosts needed a narrower primary-authority rule to avoid over-trusting search or lookup pages
+- Added/updated regression coverage in:
+  - `tests/test_source_scoring.py`
+  - `tests/test_caselaw.py`
+  - `tests/test_citation_verify.py`
+  - `tests/test_export.py`
+  - `tests/test_memo_contracts.py`
+- Remaining risks:
+  - committed fixture payloads still do not expose the richer optional normalization/citation metadata
+  - the release-scorecard path does not yet consume the new dedup/provenance metrics
+  - preflight intentionally still checks only the stable top-level section set, not the richer appendix surface
+- Recommended next issue / sprint:
+  - continue `#12` with fixture-backed canonical-evidence calibration and optional fixture refresh
+  - then fold the new dedup/provenance metrics into `#17` scorecard and release-evidence reporting
+- Verification:
+  - `$env:PYTHONPATH="src"; pytest -q tests/test_source_scoring.py tests/test_caselaw.py tests/test_citation_verify.py tests/test_export.py tests/test_memo_contracts.py` -> `58 passed`
+  - `.venv\Scripts\python.exe -m war_room --verify` -> `208 passed`, offline preflight success
+  - `.venv\Scripts\python.exe -m war_room --preflight --json` -> success (`scenario_count: 4`, `passed: true`)

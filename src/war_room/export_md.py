@@ -79,6 +79,7 @@ def render_markdown_memo(
         carrier_payload=carrier_payload,
         caselaw_payload=caselaw_payload,
         citecheck_payload=citecheck_payload,
+        audit_snapshot=audit_snapshot,
     ):
         lines.append(f"- {item}")
     lines.append("")
@@ -219,12 +220,17 @@ def render_markdown_memo(
         lines.append("> Use this as a routing signal for review, not as verification.")
         lines.append("")
         _append_claim_trace(lines, audit_snapshot.memo_claims, "citation-check-status")
-        lines.append("| Badge | Case | Citation | Note |")
-        lines.append("|-------|------|----------|------|")
+        lines.append("| Badge | Case | Citation | Confidence | Source Type | Note |")
+        lines.append("|-------|------|----------|------------|-------------|------|")
         for check in checks:
+            source_type = (check.get("source_class") or "unknown").replace("_", " ")
+            note = check.get("note", "")[:60]
+            if check.get("alternate_candidate_count"):
+                note = f"{note} ({check['alternate_candidate_count']} alternates)"
             lines.append(
                 f"| {check.get('badge', '')} | {check.get('case_name', '')[:40]} | "
-                f"{check.get('citation', '')} | {check.get('note', '')[:60]} |"
+                f"{check.get('citation', '')} | {check.get('confidence', '')} | "
+                f"{source_type} | {note} |"
             )
         lines.append("")
 
@@ -242,6 +248,10 @@ def render_markdown_memo(
     lines.append("")
 
     # --- 7. Evidence Appendix ---
+    lines.append("## Appendix: Quality Snapshot")
+    lines.append("")
+    _append_quality_snapshot(lines, audit_snapshot.quality_snapshot)
+
     lines.append("## Appendix: Evidence Clusters")
     lines.append("")
     _append_evidence_clusters(lines, audit_snapshot.evidence_clusters)
@@ -321,13 +331,46 @@ def _append_evidence_clusters(lines: list[str], evidence_clusters: list[Any]) ->
         lines.append("")
         return
 
-    lines.append("| Cluster | Type | Label | Modules | Evidence IDs |")
-    lines.append("|---------|------|-------|---------|--------------|")
+    lines.append("| Cluster | Type | Label | Members | Provenance URLs | Modules | Evidence IDs |")
+    lines.append("|---------|------|-------|---------|-----------------|---------|--------------|")
     for cluster in evidence_clusters:
         lines.append(
             f"| {cluster.cluster_id} | {cluster.cluster_type} | {cluster.label[:50]} | "
+            f"{cluster.member_count} | {len(cluster.provenance_urls)} | "
             f"{', '.join(cluster.modules)} | {', '.join(cluster.evidence_ids)} |"
         )
+    lines.append("")
+
+
+def _append_quality_snapshot(lines: list[str], quality_snapshot: Any) -> None:
+    """Append lightweight structured quality telemetry for the memo run."""
+    if quality_snapshot is None:
+        lines.append("No quality snapshot captured.")
+        lines.append("")
+        return
+
+    source_class_counts = getattr(quality_snapshot, "source_class_counts", {}) or {}
+    citation_status_counts = getattr(quality_snapshot, "citation_status_counts", {}) or {}
+    citation_reason_counts = getattr(quality_snapshot, "citation_reason_counts", {}) or {}
+
+    lines.append(f"- Sources by class: {_format_count_map(source_class_counts) or 'none'}")
+    lines.append(
+        f"- Primary vs secondary: {quality_snapshot.primary_source_count} primary / "
+        f"{quality_snapshot.secondary_source_count} secondary"
+    )
+    lines.append(f"- Citation buckets: {_format_count_map(citation_status_counts) or 'none'}")
+    if citation_reason_counts:
+        lines.append(f"- Citation reasons: {_format_count_map(citation_reason_counts)}")
+    lines.append(
+        f"- Evidence normalization: {quality_snapshot.evidence_item_count} items -> "
+        f"{quality_snapshot.evidence_cluster_count} clusters "
+        f"({quality_snapshot.grouped_evidence_count} grouped)"
+    )
+    lines.append(
+        f"- Canonical authorities: {quality_snapshot.normalized_authority_count} "
+        f"({quality_snapshot.duplicate_authority_count} duplicates collapsed, "
+        f"{quality_snapshot.provenance_link_count} provenance links)"
+    )
     lines.append("")
 
 
@@ -398,6 +441,19 @@ def _append_citation_summary(lines: list[str], citecheck_payload: dict[str, Any]
     lines.append(f"- Verified: {summary.get('verified', 0)}")
     lines.append(f"- Uncertain: {summary.get('uncertain', 0)}")
     lines.append(f"- Not Found: {summary.get('not_found', 0)}")
+    reason_counts = {}
+    for check in citecheck_payload.get("checks", []):
+        reason = (check.get("status_reason") or "").strip()
+        if reason:
+            reason_counts[reason] = reason_counts.get(reason, 0) + 1
+    if reason_counts:
+        lines.append(f"- Reasons: {_format_count_map(reason_counts)}")
+    alternate_candidates = sum(
+        int(check.get("alternate_candidate_count", 0))
+        for check in citecheck_payload.get("checks", [])
+    )
+    if alternate_candidates:
+        lines.append(f"- Alternate aligned candidates: {alternate_candidates}")
     lines.append("")
 
 
@@ -407,20 +463,52 @@ def _trust_snapshot_lines(
     carrier_payload: dict[str, Any],
     caselaw_payload: dict[str, Any],
     citecheck_payload: dict[str, Any],
+    audit_snapshot: Any,
 ) -> list[str]:
     """Build the top-of-memo trust snapshot."""
     total_cases = sum(len(issue.get("cases", [])) for issue in caselaw_payload.get("issues", []))
     citation_summary = citecheck_payload.get("summary", {})
+    quality_snapshot = getattr(audit_snapshot, "quality_snapshot", None)
+    source_class_line = "Sources by class: unavailable"
+    evidence_line = "Evidence normalization: unavailable"
+    primary_secondary_line = "Primary vs secondary: unavailable"
+    if quality_snapshot is not None:
+        source_class_line = (
+            "Sources by class: "
+            f"{_format_count_map(getattr(quality_snapshot, 'source_class_counts', {}) or {}) or 'none'}"
+        )
+        primary_secondary_line = (
+            "Primary vs secondary: "
+            f"{quality_snapshot.primary_source_count} primary / "
+            f"{quality_snapshot.secondary_source_count} secondary"
+        )
+        evidence_line = (
+            "Evidence normalization: "
+            f"{quality_snapshot.evidence_item_count} items / "
+            f"{quality_snapshot.evidence_cluster_count} clusters / "
+            f"{quality_snapshot.grouped_evidence_count} grouped"
+        )
+        authority_line = (
+            "Canonical authorities: "
+            f"{quality_snapshot.normalized_authority_count} / "
+            f"duplicates collapsed {quality_snapshot.duplicate_authority_count}"
+        )
+    else:
+        authority_line = "Canonical authorities: unavailable"
     return [
         f"Weather sources: {len(weather_payload.get('sources', []))}",
         f"Carrier documents: {len(carrier_payload.get('document_pack', []))}",
         f"Case authorities: {total_cases}",
+        source_class_line,
+        primary_secondary_line,
+        authority_line,
         (
             "Citation spot-checks: "
             f"{citation_summary.get('verified', 0)} verified / "
             f"{citation_summary.get('uncertain', 0)} uncertain / "
             f"{citation_summary.get('not_found', 0)} not found"
         ),
+        evidence_line,
     ]
 
 
@@ -451,3 +539,11 @@ def _build_review_flags(
         )
 
     return flags
+
+
+def _format_count_map(values: dict[str, int]) -> str:
+    parts = []
+    for key, value in values.items():
+        if value:
+            parts.append(f"{key.replace('_', ' ')} {value}")
+    return " / ".join(parts)
