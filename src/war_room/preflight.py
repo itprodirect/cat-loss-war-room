@@ -15,30 +15,10 @@ from war_room.citation_verify import spot_check_citations
 from war_room.export_md import render_markdown_memo
 from war_room.models import CaseIntake
 from war_room.query_plan import generate_query_plan, load_case_intake
+from war_room.scenarios import load_scenario_for_fixture_case
 from war_room.weather_module import build_weather_brief
 
 _REQUIRED_FIXTURE_FILES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
-_FALLBACK_INTAKES: dict[str, dict[str, Any]] = {
-    "milton_citizens_pinellas": {
-        "event_name": "Hurricane Milton",
-        "event_date": "2024-10-09",
-        "state": "FL",
-        "county": "Pinellas",
-        "carrier": "Citizens Property Insurance",
-        "policy_type": "HO-3 Dwelling",
-        "posture": ["denial", "bad_faith"],
-        "key_facts": [
-            "Category 3 at landfall near Siesta Key",
-            "Roof damage and water intrusion reported within 48 hours",
-            "Claim denied citing pre-existing conditions",
-        ],
-        "coverage_issues": [
-            "wind vs water causation",
-            "anti-concurrent causation clause",
-            "duty to investigate",
-        ],
-    },
-}
 _EXPECTED_MEMO_SECTIONS = (
     "## Trust Snapshot",
     "## Case Intake",
@@ -105,7 +85,7 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
         memo_sections: list[str] = []
 
         try:
-            intake, intake_evidence = _load_intake(case_key, intake_path)
+            intake, intake_evidence = _load_intake(case_key, intake_path, repo_root=context.repo_root)
             checks.append(PreflightCheck("intake payload loads", True, intake_evidence))
 
             weather = build_weather_brief(
@@ -155,7 +135,7 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
         scenario_reports.append(
             PreflightScenarioReport(
                 case_key=case_key,
-                intake_path=str(intake_path),
+                intake_path=intake_evidence,
                 checks=checks,
                 memo_length=memo_length,
                 memo_sections=memo_sections,
@@ -232,15 +212,14 @@ def _discover_scenario_dirs(cache_samples_dir: Path) -> list[Path]:
     return scenario_dirs
 
 
-def _load_intake(case_key: str, intake_path: Path) -> tuple[CaseIntake, str]:
+def _load_intake(case_key: str, intake_path: Path, *, repo_root: Path) -> tuple[CaseIntake, str]:
+    scenario = load_scenario_for_fixture_case(case_key, repo_root=repo_root)
+    if scenario is not None:
+        return scenario.to_case_intake(), f"scenario:{scenario.slug}"
+
     if intake_path.exists():
         return load_case_intake(intake_path), str(intake_path)
-
-    fallback = _FALLBACK_INTAKES.get(case_key)
-    if fallback is None:
-        raise FileNotFoundError(f"Intake file not found: {intake_path}")
-
-    return CaseIntake.model_validate(fallback), f"fallback:{case_key}"
+    raise FileNotFoundError(f"Intake file not found: {intake_path}")
 
 
 def _load_json(path: Path) -> dict[str, Any]:

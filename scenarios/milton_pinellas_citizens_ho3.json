@@ -1,0 +1,40 @@
+{
+  "schema_version": "scenario.v1",
+  "slug": "milton_pinellas_citizens_ho3",
+  "title": "Hurricane Milton (Pinellas baseline)",
+  "benchmark_focus": "Baseline Florida hurricane denial benchmark with wind-vs-water, ACC, and investigation issues.",
+  "fixture_case_key": "milton_citizens_pinellas",
+  "offline_demo_ready": true,
+  "event_name": "Hurricane Milton",
+  "event_date": "2024-10-09",
+  "state": "FL",
+  "county": "Pinellas",
+  "carrier": "Citizens Property Insurance",
+  "policy_type": "HO-3 Dwelling",
+  "posture": [
+    "denial",
+    "bad_faith"
+  ],
+  "key_facts": [
+    "Category 3 winds reached the west coast with broad Pinellas roof and envelope damage reports.",
+    "Interior water intrusion was reported within 48 hours after the claimed wind event.",
+    "The carrier position attributed the loss to pre-existing wear and excluded water damage."
+  ],
+  "coverage_issues": [
+    "wind vs water causation",
+    "anti-concurrent causation clause",
+    "duty to investigate"
+  ],
+  "tags": [
+    "florida",
+    "hurricane",
+    "pinellas",
+    "baseline",
+    "citizens",
+    "ho3"
+  ],
+  "notes": [
+    "Default notebook benchmark because the committed cache fixtures already support the offline demo path.",
+    "Use this scenario as the baseline when comparing retrieval-quality changes against prior sessions."
+  ]
+}

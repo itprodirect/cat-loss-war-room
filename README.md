@@ -91,6 +91,22 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 # Run All - should complete in < 10 seconds
 ```
 
+## Benchmark Scenarios
+
+The curated benchmark scenario registry now lives under [`scenarios/`](scenarios).
+
+- The notebook reads a shared `SCENARIO_ID` instead of a hard-coded intake object.
+- The default notebook scenario is `milton_pinellas_citizens_ho3`, which maps to the committed offline Milton fixtures.
+- The other curated Florida hurricane benchmarks are:
+  - `ian_lee_citizens_ho3`
+  - `irma_monroe_citizens_ho3`
+  - `michael_bay_default_ho3`
+  - `idalia_taylor_default_ho3`
+- To switch scenarios, change `SCENARIO_ID` in `notebooks/01_case_war_room.ipynb`.
+- Use `SCENARIO_OVERRIDES` in the notebook for one-off local intake tweaks without editing the canonical scenario files.
+
+Only the Milton benchmark currently has committed offline cache fixtures, so cache-only demos should stay on the default scenario unless live retrieval is enabled.
+
 ## Current Status
 
 **Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, `197` tests are passing under the supported bootstrap path, and CI now enforces:

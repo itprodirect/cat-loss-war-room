@@ -1,0 +1,11 @@
+{
+  "schema_version": "scenario-registry.v1",
+  "default_scenario_id": "milton_pinellas_citizens_ho3",
+  "scenario_order": [
+    "milton_pinellas_citizens_ho3",
+    "ian_lee_citizens_ho3",
+    "irma_monroe_citizens_ho3",
+    "michael_bay_default_ho3",
+    "idalia_taylor_default_ho3"
+  ]
+}

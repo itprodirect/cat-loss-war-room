@@ -1,0 +1,40 @@
+{
+  "schema_version": "scenario.v1",
+  "slug": "michael_bay_default_ho3",
+  "title": "Hurricane Michael (Bay Panhandle wind benchmark)",
+  "benchmark_focus": "Panhandle wind benchmark focused on extreme wind, roof failure, and scope-of-repair disputes.",
+  "fixture_case_key": null,
+  "offline_demo_ready": false,
+  "event_name": "Hurricane Michael",
+  "event_date": "2018-10-10",
+  "state": "FL",
+  "county": "Bay",
+  "carrier": "Florida Peninsula Insurance Company",
+  "policy_type": "HO-3 Dwelling",
+  "posture": [
+    "denial",
+    "underpayment"
+  ],
+  "key_facts": [
+    "The insured location experienced catastrophic wind conditions with widespread roof covering and structural envelope damage.",
+    "Post-loss inspections documented displaced roofing, broken openings, and rain intrusion tied to wind-created openings.",
+    "The carrier position limited covered damage to spot repairs and challenged the need for full roof replacement."
+  ],
+  "coverage_issues": [
+    "wind-created opening",
+    "scope of repair",
+    "matching"
+  ],
+  "tags": [
+    "florida",
+    "hurricane",
+    "bay",
+    "panhandle",
+    "wind-benchmark",
+    "ho3"
+  ],
+  "notes": [
+    "Use this scenario for Panhandle wind cases where the factual dispute is less about surge and more about severe wind forces and repair scope.",
+    "Carrier is intentionally a repeatable default homeowners carrier rather than a claim-specific benchmark dependency."
+  ]
+}

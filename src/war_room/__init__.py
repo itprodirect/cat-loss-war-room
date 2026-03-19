@@ -82,6 +82,15 @@ from war_room.retrieval import (
 )
 from war_room.settings import FeatureFlags, RuntimeEnvironment, WarRoomSettings, load_settings
 from war_room.source_scoring import score_url
+from war_room.scenarios import (
+    ScenarioDefinition,
+    ScenarioValidationError,
+    default_scenario_id,
+    list_scenarios,
+    load_scenario,
+    load_scenario_for_fixture_case,
+    validate_scenario,
+)
 
 __all__ = [
     "BootstrapContext",
@@ -165,4 +174,11 @@ __all__ = [
     "fetch_retrieval_contents",
     "notebook_run_id_from_intake",
     "query_spec_to_retrieval_task",
+    "ScenarioDefinition",
+    "ScenarioValidationError",
+    "default_scenario_id",
+    "list_scenarios",
+    "load_scenario",
+    "load_scenario_for_fixture_case",
+    "validate_scenario",
 ]

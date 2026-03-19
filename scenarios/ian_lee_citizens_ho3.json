@@ -1,0 +1,40 @@
+{
+  "schema_version": "scenario.v1",
+  "slug": "ian_lee_citizens_ho3",
+  "title": "Hurricane Ian (Lee benchmark)",
+  "benchmark_focus": "Southwest Florida benchmark for severe wind, storm-surge overlap, and large-loss adjustment disputes.",
+  "fixture_case_key": null,
+  "offline_demo_ready": false,
+  "event_name": "Hurricane Ian",
+  "event_date": "2022-09-28",
+  "state": "FL",
+  "county": "Lee",
+  "carrier": "Citizens Property Insurance",
+  "policy_type": "HO-3 Dwelling",
+  "posture": [
+    "denial",
+    "underpayment"
+  ],
+  "key_facts": [
+    "The insured property sustained roof failure, broken openings, and prolonged interior water exposure during Ian.",
+    "Local storm-surge reporting complicated the allocation between wind-driven rain and flood-related damage.",
+    "The initial carrier estimate scoped limited repairs despite photographs showing broad exterior and interior damage."
+  ],
+  "coverage_issues": [
+    "wind vs water causation",
+    "concurrent causation",
+    "scope of repair"
+  ],
+  "tags": [
+    "florida",
+    "hurricane",
+    "lee",
+    "benchmark",
+    "citizens",
+    "storm-surge"
+  ],
+  "notes": [
+    "Useful benchmark for Lee County fact patterns where wind and surge narratives compete.",
+    "Strong scenario for testing evidence dedup when many news and government pages discuss the same landfall facts."
+  ]
+}

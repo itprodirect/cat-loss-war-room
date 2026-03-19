@@ -31,6 +31,7 @@ def test_demo_preflight_smoke_covers_committed_scenarios():
 
     scenario_keys = [scenario.case_key for scenario in report.scenarios]
     assert scenario_keys == _expected_scenario_keys()
+    assert report.scenarios[scenario_keys.index("milton_citizens_pinellas")].intake_path == "scenario:milton_pinellas_citizens_ho3"
 
     for scenario in report.scenarios:
         check_names = {check.name for check in scenario.checks}

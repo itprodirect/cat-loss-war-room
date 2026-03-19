@@ -1,0 +1,40 @@
+{
+  "schema_version": "scenario.v1",
+  "slug": "idalia_taylor_default_ho3",
+  "title": "Hurricane Idalia (Taylor Big Bend recent benchmark)",
+  "benchmark_focus": "Recent Big Bend benchmark for rural county storm impacts, mixed wind/water narratives, and current-source retrieval quality.",
+  "fixture_case_key": null,
+  "offline_demo_ready": false,
+  "event_name": "Hurricane Idalia",
+  "event_date": "2023-08-30",
+  "state": "FL",
+  "county": "Taylor",
+  "carrier": "Florida Peninsula Insurance Company",
+  "policy_type": "HO-3 Dwelling",
+  "posture": [
+    "denial",
+    "underpayment"
+  ],
+  "key_facts": [
+    "The property was exposed to hurricane-force winds and coastal flooding conditions during Idalia's Big Bend landfall.",
+    "The insured reported roof damage, broken openings, and rapid interior water intrusion immediately after the storm.",
+    "The carrier estimate omitted portions of exterior and interior scope that the public adjuster tied to wind-driven loss."
+  ],
+  "coverage_issues": [
+    "wind vs water causation",
+    "scope of repair",
+    "ordinance or law"
+  ],
+  "tags": [
+    "florida",
+    "hurricane",
+    "taylor",
+    "big-bend",
+    "recent-benchmark",
+    "ho3"
+  ],
+  "notes": [
+    "Use this benchmark to test recent-source retrieval quality and rural-county evidence coverage after major Florida landfalls.",
+    "Carrier remains a stable default homeowners benchmark rather than a scenario-specific litigation dependency."
+  ]
+}

@@ -1015,3 +1015,43 @@ Status: Complete
   - `$env:PYTHONPATH="src"; pytest -q tests/test_source_scoring.py tests/test_caselaw.py tests/test_citation_verify.py tests/test_export.py tests/test_memo_contracts.py` -> `58 passed`
   - `.venv\Scripts\python.exe -m war_room --verify` -> `208 passed`, offline preflight success
   - `.venv\Scripts\python.exe -m war_room --preflight --json` -> success (`scenario_count: 4`, `passed: true`)
+
+## Session 60 - Five-Storm Scenario Registry
+Date: 2026-03-19
+Status: Complete
+
+- Added a canonical top-level `scenarios/` registry for five curated Florida hurricane benchmark matters:
+  - Hurricane Milton / Pinellas
+  - Hurricane Ian / Lee
+  - Hurricane Irma / Monroe
+  - Hurricane Michael / Bay
+  - Hurricane Idalia / Taylor
+- Added `src/war_room/scenarios.py` with shared loader and validation helpers:
+  - `list_scenarios()`
+  - `load_scenario()`
+  - `load_scenario_for_fixture_case()`
+  - `validate_scenario()`
+  - `default_scenario_id()`
+- Kept the canonical `CaseIntake` schema strict and backward-compatible by validating scenario intake fields through the existing intake contract instead of widening `CaseIntake` for scenario-only metadata.
+- Simplified the notebook so Cell 2 now uses:
+  - `SCENARIO_ID`
+  - shared scenario loading
+  - optional `SCENARIO_OVERRIDES`
+  - a default `case_key` derived from the selected scenario
+- Preserved the current offline demo path:
+  - the default notebook scenario remains Milton
+  - Milton still maps to the committed offline fixture key `milton_citizens_pinellas`
+  - preflight now prefers registry-backed intake data for matching fixture scenarios instead of a hard-coded fallback payload
+- Added regression coverage in:
+  - `tests/test_scenarios.py`
+  - `tests/test_preflight.py`
+- Why:
+  - the benchmark matters now live in one stable source of truth instead of being split across notebook cells, test constants, and preflight fallback code
+  - notebook, tests, and future app code can now load the same curated intake definitions through one reusable module
+- Remaining risks:
+  - only the Milton benchmark currently has committed offline cache fixtures
+  - the other four Florida scenarios are registry-ready for notebook and future app use, but still rely on live retrieval or future fixture seeding for full offline execution
+  - `eval/intakes/` still exists for the separate live-eval lane and is intentionally not replaced in this slice
+- Recommended next issue / sprint:
+  - seed committed cache fixtures for the remaining four Florida hurricane benchmarks under `#8`
+  - then teach release-scorecard and benchmark reporting to surface registry coverage alongside cache fixture coverage
