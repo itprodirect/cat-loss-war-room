@@ -15,7 +15,11 @@ from war_room.citation_verify import spot_check_citations
 from war_room.export_md import render_markdown_memo
 from war_room.models import CaseIntake
 from war_room.query_plan import generate_query_plan, load_case_intake
-from war_room.scenarios import load_scenario_for_fixture_case
+from war_room.scenarios import (
+    ScenarioAvailabilitySummary,
+    fixture_case_availability_summary,
+    load_scenario_for_fixture_case,
+)
 from war_room.weather_module import build_weather_brief
 
 _REQUIRED_FIXTURE_FILES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
@@ -53,6 +57,7 @@ class PreflightScenarioReport:
 
     case_key: str
     intake_path: str
+    availability: ScenarioAvailabilitySummary
     checks: list[PreflightCheck] = field(default_factory=list)
     memo_length: int = 0
     memo_sections: list[str] = field(default_factory=list)
@@ -80,13 +85,31 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
     for scenario_dir in _discover_scenario_dirs(context.settings.cache_samples_dir):
         case_key = scenario_dir.name
         intake_path = context.repo_root / "eval" / "intakes" / f"{case_key}.json"
+        registry_scenario = load_scenario_for_fixture_case(case_key, repo_root=context.repo_root)
         checks: list[PreflightCheck] = []
+        intake_evidence = str(intake_path)
+        availability = fixture_case_availability_summary(
+            case_key=case_key,
+            title=case_key,
+            registry_slug=registry_scenario.slug if registry_scenario is not None else None,
+            registry_offline_ready=(
+                registry_scenario.offline_demo_ready if registry_scenario is not None else None
+            ),
+        )
         memo_length = 0
         memo_sections: list[str] = []
 
         try:
             intake, intake_evidence = _load_intake(case_key, intake_path, repo_root=context.repo_root)
             checks.append(PreflightCheck("intake payload loads", True, intake_evidence))
+            availability = fixture_case_availability_summary(
+                case_key=case_key,
+                title=registry_scenario.title if registry_scenario is not None else intake.event_name,
+                registry_slug=registry_scenario.slug if registry_scenario is not None else None,
+                registry_offline_ready=(
+                    registry_scenario.offline_demo_ready if registry_scenario is not None else None
+                ),
+            )
 
             weather = build_weather_brief(
                 intake,
@@ -136,6 +159,7 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
             PreflightScenarioReport(
                 case_key=case_key,
                 intake_path=intake_evidence,
+                availability=availability,
                 checks=checks,
                 memo_length=memo_length,
                 memo_sections=memo_sections,
@@ -168,6 +192,9 @@ def render_demo_preflight_report(report: DemoPreflightReport) -> str:
     for scenario in report.scenarios:
         lines.append(f"## {scenario.case_key}")
         lines.append(f"- Intake: {scenario.intake_path}")
+        lines.append(
+            f"- Availability: {scenario.availability.status} | {scenario.availability.detail}"
+        )
         lines.append(f"- Memo length: {scenario.memo_length}")
         if scenario.memo_sections:
             lines.append(f"- Memo sections: {', '.join(scenario.memo_sections)}")
@@ -192,6 +219,7 @@ def report_to_payload(report: DemoPreflightReport) -> dict[str, Any]:
             {
                 "case_key": scenario.case_key,
                 "intake_path": scenario.intake_path,
+                "availability": asdict(scenario.availability),
                 "memo_length": scenario.memo_length,
                 "memo_sections": scenario.memo_sections,
                 "checks": [asdict(check) for check in scenario.checks],

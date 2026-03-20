@@ -34,12 +34,15 @@ def test_demo_preflight_smoke_covers_committed_scenarios():
     assert report.scenarios[scenario_keys.index("milton_citizens_pinellas")].intake_path == "scenario:milton_pinellas_citizens_ho3"
 
     for scenario in report.scenarios:
+        assert scenario.availability.status == "offline-ready"
         check_names = {check.name for check in scenario.checks}
         assert "intake payload loads" in check_names
         assert "memo includes disclaimer language" in check_names
         assert "memo includes expected major sections" in check_names
         assert scenario.memo_length > 0
         assert len(scenario.memo_sections) == 10
+    assert any("Registry scenario" in scenario.availability.detail for scenario in report.scenarios)
+    assert any("No registry scenario maps" in scenario.availability.detail for scenario in report.scenarios)
 
 
 def test_demo_preflight_rendering_includes_summary():
@@ -52,6 +55,8 @@ def test_demo_preflight_rendering_includes_summary():
     assert f"Scenario count: {len(_expected_scenario_keys())}" in rendered
     assert "ida_lloyds_orleans" in rendered
     assert "Passed: Yes" in rendered
+    assert "Availability: offline-ready" in rendered
+    assert "Registry scenario" in rendered
 
 
 def test_bootstrap_cli_preflight_json_output(monkeypatch, capsys):
@@ -64,3 +69,4 @@ def test_bootstrap_cli_preflight_json_output(monkeypatch, capsys):
     assert payload["passed"] is True
     assert payload["scenario_count"] == len(_expected_scenario_keys())
     assert len(payload["scenarios"]) == len(_expected_scenario_keys())
+    assert payload["scenarios"][0]["availability"]["status"] == "offline-ready"
