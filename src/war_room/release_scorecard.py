@@ -10,6 +10,7 @@ from datetime import date
 from pathlib import Path
 
 from war_room.bootstrap import bootstrap_runtime
+from war_room.scenarios import default_scenario_id as get_default_scenario_id, list_scenarios
 
 DEFAULT_VERIFICATION_COMMAND = "pytest -q"
 _FIXTURE_FILE_NAMES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
@@ -59,6 +60,30 @@ class FixtureCoverageSummary:
 
 
 @dataclass(frozen=True)
+class RegistryScenarioCoverage:
+    """Summary of one curated benchmark scenario in the registry."""
+
+    slug: str
+    title: str
+    state: str
+    case_key: str
+    offline_demo_ready: bool
+    has_committed_fixture_bundle: bool
+
+
+@dataclass(frozen=True)
+class ScenarioRegistrySummary:
+    """Aggregate registry coverage used for release-scorecard calibration."""
+
+    scenario_count: int
+    offline_ready_count: int
+    fixture_ready_count: int
+    states: list[str]
+    default_scenario_id: str
+    scenarios: list[RegistryScenarioCoverage]
+
+
+@dataclass(frozen=True)
 class CalibrationThreshold:
     """One measurable threshold used to calibrate release readiness."""
 
@@ -78,6 +103,7 @@ class ReleaseScorecard:
     evaluators: list[str]
     evidence_bundle: list[str]
     fixture_coverage: FixtureCoverageSummary | None
+    scenario_registry: ScenarioRegistrySummary | None
     calibration_thresholds: list[CalibrationThreshold]
     dimensions: list[ScorecardDimension]
     must_pass_gates: list[MustPassGate]
@@ -124,6 +150,40 @@ def collect_fixture_coverage(cache_samples_dir: Path) -> FixtureCoverageSummary:
     )
 
 
+def collect_scenario_registry_coverage(
+    repo_root: Path,
+    cache_samples_dir: Path,
+) -> ScenarioRegistrySummary:
+    """Inspect the benchmark registry and summarize offline-readiness coverage."""
+
+    registry = list_scenarios(repo_root=repo_root)
+    scenarios: list[RegistryScenarioCoverage] = []
+    for scenario in registry:
+        fixture_dir = cache_samples_dir / scenario.case_key
+        has_committed_fixture_bundle = all(
+            (fixture_dir / name).exists() for name in _FIXTURE_FILE_NAMES
+        )
+        scenarios.append(
+            RegistryScenarioCoverage(
+                slug=scenario.slug,
+                title=scenario.title,
+                state=scenario.state,
+                case_key=scenario.case_key,
+                offline_demo_ready=scenario.offline_demo_ready,
+                has_committed_fixture_bundle=has_committed_fixture_bundle,
+            )
+        )
+
+    return ScenarioRegistrySummary(
+        scenario_count=len(scenarios),
+        offline_ready_count=sum(1 for scenario in scenarios if scenario.offline_demo_ready),
+        fixture_ready_count=sum(1 for scenario in scenarios if scenario.has_committed_fixture_bundle),
+        states=sorted({scenario.state for scenario in scenarios if scenario.state}),
+        default_scenario_id=get_default_scenario_id(repo_root=repo_root),
+        scenarios=scenarios,
+    )
+
+
 def build_demo_release_scorecard(
     *,
     candidate: str,
@@ -134,6 +194,7 @@ def build_demo_release_scorecard(
     blocking_gaps: list[str] | None = None,
     decision: str = "Ship",
     fixture_coverage: FixtureCoverageSummary | None = None,
+    scenario_registry: ScenarioRegistrySummary | None = None,
 ) -> ReleaseScorecard:
     """Build the current demo-ready baseline scorecard."""
 
@@ -150,6 +211,16 @@ def build_demo_release_scorecard(
         evidence_bundle.insert(
             1,
             f"Fixture coverage: {fixture_coverage.scenario_count} committed scenarios across {', '.join(fixture_coverage.states)}.",
+        )
+    if scenario_registry and scenario_registry.scenario_count:
+        evidence_bundle.insert(
+            1,
+            (
+                "Scenario registry: "
+                f"{scenario_registry.scenario_count} curated scenarios "
+                f"({scenario_registry.offline_ready_count} offline-ready, "
+                f"{scenario_registry.fixture_ready_count} fixture-backed)."
+            ),
         )
     evidence_bundle.append(
         "Threshold calibration: "
@@ -180,6 +251,18 @@ def build_demo_release_scorecard(
         )
     else:
         evidence_quality_evidence.insert(0, "Broader scenario coverage is still pending under #8.")
+
+    if scenario_registry and scenario_registry.scenario_count:
+        registry_line = (
+            f"Registry coverage keeps {scenario_registry.scenario_count} curated scenarios explicit "
+            f"({scenario_registry.offline_ready_count} offline-ready, "
+            f"{scenario_registry.fixture_ready_count} fixture-backed)."
+        )
+        reliability_evidence.append(registry_line)
+        evidence_quality_evidence.insert(0, registry_line)
+        operational_evidence.append(
+            f"Default benchmark scenario is {scenario_registry.default_scenario_id}."
+        )
 
     dimensions = [
         ScorecardDimension(
@@ -231,7 +314,7 @@ def build_demo_release_scorecard(
             score=1,
             verdict="Weak",
             evidence=operational_evidence,
-            notes="Observability and broader deployment lanes remain future work, but fixture coverage is now explicit in both CI and the scorecard artifact.",
+            notes="Observability and broader deployment lanes remain future work, but fixture and registry coverage are now explicit in both CI and the scorecard artifact.",
         ),
         ScorecardDimension(
             name="Security and Governance",
@@ -290,6 +373,7 @@ def build_demo_release_scorecard(
         evaluators=evaluators or ["local builder"],
         evidence_bundle=evidence_bundle,
         fixture_coverage=fixture_coverage,
+        scenario_registry=scenario_registry,
         calibration_thresholds=calibration_thresholds,
         dimensions=dimensions,
         must_pass_gates=must_pass_gates,
@@ -325,6 +409,27 @@ def render_release_scorecard_markdown(scorecard: ReleaseScorecard) -> str:
         for scenario in scorecard.fixture_coverage.scenarios:
             lines.append(
                 f"- {scenario.case_key}: {scenario.event_summary} | {scenario.carrier} | issues {scenario.issue_count} | citation checks {scenario.citation_checks}"
+            )
+
+    if scorecard.scenario_registry and scorecard.scenario_registry.scenario_count:
+        lines.extend(
+            [
+                "",
+                "## Scenario Registry",
+                f"- Default scenario: {scorecard.scenario_registry.default_scenario_id}",
+                f"- Curated scenarios: {scorecard.scenario_registry.scenario_count}",
+                f"- Offline-ready: {scorecard.scenario_registry.offline_ready_count}",
+                f"- Fixture-backed: {scorecard.scenario_registry.fixture_ready_count}",
+            ]
+        )
+        lines.append("| Slug | State | Offline-ready | Fixture-backed | Case key |")
+        lines.append("|---|---|---|---|---|")
+        for scenario in scorecard.scenario_registry.scenarios:
+            lines.append(
+                f"| {scenario.slug} | {scenario.state} | "
+                f"{'Yes' if scenario.offline_demo_ready else 'No'} | "
+                f"{'Yes' if scenario.has_committed_fixture_bundle else 'No'} | "
+                f"{scenario.case_key} |"
             )
 
     if scorecard.calibration_thresholds:
@@ -435,6 +540,7 @@ def main(argv: list[str] | None = None) -> int:
     context = bootstrap_runtime(start_path=Path(__file__))
     output_dir = Path(args.output_dir) if args.output_dir else context.settings.runs_dir / "release_scorecards"
     fixture_coverage = collect_fixture_coverage(context.settings.cache_samples_dir)
+    scenario_registry = collect_scenario_registry_coverage(context.repo_root, context.settings.cache_samples_dir)
     scorecard = build_demo_release_scorecard(
         candidate=args.candidate,
         verification_summary=args.verification_summary,
@@ -444,6 +550,7 @@ def main(argv: list[str] | None = None) -> int:
         blocking_gaps=args.blocking_gaps,
         decision=args.decision,
         fixture_coverage=fixture_coverage,
+        scenario_registry=scenario_registry,
     )
     json_path, markdown_path = write_release_scorecard_artifacts(scorecard, output_dir=output_dir)
     print(f"Wrote JSON scorecard: {json_path}")

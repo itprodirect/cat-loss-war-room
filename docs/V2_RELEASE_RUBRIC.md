@@ -367,6 +367,7 @@ What this does now:
 - writes Markdown and JSON scorecard artifacts into `runs/release_scorecards/`
 - records the current demo-ready baseline in a repeatable format
 - captures committed fixture coverage from `cache_samples/` so the scorecard reflects the live offline scenario set
+- surfaces scenario-registry and offline-ready coverage alongside committed fixture coverage
 - evaluates explicit demo-ready fixture thresholds inside the artifact
 - runs in CI, validates the ship thresholds, and uploads the same artifact from the release-scorecard job
 - creates a concrete artifact that later `#9` CI work can extend beyond the current demo-ready gate
