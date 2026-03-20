@@ -2,8 +2,9 @@
 
 import tempfile
 
-from war_room.caselaw_module import _assemble_pack, _extract_case_info, build_caselaw_pack
 from war_room.models import CaseIntake
+from war_room.query_plan import generate_query_plan
+from war_room.caselaw_module import _assemble_pack, _extract_case_info, build_caselaw_pack
 
 
 def _sample_intake() -> CaseIntake:
@@ -183,6 +184,28 @@ def test_build_caselaw_pack_emits_retrieval_state() -> None:
     assert all(task["stage_id"].endswith(":caselaw") for task in pack["retrieval_tasks"])
     assert len(pack["run_events"]) == len(pack["retrieval_tasks"]) * 2
     assert {event["event_type"] for event in pack["run_events"]} == {"retrieval_started", "retrieval_completed"}
+
+
+def test_build_caselaw_pack_uses_shared_query_plan(monkeypatch) -> None:
+    shared_plan = generate_query_plan(_sample_intake())
+
+    def _unexpected_regeneration(*args: object, **kwargs: object) -> list[object]:
+        raise AssertionError("caselaw module regenerated the query plan")
+
+    monkeypatch.setattr("war_room.caselaw_module.generate_query_plan", _unexpected_regeneration)
+
+    provider = _CaselawProvider()
+    pack = build_caselaw_pack(
+        _sample_intake(),
+        client=provider,
+        use_cache=False,
+        query_plan=shared_plan,
+    )
+
+    expected_queries = [query for query in shared_plan if query.module == "caselaw"]
+    assert provider.calls == len(expected_queries)
+    assert len(pack["retrieval_tasks"]) == len(expected_queries)
+    assert all(task["query_text"] in {query.query for query in expected_queries} for task in pack["retrieval_tasks"])
 
 def test_build_caselaw_pack_without_client_returns_structured_fallback() -> None:
     intake = _sample_intake()

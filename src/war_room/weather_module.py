@@ -7,7 +7,7 @@ Extracts metrics only when present in retrieved content.
 from __future__ import annotations
 
 import re
-from typing import Any
+from typing import Any, Mapping, Sequence
 
 from war_room.cache_io import cache_get, cached_call
 from war_room.retrieval import (
@@ -17,8 +17,8 @@ from war_room.retrieval import (
     notebook_run_id_from_intake,
     query_spec_to_retrieval_task,
 )
-from war_room.models import CaseIntake, weather_brief_to_payload
-from war_room.query_plan import generate_query_plan
+from war_room.models import CaseIntake, QuerySpec, weather_brief_to_payload
+from war_room.query_plan import generate_query_plan, query_plan_for_module
 from war_room.source_scoring import score_url
 
 GOV_WEATHER_DOMAINS = [
@@ -61,6 +61,7 @@ def build_weather_brief(
     intake: CaseIntake,
     client: RetrievalProvider | None,
     *,
+    query_plan: Sequence[Mapping[str, Any] | QuerySpec] | None = None,
     use_cache: bool = True,
     cache_dir: str = "cache",
     cache_samples_dir: str = "cache_samples",
@@ -85,7 +86,7 @@ def build_weather_brief(
         )
 
     def _fetch() -> dict[str, Any]:
-        queries = [q for q in generate_query_plan(intake) if q.module == "weather"]
+        queries = _weather_queries(intake, query_plan)
         all_results: list[dict] = []
         retrieval_tasks = []
         run_events = []
@@ -131,6 +132,15 @@ def build_weather_brief(
         cache_dir=cache_dir,
         use_cache=use_cache,
     )
+
+
+def _weather_queries(
+    intake: CaseIntake,
+    query_plan: Sequence[Mapping[str, Any] | QuerySpec] | None,
+) -> list[QuerySpec]:
+    if query_plan is not None:
+        return query_plan_for_module(query_plan, "weather")
+    return [query for query in generate_query_plan(intake) if query.module == "weather"]
 
 
 def _empty_weather_brief(intake: CaseIntake, reason: str) -> dict[str, Any]:
