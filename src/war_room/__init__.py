@@ -2,6 +2,38 @@
 
 from war_room.bootstrap import BootstrapContext, bootstrap_runtime, discover_repo_root
 from war_room.cache_io import cached_call
+from war_room.evidence_board import (
+    EvidenceBoardClusterCard,
+    EvidenceBoardItemPreview,
+    EvidenceBoardReadModel,
+    build_evidence_board,
+    build_evidence_board_from_parts,
+    format_evidence_board,
+)
+from war_room.export_history import (
+    ExportHistoryEntry,
+    ExportHistoryReadModel,
+    build_export_history,
+    build_export_history_from_parts,
+    format_export_history,
+)
+from war_room.issue_workspace import (
+    IssueWorkspaceCaseCandidate,
+    IssueWorkspaceCard,
+    IssueWorkspaceCitationOutcome,
+    IssueWorkspaceReadModel,
+    build_issue_workspace,
+    build_issue_workspace_from_parts,
+    format_issue_workspace,
+)
+from war_room.memo_composer import (
+    MemoComposerClaimLink,
+    MemoComposerReadModel,
+    MemoComposerSectionCard,
+    build_memo_composer,
+    build_memo_composer_from_parts,
+    format_memo_composer,
+)
 from war_room.models import (
     CaseCandidate,
     CaseLawPack,
@@ -106,11 +138,36 @@ from war_room.scenarios import (
     scenario_catalog_availability,
     validate_scenario,
 )
+from war_room.workflow_summary import (
+    build_run_timeline,
+    format_research_plan_preview,
+    format_run_timeline,
+)
 
 __all__ = [
     "BootstrapContext",
     "bootstrap_runtime",
     "cached_call",
+    "EvidenceBoardClusterCard",
+    "EvidenceBoardItemPreview",
+    "EvidenceBoardReadModel",
+    "ExportHistoryEntry",
+    "ExportHistoryReadModel",
+    "IssueWorkspaceCaseCandidate",
+    "IssueWorkspaceCard",
+    "IssueWorkspaceCitationOutcome",
+    "IssueWorkspaceReadModel",
+    "MemoComposerClaimLink",
+    "MemoComposerReadModel",
+    "MemoComposerSectionCard",
+    "build_evidence_board",
+    "build_evidence_board_from_parts",
+    "build_export_history",
+    "build_export_history_from_parts",
+    "build_issue_workspace",
+    "build_issue_workspace_from_parts",
+    "build_memo_composer",
+    "build_memo_composer_from_parts",
     "discover_repo_root",
     "FeatureFlags",
     "load_settings",
@@ -203,8 +260,15 @@ __all__ = [
     "scenario_availability_summary",
     "scenario_catalog_availability",
     "validate_scenario",
+    "build_run_timeline",
     "build_intake_from_scenario",
     "ensure_runtime_context",
+    "format_research_plan_preview",
+    "format_run_timeline",
+    "format_evidence_board",
+    "format_export_history",
+    "format_issue_workspace",
+    "format_memo_composer",
     "load_selected_scenario",
     "prepare_notebook_scenario",
     "resolve_live_retrieval_enabled",

@@ -1137,3 +1137,103 @@ Status: Complete
   - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
   - `$env:PYTHONPATH='src'; pytest -q` -> `236 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight success
+
+## Session 64 - Workflow Summary Surface Slice
+Date: 2026-03-20
+Status: Complete
+
+- Added `src/war_room/workflow_summary.py` so the current notebook-era flow can derive a research-plan preview plus canonical run/stage timeline from existing typed contracts instead of leaving operators to infer trust state from scattered prints.
+- What changed:
+  - `format_research_plan_preview()` now renders planned modules, issue hypotheses, preferred domains, and estimated scope from `ResearchPlan`.
+  - `build_run_timeline()` now derives `Run` plus `RunStage` state from the shared research plan, module payloads, citation results, and audit snapshot.
+  - `notebooks/01_case_war_room.ipynb` now prints the plan preview before query rows and prints a run timeline after memo export.
+  - `src/war_room/preflight.py` now records workflow status plus stage-status summaries so the offline smoke report shows review-required run health explicitly.
+  - package exports and regression coverage were updated for the new helper surface.
+- Why:
+  - the last slice unified the shared `ResearchPlan`, but the operator still had to infer workflow state manually from raw module output
+  - this adds the first thin workflow surface without pretending the planned V2 web app already exists
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_workflow_summary.py` -> `4 passed`
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
+  - `$env:PYTHONPATH='src'; pytest -q` -> `240 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports workflow review state
+
+## Session 65 - Evidence Board Read Model Slice
+Date: 2026-03-20
+Status: Complete
+
+- Added `src/war_room/evidence_board.py` so the current notebook-era flow can derive a cluster-first Evidence Board read model from `RunAuditSnapshot` instead of forcing operators to read appendix tables or infer grouped support manually.
+- What changed:
+  - `build_evidence_board()` and `build_evidence_board_from_parts()` now derive cluster cards with source-tier summary, issue labels, linked claims, linked review events, and compact evidence previews.
+  - `format_evidence_board()` now renders a notebook-friendly cluster-first summary with review-required clusters elevated first.
+  - `notebooks/01_case_war_room.ipynb` now prints the evidence-board summary immediately after citation spot-check results.
+  - `src/war_room/preflight.py` now records evidence-board counts so the deterministic offline smoke lane surfaces grouped-support posture alongside workflow status.
+  - package exports and regression coverage were updated for the new read model.
+- Why:
+  - the workflow summary slice exposed run/stage state, but there was still no first-class grouped-support review surface between retrieval output and memo export
+  - this adds the next thin V2-aligned surface without inventing a separate UI runtime
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_evidence_board.py` -> `3 passed`
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
+  - `$env:PYTHONPATH='src'; pytest -q` -> `243 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports evidence-board cluster counts
+
+## Session 66 - Issue Workspace Read Model Slice
+Date: 2026-03-20
+Status: Complete
+
+- Added `src/war_room/issue_workspace.py` so the current notebook-era flow can derive an Issue Workspace read model from `RunAuditSnapshot` instead of forcing operators to infer issue-level support from case-law buckets and appendix tables.
+- What changed:
+  - `build_issue_workspace()` and `build_issue_workspace_from_parts()` now derive issue cards with linked clusters, case candidates, citation outcomes, linked memo claims, and open review events.
+  - `format_issue_workspace()` now renders a notebook-friendly issue summary with strongest authorities and citation state kept inside the issue view.
+  - `notebooks/01_case_war_room.ipynb` now prints the issue-workspace summary immediately after the evidence-board summary.
+  - `src/war_room/preflight.py` now records issue-workspace counts so the deterministic offline smoke lane surfaces issue-level review posture alongside workflow and evidence-board status.
+  - package exports and regression coverage were updated for the new read model.
+- Why:
+  - the evidence-board slice exposed grouped support, but there was still no first-class issue-level review surface between clusters and memo export
+  - this adds the next thin V2-aligned surface without inventing a separate UI runtime
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_issue_workspace.py` -> `3 passed`
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
+  - `$env:PYTHONPATH='src'; pytest -q` -> `246 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports issue-workspace counts
+
+## Session 67 - Memo Composer Read Model Slice
+Date: 2026-03-20
+Status: Complete
+
+- Added `src/war_room/memo_composer.py` so the current notebook-era flow can derive a Memo Composer read model from `RunAuditSnapshot` instead of forcing operators to infer section readiness and export posture from the final markdown alone.
+- What changed:
+  - `build_memo_composer()` and `build_memo_composer_from_parts()` now derive section cards with claim support links, review-event links, review-required state, and export eligibility.
+  - `format_memo_composer()` now renders a notebook-friendly section summary with claim-level cluster linkage and explicit export posture.
+  - `notebooks/01_case_war_room.ipynb` now prints the memo-composer summary in the export cell before the run timeline.
+  - `src/war_room/preflight.py` now records memo-composer counts so the deterministic offline smoke lane surfaces section readiness and export eligibility alongside workflow, evidence-board, and issue-workspace status.
+  - package exports and regression coverage were updated for the new read model.
+- Why:
+  - the issue-workspace slice exposed issue-level review, but there was still no first-class section/readiness surface between issue review and export
+  - this adds the last missing workflow stage before export history without inventing a separate UI runtime
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_memo_composer.py` -> `3 passed`
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
+  - `$env:PYTHONPATH='src'; pytest -q` -> `249 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports memo-composer counts and export eligibility
+
+## Session 68 - Export History Read Model Slice
+Date: 2026-03-20
+Status: Complete
+
+- Added `src/war_room/export_history.py` so the current notebook-era flow can derive an Export History read model from the canonical export artifact and run status instead of forcing operators to infer export posture from the written markdown path alone.
+- What changed:
+  - `build_export_history()` and `build_export_history_from_parts()` now derive export entries with artifact type, timestamp, disclaimer state, run status, delivery state, and audit-snapshot pointer.
+  - `format_export_history()` now renders a notebook-friendly export-history summary with written vs not-written state called out explicitly.
+  - `notebooks/01_case_war_room.ipynb` now prints the export-history summary in the export cell after the run timeline is available.
+  - `src/war_room/preflight.py` now records export-history counts so the deterministic offline smoke lane surfaces final export posture alongside workflow, evidence-board, issue-workspace, and memo-composer status.
+  - package exports and regression coverage were updated for the new read model.
+- Why:
+  - the memo-composer slice exposed section readiness, but there was still no first-class final-stage surface showing whether an export artifact existed, what state it was in, and how it linked back to the audit snapshot
+  - this closes the last missing written workflow stage before a PR
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_export_history.py` -> `3 passed`
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
+  - `$env:PYTHONPATH='src'; pytest -q` -> `252 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports export-history state

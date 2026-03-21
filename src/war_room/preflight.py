@@ -13,6 +13,7 @@ from war_room.caselaw_module import build_caselaw_pack
 from war_room.carrier_module import build_carrier_doc_pack
 from war_room.citation_verify import spot_check_citations
 from war_room.export_md import render_markdown_memo
+from war_room.export_history import build_export_history_from_parts
 from war_room.models import CaseIntake
 from war_room.query_plan import build_research_plan, load_case_intake
 from war_room.scenarios import (
@@ -21,6 +22,10 @@ from war_room.scenarios import (
     load_scenario_for_fixture_case,
 )
 from war_room.weather_module import build_weather_brief
+from war_room.evidence_board import build_evidence_board_from_parts
+from war_room.issue_workspace import build_issue_workspace_from_parts
+from war_room.memo_composer import build_memo_composer_from_parts
+from war_room.workflow_summary import build_run_timeline
 
 _REQUIRED_FIXTURE_FILES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
 _EXPECTED_MEMO_SECTIONS = (
@@ -61,6 +66,18 @@ class PreflightScenarioReport:
     checks: list[PreflightCheck] = field(default_factory=list)
     memo_length: int = 0
     memo_sections: list[str] = field(default_factory=list)
+    workflow_status: str = ""
+    workflow_review_required: bool = False
+    workflow_stage_statuses: list[str] = field(default_factory=list)
+    evidence_cluster_count: int = 0
+    evidence_review_required_cluster_count: int = 0
+    issue_count: int = 0
+    review_required_issue_count: int = 0
+    memo_section_count: int = 0
+    review_required_memo_section_count: int = 0
+    export_eligibility: str = ""
+    export_artifact_count: int = 0
+    export_delivery_state: str = ""
 
 
 @dataclass(frozen=True)
@@ -98,6 +115,18 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
         )
         memo_length = 0
         memo_sections: list[str] = []
+        workflow_status = ""
+        workflow_review_required = False
+        workflow_stage_statuses: list[str] = []
+        evidence_cluster_count = 0
+        evidence_review_required_cluster_count = 0
+        issue_count = 0
+        review_required_issue_count = 0
+        memo_section_count = 0
+        review_required_memo_section_count = 0
+        export_eligibility = ""
+        export_artifact_count = 0
+        export_delivery_state = ""
 
         try:
             intake, intake_evidence = _load_intake(case_key, intake_path, repo_root=context.repo_root)
@@ -151,6 +180,65 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
             memo_length = len(memo)
             memo_sections = [section for section in _EXPECTED_MEMO_SECTIONS if section in memo]
             checks.extend(_memo_checks(memo, memo_sections))
+            run_record, run_stages = build_run_timeline(
+                intake,
+                research_plan,
+                weather,
+                carrier,
+                caselaw,
+                citecheck,
+                environment="preflight",
+                export_written=False,
+            )
+            workflow_status = run_record.status
+            workflow_review_required = run_record.review_required
+            workflow_stage_statuses = [
+                f"{stage.stage_key}={stage.status}"
+                for stage in run_stages
+            ]
+            evidence_board = build_evidence_board_from_parts(
+                intake,
+                weather,
+                carrier,
+                caselaw,
+                citecheck,
+                query_plan,
+            )
+            evidence_cluster_count = evidence_board.total_clusters
+            evidence_review_required_cluster_count = evidence_board.review_required_clusters
+            issue_workspace = build_issue_workspace_from_parts(
+                intake,
+                weather,
+                carrier,
+                caselaw,
+                citecheck,
+                query_plan,
+            )
+            issue_count = len(issue_workspace.issue_cards)
+            review_required_issue_count = issue_workspace.review_required_issue_count
+            memo_composer = build_memo_composer_from_parts(
+                intake,
+                weather,
+                carrier,
+                caselaw,
+                citecheck,
+                query_plan,
+            )
+            memo_section_count = len(memo_composer.section_cards)
+            review_required_memo_section_count = memo_composer.review_required_section_count
+            export_eligibility = memo_composer.export_eligibility
+            export_history = build_export_history_from_parts(
+                intake,
+                weather,
+                carrier,
+                caselaw,
+                citecheck,
+                query_plan,
+                run_status=run_record.status,
+                export_written=False,
+            )
+            export_artifact_count = len(export_history.entries)
+            export_delivery_state = export_history.entries[0].delivery_state if export_history.entries else ""
         except Exception as exc:
             checks.append(
                 PreflightCheck(
@@ -168,6 +256,18 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
                 checks=checks,
                 memo_length=memo_length,
                 memo_sections=memo_sections,
+                workflow_status=workflow_status,
+                workflow_review_required=workflow_review_required,
+                workflow_stage_statuses=workflow_stage_statuses,
+                evidence_cluster_count=evidence_cluster_count,
+                evidence_review_required_cluster_count=evidence_review_required_cluster_count,
+                issue_count=issue_count,
+                review_required_issue_count=review_required_issue_count,
+                memo_section_count=memo_section_count,
+                review_required_memo_section_count=review_required_memo_section_count,
+                export_eligibility=export_eligibility,
+                export_artifact_count=export_artifact_count,
+                export_delivery_state=export_delivery_state,
             )
         )
 
@@ -200,6 +300,36 @@ def render_demo_preflight_report(report: DemoPreflightReport) -> str:
         lines.append(
             f"- Availability: {scenario.availability.status} | {scenario.availability.detail}"
         )
+        if scenario.workflow_status:
+            lines.append(
+                f"- Workflow: {scenario.workflow_status} | review_required="
+                f"{'yes' if scenario.workflow_review_required else 'no'}"
+            )
+        if scenario.workflow_stage_statuses:
+            lines.append(
+                "- Workflow stages: " + ", ".join(scenario.workflow_stage_statuses)
+            )
+        if scenario.evidence_cluster_count:
+            lines.append(
+                f"- Evidence board: {scenario.evidence_cluster_count} clusters | "
+                f"{scenario.evidence_review_required_cluster_count} review_required"
+            )
+        if scenario.issue_count:
+            lines.append(
+                f"- Issue workspace: {scenario.issue_count} issues | "
+                f"{scenario.review_required_issue_count} review_required"
+            )
+        if scenario.memo_section_count:
+            lines.append(
+                f"- Memo composer: {scenario.memo_section_count} sections | "
+                f"{scenario.review_required_memo_section_count} review_required | "
+                f"{scenario.export_eligibility}"
+            )
+        if scenario.export_artifact_count:
+            lines.append(
+                f"- Export history: {scenario.export_artifact_count} artifacts | "
+                f"{scenario.export_delivery_state}"
+            )
         lines.append(f"- Memo length: {scenario.memo_length}")
         if scenario.memo_sections:
             lines.append(f"- Memo sections: {', '.join(scenario.memo_sections)}")
@@ -227,6 +357,18 @@ def report_to_payload(report: DemoPreflightReport) -> dict[str, Any]:
                 "availability": asdict(scenario.availability),
                 "memo_length": scenario.memo_length,
                 "memo_sections": scenario.memo_sections,
+                "workflow_status": scenario.workflow_status,
+                "workflow_review_required": scenario.workflow_review_required,
+                "workflow_stage_statuses": scenario.workflow_stage_statuses,
+                "evidence_cluster_count": scenario.evidence_cluster_count,
+                "evidence_review_required_cluster_count": scenario.evidence_review_required_cluster_count,
+                "issue_count": scenario.issue_count,
+                "review_required_issue_count": scenario.review_required_issue_count,
+                "memo_section_count": scenario.memo_section_count,
+                "review_required_memo_section_count": scenario.review_required_memo_section_count,
+                "export_eligibility": scenario.export_eligibility,
+                "export_artifact_count": scenario.export_artifact_count,
+                "export_delivery_state": scenario.export_delivery_state,
                 "checks": [asdict(check) for check in scenario.checks],
             }
             for scenario in report.scenarios

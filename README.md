@@ -61,11 +61,16 @@ APIs.
 Given a catastrophic loss case (hurricane, hail, etc.), the war room notebook:
 
 1. **Intake** - Captures case facts (location, date, carrier, policy type, posture)
-2. **Query Plan** - Generates 12-18 targeted research queries across three modules
+2. **Research Plan Preview** - Shows planned modules, issue hypotheses, preferred domains, and query scope before execution
 3. **Weather Intel** - Gathers official weather data (.gov sources preferred)
 4. **Carrier Playbook** - Finds carrier denial patterns, regulatory actions, rebuttal angles
 5. **Case Law** - Searches relevant precedent organized by legal issue
-6. **Export** - Produces a structured research memo with source confidence badges
+6. **Evidence Board** - Groups support by evidence cluster with review-required markers and claim usage
+7. **Issue Workspace** - Summarizes issue-level support, strongest authorities, citation state, and open review items
+8. **Memo Composer** - Shows ordered sections, claim support links, review-required state, and export readiness
+9. **Export History** - Captures export artifact state, disclaimer presence, delivery status, and audit linkage
+10. **Run Timeline** - Surfaces stage-by-stage status plus explicit review-required states before reliance
+11. **Export** - Produces a structured research memo with source confidence badges
 
 ## Jupyter Kernel (required)
 
@@ -109,7 +114,7 @@ Only the Milton benchmark currently has committed offline cache fixtures, so cac
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, `236` tests are passing under the supported bootstrap path, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline summary on top of the canonical contracts, `252` tests are passing under the supported bootstrap path, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - Offline fixture smoke validation across committed scenarios

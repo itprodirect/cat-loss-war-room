@@ -109,6 +109,17 @@ def test_notebook_uses_helper_driven_scenario_prep_and_has_no_stale_hardcoded_in
     assert "prepare_notebook_scenario" in scenario_cells[0]
     assert "SETTINGS.live_retrieval_enabled" not in scenario_cells[0]
     assert "build_research_plan" in query_cells[0]
+    assert "format_research_plan_preview" in query_cells[0]
+    assert "build_evidence_board_from_parts" in "".join(code_cells)
+    assert "format_evidence_board" in "".join(code_cells)
+    assert "build_issue_workspace_from_parts" in "".join(code_cells)
+    assert "format_issue_workspace" in "".join(code_cells)
+    assert "build_memo_composer_from_parts" in "".join(code_cells)
+    assert "format_memo_composer" in "".join(code_cells)
+    assert "build_export_history_from_parts" in "".join(code_cells)
+    assert "format_export_history" in "".join(code_cells)
+    assert "build_run_timeline" in "".join(code_cells)
+    assert "format_run_timeline" in "".join(code_cells)
     assert 'query_plan=queries' in "".join(code_cells)
     assert sum("CaseIntake(" in source for source in code_cells) == 0
     assert sum("write_markdown(" in source for source in code_cells) == 1

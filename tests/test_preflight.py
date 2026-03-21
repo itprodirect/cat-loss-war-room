@@ -36,6 +36,19 @@ def test_demo_preflight_smoke_covers_committed_scenarios():
 
     for scenario in report.scenarios:
         assert scenario.availability.status == "offline-ready"
+        assert scenario.workflow_status == "completed"
+        assert scenario.workflow_review_required is True
+        assert "citation_verify=degraded" in scenario.workflow_stage_statuses
+        assert "memo_assembly=degraded" in scenario.workflow_stage_statuses
+        assert scenario.evidence_cluster_count > 0
+        assert scenario.evidence_review_required_cluster_count > 0
+        assert scenario.issue_count > 0
+        assert scenario.review_required_issue_count > 0
+        assert scenario.memo_section_count > 0
+        assert scenario.review_required_memo_section_count > 0
+        assert scenario.export_eligibility == "review_required_export"
+        assert scenario.export_artifact_count == 1
+        assert scenario.export_delivery_state == "not_written"
         check_names = {check.name for check in scenario.checks}
         assert "intake payload loads" in check_names
         assert "memo includes disclaimer language" in check_names
@@ -57,6 +70,11 @@ def test_demo_preflight_rendering_includes_summary():
     assert "ida_lloyds_orleans" in rendered
     assert "Passed: Yes" in rendered
     assert "Availability: offline-ready" in rendered
+    assert "Workflow: completed | review_required=yes" in rendered
+    assert "Evidence board:" in rendered
+    assert "Issue workspace:" in rendered
+    assert "Memo composer:" in rendered
+    assert "Export history:" in rendered
     assert "Registry scenario" in rendered
 
 
@@ -71,6 +89,11 @@ def test_bootstrap_cli_preflight_json_output(monkeypatch, capsys):
     assert payload["scenario_count"] == len(_expected_scenario_keys())
     assert len(payload["scenarios"]) == len(_expected_scenario_keys())
     assert payload["scenarios"][0]["availability"]["status"] == "offline-ready"
+    assert payload["scenarios"][0]["workflow_status"] == "completed"
+    assert payload["scenarios"][0]["evidence_cluster_count"] > 0
+    assert payload["scenarios"][0]["issue_count"] > 0
+    assert payload["scenarios"][0]["memo_section_count"] > 0
+    assert payload["scenarios"][0]["export_artifact_count"] == 1
 
 
 def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
@@ -132,9 +155,61 @@ def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
         if query_plan == research_plan.query_plan
         else "",
     )
+    monkeypatch.setattr(
+        "war_room.preflight.build_run_timeline",
+        lambda *args, **kwargs: (
+            type("RunRecord", (), {"status": "completed", "review_required": False})(),
+            [type("RunStageRecord", (), {"stage_key": "memo_assembly", "status": "completed"})()],
+        ),
+    )
+    monkeypatch.setattr(
+        "war_room.preflight.build_evidence_board_from_parts",
+        lambda *args, **kwargs: type(
+            "EvidenceBoardRecord",
+            (),
+            {"total_clusters": 3, "review_required_clusters": 1},
+        )(),
+    )
+    monkeypatch.setattr(
+        "war_room.preflight.build_issue_workspace_from_parts",
+        lambda *args, **kwargs: type(
+            "IssueWorkspaceRecord",
+            (),
+            {"issue_cards": [object(), object()], "review_required_issue_count": 1},
+        )(),
+    )
+    monkeypatch.setattr(
+        "war_room.preflight.build_memo_composer_from_parts",
+        lambda *args, **kwargs: type(
+            "MemoComposerRecord",
+            (),
+            {
+                "section_cards": [object(), object(), object()],
+                "review_required_section_count": 2,
+                "export_eligibility": "review_required_export",
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        "war_room.preflight.build_export_history_from_parts",
+        lambda *args, **kwargs: type(
+            "ExportHistoryRecord",
+            (),
+            {
+                "entries": [
+                    type("ExportEntry", (), {"delivery_state": "not_written"})(),
+                ],
+            },
+        )(),
+    )
 
     report = run_demo_preflight(context)
 
     assert report.passed is True
     assert len(observed_query_plans) == 3
     assert all(query_plan == research_plan.query_plan for query_plan in observed_query_plans)
+    assert report.scenarios[0].workflow_status == "completed"
+    assert report.scenarios[0].evidence_cluster_count == 3
+    assert report.scenarios[0].issue_count == 2
+    assert report.scenarios[0].memo_section_count == 3
+    assert report.scenarios[0].export_artifact_count == 1
