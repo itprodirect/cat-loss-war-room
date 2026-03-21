@@ -12,7 +12,7 @@ from war_room.notebook_runtime import (
     resolve_live_retrieval_enabled,
     scenario_warning_message,
 )
-from war_room.scenarios import load_scenario
+from war_room.scenarios import load_scenario, scenario_availability_summary, scenario_catalog_availability
 from war_room.settings import FeatureFlags, RuntimeEnvironment, WarRoomSettings
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -99,6 +99,27 @@ def test_scenario_warning_message_suppressed_when_live_retrieval_enabled():
     assert scenario_warning_message(scenario, live_retrieval_enabled=True) is None
 
 
+def test_scenario_availability_summary_distinguishes_offline_ready_and_live_only():
+    milton = load_scenario("milton_pinellas_citizens_ho3", repo_root=ROOT)
+    ian = load_scenario("ian_lee_citizens_ho3", repo_root=ROOT)
+
+    offline_ready = scenario_availability_summary(milton, live_retrieval_enabled=False)
+    live_only = scenario_availability_summary(ian, live_retrieval_enabled=False)
+
+    assert offline_ready.status == "offline-ready"
+    assert "offline-demo-ready" in offline_ready.detail
+    assert live_only.status == "live-only"
+    assert "live-only" in live_only.detail
+
+
+def test_scenario_catalog_availability_reports_current_notebook_statuses():
+    summaries = scenario_catalog_availability(ROOT, live_retrieval_enabled=False)
+
+    assert len(summaries) == 5
+    assert summaries[0].status == "offline-ready"
+    assert {summary.status for summary in summaries} == {"offline-ready", "live-only"}
+
+
 def test_build_intake_from_scenario_applies_overrides():
     scenario, intake = build_intake_from_scenario(
         "idalia_taylor_default_ho3",
@@ -133,9 +154,17 @@ def test_prepare_notebook_scenario_returns_full_contract_and_warning(monkeypatch
     assert selection.intake.coverage_issues == ["scope of repair"]
     assert selection.live_retrieval_enabled is False
     assert selection.warning_message is not None
+    assert selection.scenario_availability.status == "live-only"
+    assert selection.available_scenario_summaries[0].status == "offline-ready"
+    assert {summary.status for summary in selection.available_scenario_summaries} == {
+        "offline-ready",
+        "live-only",
+    }
     assert namespace["SCENARIO_SELECTION"] == selection
     assert namespace["CASE_KEY"] == "ian_lee_citizens_ho3"
     assert namespace["SETTINGS"] == expected_context.settings
+    assert namespace["SCENARIO_AVAILABILITY"].status == "live-only"
+    assert len(namespace["SCENARIO_AVAILABILITY_SUMMARIES"]) == 5
 
 
 def test_prepare_notebook_scenario_uses_existing_context_without_bootstrap(monkeypatch):
@@ -159,3 +188,4 @@ def test_prepare_notebook_scenario_uses_existing_context_without_bootstrap(monke
     assert bootstrap_called is False
     assert selection.live_retrieval_enabled is True
     assert selection.warning_message is None
+    assert selection.scenario_availability.status == "live-only"

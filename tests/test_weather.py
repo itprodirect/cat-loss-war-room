@@ -3,6 +3,7 @@
 import tempfile
 
 from war_room.models import CaseIntake
+from war_room.query_plan import generate_query_plan
 from war_room.weather_module import _assemble_brief, _extract_metrics, build_weather_brief
 
 
@@ -175,6 +176,28 @@ def test_build_weather_brief_emits_retrieval_state() -> None:
     assert all(task["stage_id"].endswith(":weather") for task in brief["retrieval_tasks"])
     assert len(brief["run_events"]) == len(brief["retrieval_tasks"]) * 2
     assert {event["event_type"] for event in brief["run_events"]} == {"retrieval_started", "retrieval_completed"}
+
+
+def test_build_weather_brief_uses_shared_query_plan(monkeypatch) -> None:
+    shared_plan = generate_query_plan(_sample_intake())
+
+    def _unexpected_regeneration(*args: object, **kwargs: object) -> list[object]:
+        raise AssertionError("weather module regenerated the query plan")
+
+    monkeypatch.setattr("war_room.weather_module.generate_query_plan", _unexpected_regeneration)
+
+    provider = _WeatherProvider()
+    brief = build_weather_brief(
+        _sample_intake(),
+        client=provider,
+        use_cache=False,
+        query_plan=shared_plan,
+    )
+
+    expected_queries = [query for query in shared_plan if query.module == "weather"]
+    assert provider.calls == len(expected_queries)
+    assert len(brief["retrieval_tasks"]) == len(expected_queries)
+    assert all(task["query_text"] in {query.query for query in expected_queries} for task in brief["retrieval_tasks"])
 
 def test_build_weather_brief_without_client_returns_structured_fallback() -> None:
     intake = _sample_intake()

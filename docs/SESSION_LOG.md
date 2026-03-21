@@ -1098,3 +1098,42 @@ Status: Complete
 - Recommended next step:
   - seed committed cache fixtures for the remaining four Florida hurricane benchmarks under `#8`
   - then add a small benchmark-facing summary surface so notebook users can see offline-ready vs live-only scenario status before execution
+
+## Session 62 - Foundation Focus Slices
+Date: 2026-03-20
+Status: Complete
+
+- Landed three bounded foundation slices on `codex/foundation-focus-slices`:
+  - release-scorecard artifacts now include scenario-registry coverage alongside committed fixture coverage
+  - notebook and preflight flows now surface explicit scenario availability (`offline-ready` vs `live-only`)
+  - weather, carrier, and caselaw builders now accept a shared query plan instead of always regenerating module-local slices
+- Exported the new query-plan and scenario-availability helpers from `war_room.__init__` so later callers can consume the shared seams through the package surface.
+- Synced the canonical docs to the current verified test baseline (`235` passing under the supported path).
+- Why:
+  - `#27` and `#9` need more repeatable release evidence than fixture counts alone
+  - notebook-era flows still needed clearer visibility into which scenarios are cache-only safe
+  - `#6` and `#7` still had needless query-plan regeneration across modules instead of one reusable plan seam
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q` -> `235 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight success
+- Commits pushed on this branch:
+  - `74dbea2` `feat: add registry coverage to release scorecards`
+  - `1b4bd5e` `feat: share query plans across module builders`
+  - `844a7fe` `feat: surface scenario availability in demo flows`
+
+## Session 63 - Shared Research Plan Through Demo Callers
+Date: 2026-03-20
+Status: Complete
+
+- Threaded one canonical `ResearchPlan` through the remaining demo callers instead of regenerating query slices at the preflight call site and tracked notebook flow.
+- What changed:
+  - `src/war_room/preflight.py` now builds `research_plan = build_research_plan(intake)` once per scenario and passes `research_plan.query_plan` into weather, carrier, caselaw, and memo rendering.
+  - `notebooks/01_case_war_room.ipynb` now builds the shared research plan once in the query-plan cell and reuses `queries` for downstream module calls.
+  - regression coverage now checks the tracked notebook content and preflight runtime so this seam does not drift back to per-module plan regeneration.
+- Why:
+  - the module seam for shared query plans had landed, but the actual demo callers still regenerated plan state
+  - this closes the loop on the immediate next recommendation from the previous session and pushes one layer higher in the orchestration stack
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
+  - `$env:PYTHONPATH='src'; pytest -q` -> `236 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight success

@@ -6,6 +6,7 @@ from war_room.release_scorecard import (
     DEFAULT_VERIFICATION_COMMAND,
     build_demo_release_scorecard,
     collect_fixture_coverage,
+    collect_scenario_registry_coverage,
     render_release_scorecard_markdown,
     write_release_scorecard_artifacts,
 )
@@ -44,17 +45,40 @@ def test_collect_fixture_coverage_ignores_incomplete_scenarios(tmp_path: Path):
     assert summary.states == []
 
 
+def test_collect_scenario_registry_coverage_reads_curated_registry():
+    summary = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+
+    assert summary.scenario_count == 5
+    assert summary.offline_ready_count == 1
+    assert summary.fixture_ready_count == 1
+    assert summary.default_scenario_id == "milton_pinellas_citizens_ho3"
+    assert summary.states == ["FL"]
+    assert [scenario.slug for scenario in summary.scenarios] == [
+        "milton_pinellas_citizens_ho3",
+        "ian_lee_citizens_ho3",
+        "irma_monroe_citizens_ho3",
+        "michael_bay_default_ho3",
+        "idalia_taylor_default_ho3",
+    ]
+    assert summary.scenarios[0].offline_demo_ready is True
+    assert summary.scenarios[0].has_committed_fixture_bundle is True
+    assert all(not scenario.offline_demo_ready for scenario in summary.scenarios[1:])
+    assert all(not scenario.has_committed_fixture_bundle for scenario in summary.scenarios[1:])
+
+
 def test_default_verification_command_matches_supported_path():
     assert DEFAULT_VERIFICATION_COMMAND == "pytest -q"
 
 
 def test_build_demo_release_scorecard_uses_fixture_calibration():
     summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
     scorecard = build_demo_release_scorecard(
         candidate="codex/local",
         verification_summary="179 passed",
         artifact_date="2026-03-11",
         fixture_coverage=summary,
+        scenario_registry=registry,
     )
 
     assert scorecard.target_release_level == "Demo-ready"
@@ -70,17 +94,25 @@ def test_build_demo_release_scorecard_uses_fixture_calibration():
     assert scorecard.must_pass_gates[2].passed is True
     assert scorecard.fixture_coverage is not None
     assert scorecard.fixture_coverage.scenario_count == len(_expected_scenario_keys())
+    assert scorecard.scenario_registry is not None
+    assert scorecard.scenario_registry.scenario_count == 5
+    assert scorecard.scenario_registry.offline_ready_count == 1
+    assert scorecard.scenario_registry.fixture_ready_count == 1
+    assert any("Scenario registry:" in entry for entry in scorecard.evidence_bundle)
 
     markdown = render_release_scorecard_markdown(scorecard)
     assert "# Release Scorecard" in markdown
     assert "codex/local" in markdown
     assert "## Fixture Coverage" in markdown
+    assert "## Scenario Registry" in markdown
     assert "## Threshold Calibration" in markdown
     assert "ida_lloyds_orleans" in markdown
+    assert "milton_pinellas_citizens_ho3" in markdown
 
 
 def test_write_release_scorecard_artifacts_writes_json_and_markdown(tmp_path: Path):
     summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
     scorecard = build_demo_release_scorecard(
         candidate="Feature Branch 27",
         verification_summary="179 passed",
@@ -89,6 +121,7 @@ def test_write_release_scorecard_artifacts_writes_json_and_markdown(tmp_path: Pa
         blocking_gaps=["CI release-evidence automation is still pending."],
         decision="No ship",
         fixture_coverage=summary,
+        scenario_registry=registry,
     )
 
     json_path, markdown_path = write_release_scorecard_artifacts(scorecard, output_dir=tmp_path / "scorecards")
@@ -102,22 +135,26 @@ def test_write_release_scorecard_artifacts_writes_json_and_markdown(tmp_path: Pa
     assert "CI release-evidence automation is still pending." in markdown
     assert "- No ship" in markdown
     assert "Scenario count:" in markdown
+    assert "Scenario Registry" in markdown
     assert "Threshold Calibration" in markdown
 
     payload = json_path.read_text(encoding="utf-8")
     assert '"candidate": "Feature Branch 27"' in payload
     assert '"target_release_level": "Demo-ready"' in payload
     assert '"fixture_coverage"' in payload
+    assert '"scenario_registry"' in payload
     assert '"calibration_thresholds"' in payload
 
 
 def test_build_demo_release_scorecard_marks_failed_verification_gate():
     summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
     scorecard = build_demo_release_scorecard(
         candidate="codex/local",
         verification_summary="1 failed, 178 passed",
         artifact_date="2026-03-18",
         fixture_coverage=summary,
+        scenario_registry=registry,
     )
 
     assert scorecard.dimensions[0].score == 0

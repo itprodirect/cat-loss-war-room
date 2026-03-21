@@ -10,9 +10,9 @@ import datetime as dt
 import json
 import re
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
-from war_room.models import CaseIntake, QuerySpec, adapt_query_plan
+from war_room.models import CaseIntake, QuerySpec, ResearchPlan, adapt_query_plan
 
 CASE_INTAKE_REQUIRED_FIELDS = (
     "event_name",
@@ -324,6 +324,48 @@ def generate_query_plan(intake: CaseIntake) -> list[QuerySpec]:
     return queries
 
 
+def build_research_plan(
+    intake: CaseIntake,
+    *,
+    plan_id: str | None = None,
+    run_id: str | None = None,
+    review_required: bool = False,
+) -> ResearchPlan:
+    """Build the canonical research-plan contract from a case intake."""
+
+    query_plan = generate_query_plan(intake)
+    planned_modules = list(dict.fromkeys(query.module for query in query_plan))
+    preferred_domains = _unique_strings(
+        domain
+        for query in query_plan
+        for domain in query.preferred_domains
+    )
+    issue_hypotheses = _build_issue_hypotheses(intake)
+
+    return ResearchPlan(
+        plan_id=plan_id or _plan_id_from_intake(intake),
+        run_id=run_id or _run_id_from_intake(intake),
+        planned_modules=planned_modules,
+        issue_hypotheses=issue_hypotheses,
+        query_plan=query_plan,
+        preferred_domains=preferred_domains,
+        estimated_scope=(
+            f"{len(query_plan)} queries across {len(planned_modules)} modules "
+            f"for {intake.summary()}."
+        ),
+        review_required=review_required,
+    )
+
+
+def query_plan_for_module(
+    query_plan: Sequence[Mapping[str, Any] | QuerySpec],
+    module: str,
+) -> list[QuerySpec]:
+    """Return the module-specific slice from a shared query plan."""
+
+    return [query for query in adapt_query_plan(query_plan) if query.module == module]
+
+
 def format_query_plan(queries: list[Mapping[str, Any] | QuerySpec]) -> str:
     """Format the query plan grouped by module for display."""
     typed_queries = adapt_query_plan(queries)
@@ -351,3 +393,50 @@ def format_query_plan(queries: list[Mapping[str, Any] | QuerySpec]) -> str:
 
     lines.append("\n" + "=" * 60)
     return "\n".join(lines)
+
+
+def _build_issue_hypotheses(intake: CaseIntake) -> list[str]:
+    if intake.coverage_issues:
+        hypotheses = [
+            f"Research {issue} under {intake.policy_type}"
+            for issue in intake.coverage_issues
+        ]
+        return _unique_strings(hypotheses)
+
+    return [
+        (
+            f"{intake.event_name} coverage dispute requires weather, carrier, "
+            "and case-law review."
+        )
+    ]
+
+
+def _plan_id_from_intake(intake: CaseIntake) -> str:
+    return "plan-notebook-" + "-".join(
+        _stable_token(part)
+        for part in (intake.event_name, intake.state, intake.county, intake.carrier)
+        if part.strip()
+    )
+
+
+def _run_id_from_intake(intake: CaseIntake) -> str:
+    return "run-notebook-" + "-".join(
+        _stable_token(part)
+        for part in (intake.event_name, intake.state, intake.county, intake.carrier)
+        if part.strip()
+    )
+
+
+def _stable_token(value: str) -> str:
+    normalized = re.sub(r"[^A-Za-z0-9]+", "-", value.strip().lower()).strip("-")
+    return normalized or "item"
+
+
+def _unique_strings(values: Sequence[str] | list[str]) -> list[str]:
+    seen: set[str] = set()
+    unique: list[str] = []
+    for value in values:
+        if value not in seen:
+            seen.add(value)
+            unique.append(value)
+    return unique

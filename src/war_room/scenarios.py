@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Literal, Mapping
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
@@ -21,6 +22,18 @@ DEFAULT_SCENARIOS_DIRNAME = "scenarios"
 
 class ScenarioValidationError(ValueError):
     """Raised when a scenario file or registry entry is invalid."""
+
+
+@dataclass(frozen=True)
+class ScenarioAvailabilitySummary:
+    """Human-readable availability summary for notebook and preflight surfaces."""
+
+    surface: Literal["notebook", "preflight"]
+    scenario_id: str
+    title: str
+    case_key: str
+    status: Literal["offline-ready", "live-only"]
+    detail: str
 
 
 class ScenarioRegistryIndex(BaseModel):
@@ -120,6 +133,85 @@ class ScenarioDefinition(BaseModel):
         if overrides:
             payload.update(dict(overrides))
         return validate_case_intake_payload(payload)
+
+
+def scenario_availability_summary(
+    scenario: ScenarioDefinition,
+    *,
+    live_retrieval_enabled: bool,
+) -> ScenarioAvailabilitySummary:
+    """Summarize whether a registry scenario is cache-only ready or live-only."""
+
+    if scenario.offline_demo_ready:
+        detail = "Registry marks this scenario as offline-demo-ready for cache-only use."
+        status: Literal["offline-ready", "live-only"] = "offline-ready"
+    elif live_retrieval_enabled:
+        detail = (
+            "Registry marks this scenario as live-only; live retrieval is enabled for "
+            "the current runtime."
+        )
+        status = "live-only"
+    else:
+        detail = (
+            "Registry marks this scenario as live-only; enable live retrieval or add "
+            "committed fixtures for cache-only runs."
+        )
+        status = "live-only"
+
+    return ScenarioAvailabilitySummary(
+        surface="notebook",
+        scenario_id=scenario.slug,
+        title=scenario.title,
+        case_key=scenario.case_key,
+        status=status,
+        detail=detail,
+    )
+
+
+def scenario_catalog_availability(
+    repo_root: str | Path | None = None,
+    *,
+    live_retrieval_enabled: bool,
+) -> list[ScenarioAvailabilitySummary]:
+    """Return availability summaries for every curated notebook scenario."""
+
+    return [
+        scenario_availability_summary(scenario, live_retrieval_enabled=live_retrieval_enabled)
+        for scenario in list_scenarios(repo_root=repo_root)
+    ]
+
+
+def fixture_case_availability_summary(
+    *,
+    case_key: str,
+    title: str,
+    registry_slug: str | None = None,
+    registry_offline_ready: bool | None = None,
+) -> ScenarioAvailabilitySummary:
+    """Summarize an offline preflight fixture lane."""
+
+    if registry_slug is None:
+        detail = "No registry scenario maps to this committed fixture lane, but preflight stays offline-safe."
+        scenario_id = case_key
+    elif registry_offline_ready:
+        detail = (
+            f"Registry scenario '{registry_slug}' is offline-ready, and the committed fixture lane is available."
+        )
+        scenario_id = registry_slug
+    else:
+        detail = (
+            f"Registry scenario '{registry_slug}' is live-only, but the committed fixture lane keeps preflight offline-ready."
+        )
+        scenario_id = registry_slug
+
+    return ScenarioAvailabilitySummary(
+        surface="preflight",
+        scenario_id=scenario_id,
+        title=title,
+        case_key=case_key,
+        status="offline-ready",
+        detail=detail,
+    )
 
 
 def scenarios_dir(repo_root: str | Path | None = None) -> Path:

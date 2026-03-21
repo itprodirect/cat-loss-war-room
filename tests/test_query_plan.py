@@ -1,7 +1,12 @@
 """Tests for query_plan module."""
 
 from war_room.models import CaseIntake, QuerySpec
-from war_room.query_plan import generate_query_plan, format_query_plan
+from war_room.query_plan import (
+    build_research_plan,
+    format_query_plan,
+    generate_query_plan,
+    query_plan_for_module,
+)
 
 
 def _sample_intake() -> CaseIntake:
@@ -54,6 +59,33 @@ def test_format_query_plan_output():
     assert "WEATHER DATA" in output
     assert "CARRIER DOCUMENTS" in output
     assert "CASE LAW" in output
+
+
+def test_build_research_plan_wraps_generated_query_plan():
+    intake = _sample_intake()
+    plan = build_research_plan(intake)
+
+    assert plan.plan_id.startswith("plan-notebook-")
+    assert plan.run_id.startswith("run-notebook-")
+    assert plan.planned_modules == ["weather", "carrier_docs", "caselaw"]
+    assert plan.query_plan == generate_query_plan(intake)
+    assert plan.preferred_domains
+    assert plan.issue_hypotheses
+    assert any("wind vs water causation" in hypothesis.lower() for hypothesis in plan.issue_hypotheses)
+
+
+def test_query_plan_for_module_accepts_mixed_payloads():
+    shared_plan = [
+        QuerySpec(module="weather", query="storm report", category="damage_report").model_dump(),
+        QuerySpec(module="carrier_docs", query="carrier complaints", category="doi_complaints"),
+        QuerySpec(module="weather", query="weather summary", category="loss_estimate").model_dump(),
+    ]
+
+    weather_plan = query_plan_for_module(shared_plan, "weather")
+
+    assert len(weather_plan) == 2
+    assert all(query.module == "weather" for query in weather_plan)
+    assert [query.query for query in weather_plan] == ["storm report", "weather summary"]
 
 
 def test_format_query_plan_accepts_dict_payloads():

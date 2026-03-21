@@ -9,10 +9,13 @@ from typing import Any, Mapping, MutableMapping
 from war_room.bootstrap import BootstrapContext, bootstrap_runtime
 from war_room.models import CaseIntake
 from war_room.scenarios import (
+    ScenarioAvailabilitySummary,
     ScenarioDefinition,
     default_scenario_id,
     list_scenarios,
     load_scenario,
+    scenario_availability_summary,
+    scenario_catalog_availability,
 )
 from war_room.settings import WarRoomSettings
 
@@ -28,7 +31,9 @@ class NotebookScenarioSelection:
     scenario: ScenarioDefinition
     intake: CaseIntake
     case_key: str
+    scenario_availability: ScenarioAvailabilitySummary
     available_scenarios: list[ScenarioDefinition]
+    available_scenario_summaries: list[ScenarioAvailabilitySummary]
     live_retrieval_enabled: bool
     warning_message: str | None = None
 
@@ -155,7 +160,15 @@ def prepare_notebook_scenario(
         scenario=scenario,
         intake=intake,
         case_key=scenario.case_key,
+        scenario_availability=scenario_availability_summary(
+            scenario,
+            live_retrieval_enabled=live_enabled,
+        ),
         available_scenarios=list_scenarios(repo_root=context.repo_root),
+        available_scenario_summaries=scenario_catalog_availability(
+            repo_root=context.repo_root,
+            live_retrieval_enabled=live_enabled,
+        ),
         live_retrieval_enabled=live_enabled,
         warning_message=scenario_warning_message(
             scenario,
@@ -166,6 +179,8 @@ def prepare_notebook_scenario(
         namespace["SCENARIO_SELECTION"] = selection
         namespace["SCENARIO"] = selection.scenario
         namespace["CASE_KEY"] = selection.case_key
+        namespace["SCENARIO_AVAILABILITY"] = selection.scenario_availability
+        namespace["SCENARIO_AVAILABILITY_SUMMARIES"] = selection.available_scenario_summaries
     return selection
 
 
