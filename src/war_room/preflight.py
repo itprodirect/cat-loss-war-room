@@ -14,7 +14,7 @@ from war_room.carrier_module import build_carrier_doc_pack
 from war_room.citation_verify import spot_check_citations
 from war_room.export_md import render_markdown_memo
 from war_room.models import CaseIntake
-from war_room.query_plan import generate_query_plan, load_case_intake
+from war_room.query_plan import build_research_plan, load_case_intake
 from war_room.scenarios import (
     ScenarioAvailabilitySummary,
     fixture_case_availability_summary,
@@ -110,10 +110,13 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
                     registry_scenario.offline_demo_ready if registry_scenario is not None else None
                 ),
             )
+            research_plan = build_research_plan(intake)
+            query_plan = research_plan.query_plan
 
             weather = build_weather_brief(
                 intake,
                 None,
+                query_plan=query_plan,
                 cache_samples_dir=str(context.settings.cache_samples_dir),
             )
             checks.extend(_module_checks("weather", weather))
@@ -121,6 +124,7 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
             carrier = build_carrier_doc_pack(
                 intake,
                 None,
+                query_plan=query_plan,
                 cache_samples_dir=str(context.settings.cache_samples_dir),
             )
             checks.extend(_module_checks("carrier", carrier))
@@ -128,6 +132,7 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
             caselaw = build_caselaw_pack(
                 intake,
                 None,
+                query_plan=query_plan,
                 cache_samples_dir=str(context.settings.cache_samples_dir),
             )
             checks.extend(_module_checks("caselaw", caselaw))
@@ -141,7 +146,7 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
                 carrier,
                 caselaw,
                 citecheck,
-                generate_query_plan(intake),
+                query_plan,
             )
             memo_length = len(memo)
             memo_sections = [section for section in _EXPECTED_MEMO_SECTIONS if section in memo]

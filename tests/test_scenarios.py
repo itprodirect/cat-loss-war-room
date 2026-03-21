@@ -102,9 +102,13 @@ def test_notebook_uses_helper_driven_scenario_prep_and_has_no_stale_hardcoded_in
     notebook = json.loads(NOTEBOOK_PATH.read_text(encoding="utf-8"))
     code_cells = ["".join(cell.get("source", [])) for cell in notebook["cells"] if cell.get("cell_type") == "code"]
     scenario_cells = [source for source in code_cells if "SCENARIO_ID" in source]
+    query_cells = [source for source in code_cells if "Query Plan Generation" in source]
 
     assert len(scenario_cells) == 1
+    assert len(query_cells) == 1
     assert "prepare_notebook_scenario" in scenario_cells[0]
     assert "SETTINGS.live_retrieval_enabled" not in scenario_cells[0]
+    assert "build_research_plan" in query_cells[0]
+    assert 'query_plan=queries' in "".join(code_cells)
     assert sum("CaseIntake(" in source for source in code_cells) == 0
     assert sum("write_markdown(" in source for source in code_cells) == 1

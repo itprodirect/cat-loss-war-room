@@ -7,6 +7,7 @@ from pathlib import Path
 
 from war_room.bootstrap import bootstrap_runtime, main as bootstrap_main
 from war_room.preflight import render_demo_preflight_report, run_demo_preflight
+from war_room.query_plan import build_research_plan, load_case_intake
 
 ROOT = Path(__file__).resolve().parent.parent
 REQUIRED_FIXTURE_FILES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
@@ -70,3 +71,70 @@ def test_bootstrap_cli_preflight_json_output(monkeypatch, capsys):
     assert payload["scenario_count"] == len(_expected_scenario_keys())
     assert len(payload["scenarios"]) == len(_expected_scenario_keys())
     assert payload["scenarios"][0]["availability"]["status"] == "offline-ready"
+
+
+def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
+    context = bootstrap_runtime(start_path=ROOT, ensure_dirs=False)
+    scenario_dir = ROOT / "cache_samples" / "milton_citizens_pinellas"
+    intake = load_case_intake(ROOT / "eval" / "intakes" / "tx_hail_allstate_tarrant.json")
+    research_plan = build_research_plan(intake)
+    observed_query_plans: list[object] = []
+
+    monkeypatch.setattr("war_room.preflight._discover_scenario_dirs", lambda cache_samples_dir: [scenario_dir])
+    monkeypatch.setattr(
+        "war_room.preflight._load_intake",
+        lambda case_key, intake_path, repo_root: (intake, str(intake_path)),
+    )
+    monkeypatch.setattr(
+        "war_room.preflight.build_research_plan",
+        lambda payload: research_plan,
+    )
+
+    def _weather(intake_arg, client, **kwargs):
+        observed_query_plans.append(kwargs.get("query_plan"))
+        return {"module": "weather", "sources": [{"url": "https://example.com"}]}
+
+    def _carrier(intake_arg, client, **kwargs):
+        observed_query_plans.append(kwargs.get("query_plan"))
+        return {"module": "carrier", "document_pack": [{"url": "https://example.com"}]}
+
+    def _caselaw(intake_arg, client, **kwargs):
+        observed_query_plans.append(kwargs.get("query_plan"))
+        return {"module": "caselaw", "issues": [{"issue": "Coverage", "cases": []}]}
+
+    monkeypatch.setattr("war_room.preflight.build_weather_brief", _weather)
+    monkeypatch.setattr("war_room.preflight.build_carrier_doc_pack", _carrier)
+    monkeypatch.setattr("war_room.preflight.build_caselaw_pack", _caselaw)
+    monkeypatch.setattr(
+        "war_room.preflight.render_markdown_memo",
+        lambda intake_arg, weather, carrier, caselaw, citecheck, query_plan: "\n".join(
+            [
+                "DRAFT - ATTORNEY WORK PRODUCT",
+                "DEMO RESEARCH MEMO - VERIFY CITATIONS - NOT LEGAL ADVICE",
+                "DRAFT - ATTORNEY WORK PRODUCT - VERIFY ALL CITATIONS",
+                *[
+                    section
+                    for section in (
+                        "## Trust Snapshot",
+                        "## Case Intake",
+                        "## Weather Corroboration",
+                        "## Carrier Document Pack",
+                        "## Case Law",
+                        "## Appendix: Query Plan",
+                        "## Appendix: Evidence Clusters",
+                        "## Appendix: Evidence Index",
+                        "## Appendix: All Sources",
+                        "## Methodology & Limitations",
+                    )
+                ],
+            ]
+        )
+        if query_plan == research_plan.query_plan
+        else "",
+    )
+
+    report = run_demo_preflight(context)
+
+    assert report.passed is True
+    assert len(observed_query_plans) == 3
+    assert all(query_plan == research_plan.query_plan for query_plan in observed_query_plans)
