@@ -19,6 +19,14 @@ from war_room.issue_workspace import (
     build_issue_workspace_from_parts,
     format_issue_workspace,
 )
+from war_room.memo_composer import (
+    MemoComposerClaimLink,
+    MemoComposerReadModel,
+    MemoComposerSectionCard,
+    build_memo_composer,
+    build_memo_composer_from_parts,
+    format_memo_composer,
+)
 from war_room.models import (
     CaseCandidate,
     CaseLawPack,
@@ -140,10 +148,15 @@ __all__ = [
     "IssueWorkspaceCard",
     "IssueWorkspaceCitationOutcome",
     "IssueWorkspaceReadModel",
+    "MemoComposerClaimLink",
+    "MemoComposerReadModel",
+    "MemoComposerSectionCard",
     "build_evidence_board",
     "build_evidence_board_from_parts",
     "build_issue_workspace",
     "build_issue_workspace_from_parts",
+    "build_memo_composer",
+    "build_memo_composer_from_parts",
     "discover_repo_root",
     "FeatureFlags",
     "load_settings",
@@ -243,6 +256,7 @@ __all__ = [
     "format_run_timeline",
     "format_evidence_board",
     "format_issue_workspace",
+    "format_memo_composer",
     "load_selected_scenario",
     "prepare_notebook_scenario",
     "resolve_live_retrieval_enabled",

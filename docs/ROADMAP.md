@@ -7,12 +7,12 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 246 tests are passing.
+- 249 tests are passing.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job, and the `exa-py` compatibility matrix.
 - CI now also emits and validates a release-scorecard artifact from the calibrated `#27` workflow.
 - The supported test path is editable install plus `pytest -q`, or `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not supported.
 - The offline demo path now has a deterministic preflight command: `python -m war_room --preflight`.
-- The notebook and preflight surfaces now expose a first workflow layer with research-plan preview, evidence-board summary, issue-workspace summary, and run-timeline review state.
+- The notebook and preflight surfaces now expose a first workflow layer with research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, and run-timeline review state.
 - A deeper V2 foundation layer is tracked in issues `#22` through `#27`.
 - Issue [#4](https://github.com/itprodirect/cat-loss-war-room-demo/issues/4) is complete and closed.
 - Issue [#5](https://github.com/itprodirect/cat-loss-war-room-demo/issues/5) is complete and closed.

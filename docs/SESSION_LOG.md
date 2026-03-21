@@ -1197,3 +1197,23 @@ Status: Complete
   - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
   - `$env:PYTHONPATH='src'; pytest -q` -> `246 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports issue-workspace counts
+
+## Session 67 - Memo Composer Read Model Slice
+Date: 2026-03-20
+Status: Complete
+
+- Added `src/war_room/memo_composer.py` so the current notebook-era flow can derive a Memo Composer read model from `RunAuditSnapshot` instead of forcing operators to infer section readiness and export posture from the final markdown alone.
+- What changed:
+  - `build_memo_composer()` and `build_memo_composer_from_parts()` now derive section cards with claim support links, review-event links, review-required state, and export eligibility.
+  - `format_memo_composer()` now renders a notebook-friendly section summary with claim-level cluster linkage and explicit export posture.
+  - `notebooks/01_case_war_room.ipynb` now prints the memo-composer summary in the export cell before the run timeline.
+  - `src/war_room/preflight.py` now records memo-composer counts so the deterministic offline smoke lane surfaces section readiness and export eligibility alongside workflow, evidence-board, and issue-workspace status.
+  - package exports and regression coverage were updated for the new read model.
+- Why:
+  - the issue-workspace slice exposed issue-level review, but there was still no first-class section/readiness surface between issue review and export
+  - this adds the last missing workflow stage before export history without inventing a separate UI runtime
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_memo_composer.py` -> `3 passed`
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
+  - `$env:PYTHONPATH='src'; pytest -q` -> `249 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports memo-composer counts and export eligibility

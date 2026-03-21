@@ -44,6 +44,9 @@ def test_demo_preflight_smoke_covers_committed_scenarios():
         assert scenario.evidence_review_required_cluster_count > 0
         assert scenario.issue_count > 0
         assert scenario.review_required_issue_count > 0
+        assert scenario.memo_section_count > 0
+        assert scenario.review_required_memo_section_count > 0
+        assert scenario.export_eligibility == "review_required_export"
         check_names = {check.name for check in scenario.checks}
         assert "intake payload loads" in check_names
         assert "memo includes disclaimer language" in check_names
@@ -68,6 +71,7 @@ def test_demo_preflight_rendering_includes_summary():
     assert "Workflow: completed | review_required=yes" in rendered
     assert "Evidence board:" in rendered
     assert "Issue workspace:" in rendered
+    assert "Memo composer:" in rendered
     assert "Registry scenario" in rendered
 
 
@@ -85,6 +89,7 @@ def test_bootstrap_cli_preflight_json_output(monkeypatch, capsys):
     assert payload["scenarios"][0]["workflow_status"] == "completed"
     assert payload["scenarios"][0]["evidence_cluster_count"] > 0
     assert payload["scenarios"][0]["issue_count"] > 0
+    assert payload["scenarios"][0]["memo_section_count"] > 0
 
 
 def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
@@ -169,6 +174,18 @@ def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
             {"issue_cards": [object(), object()], "review_required_issue_count": 1},
         )(),
     )
+    monkeypatch.setattr(
+        "war_room.preflight.build_memo_composer_from_parts",
+        lambda *args, **kwargs: type(
+            "MemoComposerRecord",
+            (),
+            {
+                "section_cards": [object(), object(), object()],
+                "review_required_section_count": 2,
+                "export_eligibility": "review_required_export",
+            },
+        )(),
+    )
 
     report = run_demo_preflight(context)
 
@@ -178,3 +195,4 @@ def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
     assert report.scenarios[0].workflow_status == "completed"
     assert report.scenarios[0].evidence_cluster_count == 3
     assert report.scenarios[0].issue_count == 2
+    assert report.scenarios[0].memo_section_count == 3
