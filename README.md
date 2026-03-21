@@ -65,8 +65,9 @@ Given a catastrophic loss case (hurricane, hail, etc.), the war room notebook:
 3. **Weather Intel** - Gathers official weather data (.gov sources preferred)
 4. **Carrier Playbook** - Finds carrier denial patterns, regulatory actions, rebuttal angles
 5. **Case Law** - Searches relevant precedent organized by legal issue
-6. **Run Timeline** - Surfaces stage-by-stage status plus explicit review-required states before reliance
-7. **Export** - Produces a structured research memo with source confidence badges
+6. **Evidence Board** - Groups support by evidence cluster with review-required markers and claim usage
+7. **Run Timeline** - Surfaces stage-by-stage status plus explicit review-required states before reliance
+8. **Export** - Produces a structured research memo with source confidence badges
 
 ## Jupyter Kernel (required)
 
@@ -110,7 +111,7 @@ Only the Milton benchmark currently has committed offline cache fixtures, so cac
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview plus run-timeline summary on top of the canonical contracts, `240` tests are passing under the supported bootstrap path, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, evidence-board summary, and run-timeline summary on top of the canonical contracts, `243` tests are passing under the supported bootstrap path, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - Offline fixture smoke validation across committed scenarios

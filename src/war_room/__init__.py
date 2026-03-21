@@ -2,6 +2,14 @@
 
 from war_room.bootstrap import BootstrapContext, bootstrap_runtime, discover_repo_root
 from war_room.cache_io import cached_call
+from war_room.evidence_board import (
+    EvidenceBoardClusterCard,
+    EvidenceBoardItemPreview,
+    EvidenceBoardReadModel,
+    build_evidence_board,
+    build_evidence_board_from_parts,
+    format_evidence_board,
+)
 from war_room.models import (
     CaseCandidate,
     CaseLawPack,
@@ -116,6 +124,11 @@ __all__ = [
     "BootstrapContext",
     "bootstrap_runtime",
     "cached_call",
+    "EvidenceBoardClusterCard",
+    "EvidenceBoardItemPreview",
+    "EvidenceBoardReadModel",
+    "build_evidence_board",
+    "build_evidence_board_from_parts",
     "discover_repo_root",
     "FeatureFlags",
     "load_settings",
@@ -213,6 +226,7 @@ __all__ = [
     "ensure_runtime_context",
     "format_research_plan_preview",
     "format_run_timeline",
+    "format_evidence_board",
     "load_selected_scenario",
     "prepare_notebook_scenario",
     "resolve_live_retrieval_enabled",

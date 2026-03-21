@@ -40,6 +40,8 @@ def test_demo_preflight_smoke_covers_committed_scenarios():
         assert scenario.workflow_review_required is True
         assert "citation_verify=degraded" in scenario.workflow_stage_statuses
         assert "memo_assembly=degraded" in scenario.workflow_stage_statuses
+        assert scenario.evidence_cluster_count > 0
+        assert scenario.evidence_review_required_cluster_count > 0
         check_names = {check.name for check in scenario.checks}
         assert "intake payload loads" in check_names
         assert "memo includes disclaimer language" in check_names
@@ -62,6 +64,7 @@ def test_demo_preflight_rendering_includes_summary():
     assert "Passed: Yes" in rendered
     assert "Availability: offline-ready" in rendered
     assert "Workflow: completed | review_required=yes" in rendered
+    assert "Evidence board:" in rendered
     assert "Registry scenario" in rendered
 
 
@@ -77,6 +80,7 @@ def test_bootstrap_cli_preflight_json_output(monkeypatch, capsys):
     assert len(payload["scenarios"]) == len(_expected_scenario_keys())
     assert payload["scenarios"][0]["availability"]["status"] == "offline-ready"
     assert payload["scenarios"][0]["workflow_status"] == "completed"
+    assert payload["scenarios"][0]["evidence_cluster_count"] > 0
 
 
 def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
@@ -145,6 +149,14 @@ def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
             [type("RunStageRecord", (), {"stage_key": "memo_assembly", "status": "completed"})()],
         ),
     )
+    monkeypatch.setattr(
+        "war_room.preflight.build_evidence_board_from_parts",
+        lambda *args, **kwargs: type(
+            "EvidenceBoardRecord",
+            (),
+            {"total_clusters": 3, "review_required_clusters": 1},
+        )(),
+    )
 
     report = run_demo_preflight(context)
 
@@ -152,3 +164,4 @@ def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
     assert len(observed_query_plans) == 3
     assert all(query_plan == research_plan.query_plan for query_plan in observed_query_plans)
     assert report.scenarios[0].workflow_status == "completed"
+    assert report.scenarios[0].evidence_cluster_count == 3

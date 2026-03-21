@@ -1157,3 +1157,23 @@ Status: Complete
   - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
   - `$env:PYTHONPATH='src'; pytest -q` -> `240 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports workflow review state
+
+## Session 65 - Evidence Board Read Model Slice
+Date: 2026-03-20
+Status: Complete
+
+- Added `src/war_room/evidence_board.py` so the current notebook-era flow can derive a cluster-first Evidence Board read model from `RunAuditSnapshot` instead of forcing operators to read appendix tables or infer grouped support manually.
+- What changed:
+  - `build_evidence_board()` and `build_evidence_board_from_parts()` now derive cluster cards with source-tier summary, issue labels, linked claims, linked review events, and compact evidence previews.
+  - `format_evidence_board()` now renders a notebook-friendly cluster-first summary with review-required clusters elevated first.
+  - `notebooks/01_case_war_room.ipynb` now prints the evidence-board summary immediately after citation spot-check results.
+  - `src/war_room/preflight.py` now records evidence-board counts so the deterministic offline smoke lane surfaces grouped-support posture alongside workflow status.
+  - package exports and regression coverage were updated for the new read model.
+- Why:
+  - the workflow summary slice exposed run/stage state, but there was still no first-class grouped-support review surface between retrieval output and memo export
+  - this adds the next thin V2-aligned surface without inventing a separate UI runtime
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_evidence_board.py` -> `3 passed`
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
+  - `$env:PYTHONPATH='src'; pytest -q` -> `243 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports evidence-board cluster counts

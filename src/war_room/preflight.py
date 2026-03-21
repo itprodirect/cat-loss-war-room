@@ -21,6 +21,7 @@ from war_room.scenarios import (
     load_scenario_for_fixture_case,
 )
 from war_room.weather_module import build_weather_brief
+from war_room.evidence_board import build_evidence_board_from_parts
 from war_room.workflow_summary import build_run_timeline
 
 _REQUIRED_FIXTURE_FILES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
@@ -65,6 +66,8 @@ class PreflightScenarioReport:
     workflow_status: str = ""
     workflow_review_required: bool = False
     workflow_stage_statuses: list[str] = field(default_factory=list)
+    evidence_cluster_count: int = 0
+    evidence_review_required_cluster_count: int = 0
 
 
 @dataclass(frozen=True)
@@ -105,6 +108,8 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
         workflow_status = ""
         workflow_review_required = False
         workflow_stage_statuses: list[str] = []
+        evidence_cluster_count = 0
+        evidence_review_required_cluster_count = 0
 
         try:
             intake, intake_evidence = _load_intake(case_key, intake_path, repo_root=context.repo_root)
@@ -174,6 +179,16 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
                 f"{stage.stage_key}={stage.status}"
                 for stage in run_stages
             ]
+            evidence_board = build_evidence_board_from_parts(
+                intake,
+                weather,
+                carrier,
+                caselaw,
+                citecheck,
+                query_plan,
+            )
+            evidence_cluster_count = evidence_board.total_clusters
+            evidence_review_required_cluster_count = evidence_board.review_required_clusters
         except Exception as exc:
             checks.append(
                 PreflightCheck(
@@ -194,6 +209,8 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
                 workflow_status=workflow_status,
                 workflow_review_required=workflow_review_required,
                 workflow_stage_statuses=workflow_stage_statuses,
+                evidence_cluster_count=evidence_cluster_count,
+                evidence_review_required_cluster_count=evidence_review_required_cluster_count,
             )
         )
 
@@ -235,6 +252,11 @@ def render_demo_preflight_report(report: DemoPreflightReport) -> str:
             lines.append(
                 "- Workflow stages: " + ", ".join(scenario.workflow_stage_statuses)
             )
+        if scenario.evidence_cluster_count:
+            lines.append(
+                f"- Evidence board: {scenario.evidence_cluster_count} clusters | "
+                f"{scenario.evidence_review_required_cluster_count} review_required"
+            )
         lines.append(f"- Memo length: {scenario.memo_length}")
         if scenario.memo_sections:
             lines.append(f"- Memo sections: {', '.join(scenario.memo_sections)}")
@@ -265,6 +287,8 @@ def report_to_payload(report: DemoPreflightReport) -> dict[str, Any]:
                 "workflow_status": scenario.workflow_status,
                 "workflow_review_required": scenario.workflow_review_required,
                 "workflow_stage_statuses": scenario.workflow_stage_statuses,
+                "evidence_cluster_count": scenario.evidence_cluster_count,
+                "evidence_review_required_cluster_count": scenario.evidence_review_required_cluster_count,
                 "checks": [asdict(check) for check in scenario.checks],
             }
             for scenario in report.scenarios
