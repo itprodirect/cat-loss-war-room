@@ -10,6 +10,13 @@ from war_room.evidence_board import (
     build_evidence_board_from_parts,
     format_evidence_board,
 )
+from war_room.export_history import (
+    ExportHistoryEntry,
+    ExportHistoryReadModel,
+    build_export_history,
+    build_export_history_from_parts,
+    format_export_history,
+)
 from war_room.issue_workspace import (
     IssueWorkspaceCaseCandidate,
     IssueWorkspaceCard,
@@ -144,6 +151,8 @@ __all__ = [
     "EvidenceBoardClusterCard",
     "EvidenceBoardItemPreview",
     "EvidenceBoardReadModel",
+    "ExportHistoryEntry",
+    "ExportHistoryReadModel",
     "IssueWorkspaceCaseCandidate",
     "IssueWorkspaceCard",
     "IssueWorkspaceCitationOutcome",
@@ -153,6 +162,8 @@ __all__ = [
     "MemoComposerSectionCard",
     "build_evidence_board",
     "build_evidence_board_from_parts",
+    "build_export_history",
+    "build_export_history_from_parts",
     "build_issue_workspace",
     "build_issue_workspace_from_parts",
     "build_memo_composer",
@@ -255,6 +266,7 @@ __all__ = [
     "format_research_plan_preview",
     "format_run_timeline",
     "format_evidence_board",
+    "format_export_history",
     "format_issue_workspace",
     "format_memo_composer",
     "load_selected_scenario",

@@ -116,6 +116,8 @@ def test_notebook_uses_helper_driven_scenario_prep_and_has_no_stale_hardcoded_in
     assert "format_issue_workspace" in "".join(code_cells)
     assert "build_memo_composer_from_parts" in "".join(code_cells)
     assert "format_memo_composer" in "".join(code_cells)
+    assert "build_export_history_from_parts" in "".join(code_cells)
+    assert "format_export_history" in "".join(code_cells)
     assert "build_run_timeline" in "".join(code_cells)
     assert "format_run_timeline" in "".join(code_cells)
     assert 'query_plan=queries' in "".join(code_cells)

@@ -1217,3 +1217,23 @@ Status: Complete
   - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
   - `$env:PYTHONPATH='src'; pytest -q` -> `249 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports memo-composer counts and export eligibility
+
+## Session 68 - Export History Read Model Slice
+Date: 2026-03-20
+Status: Complete
+
+- Added `src/war_room/export_history.py` so the current notebook-era flow can derive an Export History read model from the canonical export artifact and run status instead of forcing operators to infer export posture from the written markdown path alone.
+- What changed:
+  - `build_export_history()` and `build_export_history_from_parts()` now derive export entries with artifact type, timestamp, disclaimer state, run status, delivery state, and audit-snapshot pointer.
+  - `format_export_history()` now renders a notebook-friendly export-history summary with written vs not-written state called out explicitly.
+  - `notebooks/01_case_war_room.ipynb` now prints the export-history summary in the export cell after the run timeline is available.
+  - `src/war_room/preflight.py` now records export-history counts so the deterministic offline smoke lane surfaces final export posture alongside workflow, evidence-board, issue-workspace, and memo-composer status.
+  - package exports and regression coverage were updated for the new read model.
+- Why:
+  - the memo-composer slice exposed section readiness, but there was still no first-class final-stage surface showing whether an export artifact existed, what state it was in, and how it linked back to the audit snapshot
+  - this closes the last missing written workflow stage before a PR
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_export_history.py` -> `3 passed`
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
+  - `$env:PYTHONPATH='src'; pytest -q` -> `252 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports export-history state
