@@ -21,6 +21,7 @@ from war_room.scenarios import (
     load_scenario_for_fixture_case,
 )
 from war_room.weather_module import build_weather_brief
+from war_room.workflow_summary import build_run_timeline
 
 _REQUIRED_FIXTURE_FILES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
 _EXPECTED_MEMO_SECTIONS = (
@@ -61,6 +62,9 @@ class PreflightScenarioReport:
     checks: list[PreflightCheck] = field(default_factory=list)
     memo_length: int = 0
     memo_sections: list[str] = field(default_factory=list)
+    workflow_status: str = ""
+    workflow_review_required: bool = False
+    workflow_stage_statuses: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -98,6 +102,9 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
         )
         memo_length = 0
         memo_sections: list[str] = []
+        workflow_status = ""
+        workflow_review_required = False
+        workflow_stage_statuses: list[str] = []
 
         try:
             intake, intake_evidence = _load_intake(case_key, intake_path, repo_root=context.repo_root)
@@ -151,6 +158,22 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
             memo_length = len(memo)
             memo_sections = [section for section in _EXPECTED_MEMO_SECTIONS if section in memo]
             checks.extend(_memo_checks(memo, memo_sections))
+            run_record, run_stages = build_run_timeline(
+                intake,
+                research_plan,
+                weather,
+                carrier,
+                caselaw,
+                citecheck,
+                environment="preflight",
+                export_written=False,
+            )
+            workflow_status = run_record.status
+            workflow_review_required = run_record.review_required
+            workflow_stage_statuses = [
+                f"{stage.stage_key}={stage.status}"
+                for stage in run_stages
+            ]
         except Exception as exc:
             checks.append(
                 PreflightCheck(
@@ -168,6 +191,9 @@ def run_demo_preflight(context: BootstrapContext) -> DemoPreflightReport:
                 checks=checks,
                 memo_length=memo_length,
                 memo_sections=memo_sections,
+                workflow_status=workflow_status,
+                workflow_review_required=workflow_review_required,
+                workflow_stage_statuses=workflow_stage_statuses,
             )
         )
 
@@ -200,6 +226,15 @@ def render_demo_preflight_report(report: DemoPreflightReport) -> str:
         lines.append(
             f"- Availability: {scenario.availability.status} | {scenario.availability.detail}"
         )
+        if scenario.workflow_status:
+            lines.append(
+                f"- Workflow: {scenario.workflow_status} | review_required="
+                f"{'yes' if scenario.workflow_review_required else 'no'}"
+            )
+        if scenario.workflow_stage_statuses:
+            lines.append(
+                "- Workflow stages: " + ", ".join(scenario.workflow_stage_statuses)
+            )
         lines.append(f"- Memo length: {scenario.memo_length}")
         if scenario.memo_sections:
             lines.append(f"- Memo sections: {', '.join(scenario.memo_sections)}")
@@ -227,6 +262,9 @@ def report_to_payload(report: DemoPreflightReport) -> dict[str, Any]:
                 "availability": asdict(scenario.availability),
                 "memo_length": scenario.memo_length,
                 "memo_sections": scenario.memo_sections,
+                "workflow_status": scenario.workflow_status,
+                "workflow_review_required": scenario.workflow_review_required,
+                "workflow_stage_statuses": scenario.workflow_stage_statuses,
                 "checks": [asdict(check) for check in scenario.checks],
             }
             for scenario in report.scenarios

@@ -36,6 +36,10 @@ def test_demo_preflight_smoke_covers_committed_scenarios():
 
     for scenario in report.scenarios:
         assert scenario.availability.status == "offline-ready"
+        assert scenario.workflow_status == "completed"
+        assert scenario.workflow_review_required is True
+        assert "citation_verify=degraded" in scenario.workflow_stage_statuses
+        assert "memo_assembly=degraded" in scenario.workflow_stage_statuses
         check_names = {check.name for check in scenario.checks}
         assert "intake payload loads" in check_names
         assert "memo includes disclaimer language" in check_names
@@ -57,6 +61,7 @@ def test_demo_preflight_rendering_includes_summary():
     assert "ida_lloyds_orleans" in rendered
     assert "Passed: Yes" in rendered
     assert "Availability: offline-ready" in rendered
+    assert "Workflow: completed | review_required=yes" in rendered
     assert "Registry scenario" in rendered
 
 
@@ -71,6 +76,7 @@ def test_bootstrap_cli_preflight_json_output(monkeypatch, capsys):
     assert payload["scenario_count"] == len(_expected_scenario_keys())
     assert len(payload["scenarios"]) == len(_expected_scenario_keys())
     assert payload["scenarios"][0]["availability"]["status"] == "offline-ready"
+    assert payload["scenarios"][0]["workflow_status"] == "completed"
 
 
 def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
@@ -132,9 +138,17 @@ def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
         if query_plan == research_plan.query_plan
         else "",
     )
+    monkeypatch.setattr(
+        "war_room.preflight.build_run_timeline",
+        lambda *args, **kwargs: (
+            type("RunRecord", (), {"status": "completed", "review_required": False})(),
+            [type("RunStageRecord", (), {"stage_key": "memo_assembly", "status": "completed"})()],
+        ),
+    )
 
     report = run_demo_preflight(context)
 
     assert report.passed is True
     assert len(observed_query_plans) == 3
     assert all(query_plan == research_plan.query_plan for query_plan in observed_query_plans)
+    assert report.scenarios[0].workflow_status == "completed"

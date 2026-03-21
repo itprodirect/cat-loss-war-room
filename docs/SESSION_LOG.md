@@ -1137,3 +1137,23 @@ Status: Complete
   - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
   - `$env:PYTHONPATH='src'; pytest -q` -> `236 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight success
+
+## Session 64 - Workflow Summary Surface Slice
+Date: 2026-03-20
+Status: Complete
+
+- Added `src/war_room/workflow_summary.py` so the current notebook-era flow can derive a research-plan preview plus canonical run/stage timeline from existing typed contracts instead of leaving operators to infer trust state from scattered prints.
+- What changed:
+  - `format_research_plan_preview()` now renders planned modules, issue hypotheses, preferred domains, and estimated scope from `ResearchPlan`.
+  - `build_run_timeline()` now derives `Run` plus `RunStage` state from the shared research plan, module payloads, citation results, and audit snapshot.
+  - `notebooks/01_case_war_room.ipynb` now prints the plan preview before query rows and prints a run timeline after memo export.
+  - `src/war_room/preflight.py` now records workflow status plus stage-status summaries so the offline smoke report shows review-required run health explicitly.
+  - package exports and regression coverage were updated for the new helper surface.
+- Why:
+  - the last slice unified the shared `ResearchPlan`, but the operator still had to infer workflow state manually from raw module output
+  - this adds the first thin workflow surface without pretending the planned V2 web app already exists
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_workflow_summary.py` -> `4 passed`
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
+  - `$env:PYTHONPATH='src'; pytest -q` -> `240 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports workflow review state

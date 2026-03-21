@@ -106,6 +106,11 @@ from war_room.scenarios import (
     scenario_catalog_availability,
     validate_scenario,
 )
+from war_room.workflow_summary import (
+    build_run_timeline,
+    format_research_plan_preview,
+    format_run_timeline,
+)
 
 __all__ = [
     "BootstrapContext",
@@ -203,8 +208,11 @@ __all__ = [
     "scenario_availability_summary",
     "scenario_catalog_availability",
     "validate_scenario",
+    "build_run_timeline",
     "build_intake_from_scenario",
     "ensure_runtime_context",
+    "format_research_plan_preview",
+    "format_run_timeline",
     "load_selected_scenario",
     "prepare_notebook_scenario",
     "resolve_live_retrieval_enabled",
