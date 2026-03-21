@@ -10,6 +10,15 @@ from war_room.evidence_board import (
     build_evidence_board_from_parts,
     format_evidence_board,
 )
+from war_room.issue_workspace import (
+    IssueWorkspaceCaseCandidate,
+    IssueWorkspaceCard,
+    IssueWorkspaceCitationOutcome,
+    IssueWorkspaceReadModel,
+    build_issue_workspace,
+    build_issue_workspace_from_parts,
+    format_issue_workspace,
+)
 from war_room.models import (
     CaseCandidate,
     CaseLawPack,
@@ -127,8 +136,14 @@ __all__ = [
     "EvidenceBoardClusterCard",
     "EvidenceBoardItemPreview",
     "EvidenceBoardReadModel",
+    "IssueWorkspaceCaseCandidate",
+    "IssueWorkspaceCard",
+    "IssueWorkspaceCitationOutcome",
+    "IssueWorkspaceReadModel",
     "build_evidence_board",
     "build_evidence_board_from_parts",
+    "build_issue_workspace",
+    "build_issue_workspace_from_parts",
     "discover_repo_root",
     "FeatureFlags",
     "load_settings",
@@ -227,6 +242,7 @@ __all__ = [
     "format_research_plan_preview",
     "format_run_timeline",
     "format_evidence_board",
+    "format_issue_workspace",
     "load_selected_scenario",
     "prepare_notebook_scenario",
     "resolve_live_retrieval_enabled",

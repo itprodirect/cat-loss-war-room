@@ -1177,3 +1177,23 @@ Status: Complete
   - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
   - `$env:PYTHONPATH='src'; pytest -q` -> `243 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports evidence-board cluster counts
+
+## Session 66 - Issue Workspace Read Model Slice
+Date: 2026-03-20
+Status: Complete
+
+- Added `src/war_room/issue_workspace.py` so the current notebook-era flow can derive an Issue Workspace read model from `RunAuditSnapshot` instead of forcing operators to infer issue-level support from case-law buckets and appendix tables.
+- What changed:
+  - `build_issue_workspace()` and `build_issue_workspace_from_parts()` now derive issue cards with linked clusters, case candidates, citation outcomes, linked memo claims, and open review events.
+  - `format_issue_workspace()` now renders a notebook-friendly issue summary with strongest authorities and citation state kept inside the issue view.
+  - `notebooks/01_case_war_room.ipynb` now prints the issue-workspace summary immediately after the evidence-board summary.
+  - `src/war_room/preflight.py` now records issue-workspace counts so the deterministic offline smoke lane surfaces issue-level review posture alongside workflow and evidence-board status.
+  - package exports and regression coverage were updated for the new read model.
+- Why:
+  - the evidence-board slice exposed grouped support, but there was still no first-class issue-level review surface between clusters and memo export
+  - this adds the next thin V2-aligned surface without inventing a separate UI runtime
+- Verification:
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_issue_workspace.py` -> `3 passed`
+  - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
+  - `$env:PYTHONPATH='src'; pytest -q` -> `246 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports issue-workspace counts

@@ -42,6 +42,8 @@ def test_demo_preflight_smoke_covers_committed_scenarios():
         assert "memo_assembly=degraded" in scenario.workflow_stage_statuses
         assert scenario.evidence_cluster_count > 0
         assert scenario.evidence_review_required_cluster_count > 0
+        assert scenario.issue_count > 0
+        assert scenario.review_required_issue_count > 0
         check_names = {check.name for check in scenario.checks}
         assert "intake payload loads" in check_names
         assert "memo includes disclaimer language" in check_names
@@ -65,6 +67,7 @@ def test_demo_preflight_rendering_includes_summary():
     assert "Availability: offline-ready" in rendered
     assert "Workflow: completed | review_required=yes" in rendered
     assert "Evidence board:" in rendered
+    assert "Issue workspace:" in rendered
     assert "Registry scenario" in rendered
 
 
@@ -81,6 +84,7 @@ def test_bootstrap_cli_preflight_json_output(monkeypatch, capsys):
     assert payload["scenarios"][0]["availability"]["status"] == "offline-ready"
     assert payload["scenarios"][0]["workflow_status"] == "completed"
     assert payload["scenarios"][0]["evidence_cluster_count"] > 0
+    assert payload["scenarios"][0]["issue_count"] > 0
 
 
 def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
@@ -157,6 +161,14 @@ def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
             {"total_clusters": 3, "review_required_clusters": 1},
         )(),
     )
+    monkeypatch.setattr(
+        "war_room.preflight.build_issue_workspace_from_parts",
+        lambda *args, **kwargs: type(
+            "IssueWorkspaceRecord",
+            (),
+            {"issue_cards": [object(), object()], "review_required_issue_count": 1},
+        )(),
+    )
 
     report = run_demo_preflight(context)
 
@@ -165,3 +177,4 @@ def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
     assert all(query_plan == research_plan.query_plan for query_plan in observed_query_plans)
     assert report.scenarios[0].workflow_status == "completed"
     assert report.scenarios[0].evidence_cluster_count == 3
+    assert report.scenarios[0].issue_count == 2
