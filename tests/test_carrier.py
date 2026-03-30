@@ -8,6 +8,7 @@ from war_room.carrier_module import (
     _assemble_pack,
     _build_rebuttals,
     _extract_defenses,
+    _normalize_carrier_pack,
     build_carrier_doc_pack,
 )
 
@@ -76,6 +77,66 @@ def test_generic_regulatory_pages_are_excluded() -> None:
     assert "Citizens Market Conduct Exam Report" in titles
 
 
+def test_normalize_carrier_pack_filters_low_value_sources_and_boilerplate_notes() -> None:
+    intake = _sample_intake()
+    payload = {
+        "module": "carrier",
+        "carrier_snapshot": {
+            "name": intake.carrier,
+            "state": intake.state,
+            "event": intake.event_name,
+            "policy_type": intake.policy_type,
+        },
+        "document_pack": [
+            {
+                "doc_type": "Claims Handling Guideline",
+                "title": "What to Expect After Reporting Your Claim",
+                "url": "https://www.citizensfla.com/documents/claim-brochure.pdf",
+                "badge": "professional",
+                "why_it_matters": "CONTINUE TO SITE\n\nWhat to expect",
+            },
+            {
+                "doc_type": "DOI/Regulatory Complaint",
+                "title": "Citizens Market Conduct Exam Report",
+                "url": "https://floir.com/reports/citizens-market-conduct-exam.pdf",
+                "badge": "official",
+                "why_it_matters": "Complaint handling findings",
+            },
+        ],
+        "common_defenses": [],
+        "rebuttal_angles": [],
+        "sources": [
+            {
+                "title": "Consumers - floir",
+                "url": "https://floir.com/consumers",
+                "badge": "official",
+                "reason": "Official source",
+            },
+            {
+                "title": "What to Expect After Reporting Your Claim",
+                "url": "https://www.citizensfla.com/documents/claim-brochure.pdf",
+                "badge": "professional",
+                "reason": "Professional source",
+            },
+            {
+                "title": "Citizens Market Conduct Exam Report",
+                "url": "https://floir.com/reports/citizens-market-conduct-exam.pdf",
+                "badge": "official",
+                "reason": "Official source",
+            },
+        ],
+    }
+
+    pack = _normalize_carrier_pack(payload, intake)
+
+    assert [document["title"] for document in pack["document_pack"]] == [
+        "Citizens Market Conduct Exam Report"
+    ]
+    assert [source["title"] for source in pack["sources"]] == [
+        "Citizens Market Conduct Exam Report"
+    ]
+
+
 def test_high_value_documents_rank_ahead_of_generic_articles() -> None:
     results = [
         {
@@ -97,6 +158,140 @@ def test_high_value_documents_rank_ahead_of_generic_articles() -> None:
     pack = _assemble_pack(_sample_intake(), results)
 
     assert pack["document_pack"][0]["title"] == "Final Order on Citizens Claims Practices"
+
+
+def test_normalize_carrier_pack_prioritizes_official_regulatory_material_over_news() -> None:
+    intake = _sample_intake()
+    payload = {
+        "module": "carrier",
+        "carrier_snapshot": {
+            "name": intake.carrier,
+            "state": intake.state,
+            "event": intake.event_name,
+            "policy_type": intake.policy_type,
+        },
+        "document_pack": [
+            {
+                "doc_type": "Denial Pattern Analysis",
+                "title": "Citizens sued over alleged mishandling of Hurricane Milton claim | Insurance Business",
+                "url": "https://www.insurancebusinessmag.com/us/news/legal-insights/citizens-sued-over-alleged-mishandling-of-hurricane-milton-claim-550172.aspx",
+                "badge": "unvetted",
+                "why_it_matters": "News article",
+            },
+            {
+                "doc_type": "DOI/Regulatory Complaint",
+                "title": "[PDF] CITIZENS PROPERTY INSURANCE CORPORATION",
+                "url": "https://floir.com/docs-sf/default-source/property-and-casualty/citizens-market-conduct-exam-reports/citizens-property-insurance-corporation-final-exam-report_1-18-2023.pdf",
+                "badge": "official",
+                "why_it_matters": "Exam report",
+            },
+            {
+                "doc_type": "Regulatory Action",
+                "title": "Orders and Memoranda - Florida Office of Insurance Regulation",
+                "url": "https://www.floir.com/resources-and-reports/orders-and-memoranda",
+                "badge": "official",
+                "why_it_matters": "Orders",
+            },
+        ],
+        "common_defenses": [],
+        "rebuttal_angles": [],
+        "sources": [
+            {
+                "title": "Citizens sued over alleged mishandling of Hurricane Milton claim | Insurance Business",
+                "url": "https://www.insurancebusinessmag.com/us/news/legal-insights/citizens-sued-over-alleged-mishandling-of-hurricane-milton-claim-550172.aspx",
+                "badge": "unvetted",
+                "reason": "Unvetted source",
+            },
+            {
+                "title": "[PDF] CITIZENS PROPERTY INSURANCE CORPORATION",
+                "url": "https://floir.com/docs-sf/default-source/property-and-casualty/citizens-market-conduct-exam-reports/citizens-property-insurance-corporation-final-exam-report_1-18-2023.pdf",
+                "badge": "official",
+                "reason": "Official source",
+            },
+        ],
+    }
+
+    pack = _normalize_carrier_pack(payload, intake)
+
+    assert pack["document_pack"][0]["title"] == "[PDF] CITIZENS PROPERTY INSURANCE CORPORATION"
+    assert pack["document_pack"][1]["title"] == "Orders and Memoranda - Florida Office of Insurance Regulation"
+    assert pack["sources"][0]["title"] == "[PDF] CITIZENS PROPERTY INSURANCE CORPORATION"
+
+
+def test_normalize_carrier_pack_drops_unvetted_rows_when_strong_evidence_is_present() -> None:
+    intake = _sample_intake()
+    payload = {
+        "module": "carrier",
+        "carrier_snapshot": {
+            "name": intake.carrier,
+            "state": intake.state,
+            "event": intake.event_name,
+            "policy_type": intake.policy_type,
+        },
+        "document_pack": [
+            {
+                "doc_type": "DOI/Regulatory Complaint",
+                "title": "[PDF] CITIZENS PROPERTY INSURANCE CORPORATION",
+                "url": "https://floir.com/docs-sf/default-source/property-and-casualty/citizens-market-conduct-exam-reports/citizens-property-insurance-corporation-final-exam-report_1-18-2023.pdf",
+                "badge": "official",
+                "why_it_matters": "Exam report",
+            },
+            {
+                "doc_type": "DOI/Regulatory Complaint",
+                "title": "Orders and Memoranda - Florida Office of Insurance Regulation",
+                "url": "https://www.floir.com/resources-and-reports/orders-and-memoranda",
+                "badge": "official",
+                "why_it_matters": "Orders",
+            },
+            {
+                "doc_type": "Denial Pattern Analysis",
+                "title": "Commissioner Yaworsky Fights for Consumers and Brings More ...",
+                "url": "https://floir.gov/home/2025/04/09/commissioner-yaworsky-fights-for-consumers-and-brings-more-transparency-and-accountability-for-hurricane-claim-denials",
+                "badge": "official",
+                "why_it_matters": "Commissioner statement",
+            },
+            {
+                "doc_type": "Denial Pattern Analysis",
+                "title": "Citizens sued over alleged mishandling of Hurricane Milton claim | Insurance Business",
+                "url": "https://www.insurancebusinessmag.com/us/news/legal-insights/citizens-sued-over-alleged-mishandling-of-hurricane-milton-claim-550172.aspx",
+                "badge": "unvetted",
+                "why_it_matters": "News article",
+            },
+        ],
+        "common_defenses": [],
+        "rebuttal_angles": [],
+        "sources": [
+            {
+                "title": "[PDF] CITIZENS PROPERTY INSURANCE CORPORATION",
+                "url": "https://floir.com/docs-sf/default-source/property-and-casualty/citizens-market-conduct-exam-reports/citizens-property-insurance-corporation-final-exam-report_1-18-2023.pdf",
+                "badge": "official",
+                "reason": "Official source",
+            },
+            {
+                "title": "Orders and Memoranda - Florida Office of Insurance Regulation",
+                "url": "https://www.floir.com/resources-and-reports/orders-and-memoranda",
+                "badge": "official",
+                "reason": "Official source",
+            },
+            {
+                "title": "Commissioner Yaworsky Fights for Consumers and Brings More ...",
+                "url": "https://floir.gov/home/2025/04/09/commissioner-yaworsky-fights-for-consumers-and-brings-more-transparency-and-accountability-for-hurricane-claim-denials",
+                "badge": "official",
+                "reason": "Official source",
+            },
+            {
+                "title": "Citizens sued over alleged mishandling of Hurricane Milton claim | Insurance Business",
+                "url": "https://www.insurancebusinessmag.com/us/news/legal-insights/citizens-sued-over-alleged-mishandling-of-hurricane-milton-claim-550172.aspx",
+                "badge": "unvetted",
+                "reason": "Unvetted source",
+            },
+        ],
+    }
+
+    pack = _normalize_carrier_pack(payload, intake)
+
+    assert all("Insurance Business" not in document["title"] for document in pack["document_pack"])
+    assert all("Insurance Business" not in source["title"] for source in pack["sources"])
 
 
 def test_extract_defenses() -> None:

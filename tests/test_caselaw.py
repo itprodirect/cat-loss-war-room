@@ -4,7 +4,13 @@ import tempfile
 
 from war_room.models import CaseIntake
 from war_room.query_plan import generate_query_plan
-from war_room.caselaw_module import _assemble_pack, _extract_case_info, build_caselaw_pack
+from war_room.caselaw_module import (
+    _assemble_pack,
+    _extract_case_info,
+    _normalize_case_entry,
+    _normalize_caselaw_pack,
+    build_caselaw_pack,
+)
 
 
 def _sample_intake() -> CaseIntake:
@@ -149,6 +155,197 @@ def test_pack_prefers_richer_case_metadata_when_authority_class_is_equal() -> No
 
     assert case["citation"] == "123 So. 3d 456"
     assert case["year"] == "2022"
+
+
+def test_normalize_caselaw_pack_drops_commentary_cases_and_support_noise() -> None:
+    payload = {
+        "module": "caselaw",
+        "issues": [
+            {
+                "issue": "Concurrent Causation Doctrine",
+                "cases": [
+                    {
+                        "name": "Hurricane Irma - The State of Concurrent Causation and ACC Clauses in Florida | JD Supra",
+                        "citation": "208 So. 3d 694",
+                        "court": "",
+                        "year": "",
+                        "one_liner": "Commentary article",
+                        "url": "https://www.jdsupra.com/legalnews/hurricane-irma-the-state-of-concurrent-52284",
+                        "badge": "professional",
+                    },
+                    {
+                        "name": "Sebo v. American Home Assurance Co.",
+                        "citation": "208 So. 3d 694",
+                        "court": "Supreme Court of Florida",
+                        "year": "2016",
+                        "one_liner": "Florida concurrent causation case",
+                        "url": "https://casetext.com/case/sebo-v-american-home-assurance-co",
+                        "badge": "professional",
+                    },
+                ],
+                "notes": ["Relevant"],
+            }
+        ],
+        "sources": [
+            {
+                "title": "Citizens Property Insurance Corporation",
+                "url": "https://citizensfla.com/",
+                "badge": "professional",
+                "reason": "Professional source",
+            },
+            {
+                "title": "Concurrent Causation in Florida",
+                "url": "https://www.propertyinsurancecoveragelaw.com/blog/concurrent-causation-in-florida/",
+                "badge": "professional",
+                "reason": "Professional source",
+            },
+            {
+                "title": "Sebo v. American Home Assurance Co.",
+                "url": "https://casetext.com/case/sebo-v-american-home-assurance-co",
+                "badge": "professional",
+                "reason": "Professional source",
+            },
+            {
+                "title": "Fla. Admin. Code Ann. R. 69J-123.003",
+                "url": "https://www.law.cornell.edu/regulations/florida/Fla-Admin-Code-Ann-R-69J-123-003",
+                "badge": "professional",
+                "reason": "Professional source",
+            },
+        ],
+    }
+
+    pack = _normalize_caselaw_pack(payload, intake=_sample_intake())
+
+    case_names = [case["name"] for issue in pack["issues"] for case in issue["cases"]]
+    source_titles = [source["title"] for source in pack["sources"]]
+
+    assert case_names == ["Sebo v. American Home Assurance Co."]
+    assert "Citizens Property Insurance Corporation" not in source_titles
+    assert "Concurrent Causation in Florida" not in source_titles
+    assert "Sebo v. American Home Assurance Co." in source_titles
+    assert "Fla. Admin. Code Ann. R. 69J-123.003" in source_titles
+
+
+def test_normalize_caselaw_pack_drops_tangential_support_authorities_when_on_point_cases_exist() -> None:
+    payload = {
+        "module": "caselaw",
+        "issues": [
+            {
+                "issue": "Coverage / Denial Law",
+                "cases": [
+                    {
+                        "name": "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678",
+                        "citation": "739 F.3d 678",
+                        "court": "Eleventh Circuit",
+                        "year": "2014",
+                        "one_liner": "Florida authority",
+                        "url": "https://casetext.com/case/sapuppo-v-allstate-floridian-ins-co",
+                        "badge": "professional",
+                    },
+                    {
+                        "name": "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732",
+                        "citation": "819 So. 2d 732",
+                        "court": "Supreme Court of Florida",
+                        "year": "2002",
+                        "one_liner": "Florida authority",
+                        "url": "https://casetext.com/case/siegle-v-progressive-consumers-ins-co",
+                        "badge": "professional",
+                    },
+                    {
+                        "name": "Johnson v. Davis, 480 So. 2d 625",
+                        "citation": "480 So. 2d 625",
+                        "court": "Supreme Court of Florida",
+                        "year": "1985",
+                        "one_liner": "Florida authority",
+                        "url": "https://casetext.com/case/johnson-v-davis-20",
+                        "badge": "professional",
+                    },
+                    {
+                        "name": "Quesada v. Director, Fed. Emergency Agency, 753 F.2d 1011",
+                        "citation": "753 F.2d 1011",
+                        "court": "Eleventh Circuit",
+                        "year": "1985",
+                        "one_liner": "Flood authority",
+                        "url": "https://casetext.com/case/quesada-v-director-fed-emergency-agency",
+                        "badge": "professional",
+                    },
+                ],
+                "notes": ["Relevant"],
+            }
+        ],
+        "sources": [
+            {
+                "title": "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678",
+                "url": "https://casetext.com/case/sapuppo-v-allstate-floridian-ins-co",
+                "badge": "professional",
+                "reason": "Professional source",
+            },
+            {
+                "title": "Fla. Admin. Code Ann. R. 69J-123.003",
+                "url": "https://www.law.cornell.edu/regulations/florida/Fla-Admin-Code-Ann-R-69J-123-003",
+                "badge": "professional",
+                "reason": "Professional source",
+            },
+            {
+                "title": "Lyons v. Millers Cas. Ins. Co. of Texas, 866 S.W.2d 597",
+                "url": "https://casetext.com/case/lyons-v-millers-cas-ins-co-of-texas",
+                "badge": "professional",
+                "reason": "Professional source",
+            },
+        ],
+    }
+
+    pack = _normalize_caselaw_pack(payload, intake=_sample_intake())
+    source_titles = [source["title"] for source in pack["sources"]]
+
+    assert "Sapuppo v. Allstate Floridian Ins. Co., 739 F.3d 678" in source_titles
+    assert "Fla. Admin. Code Ann. R. 69J-123.003" in source_titles
+    assert "Lyons v. Millers Cas. Ins. Co. of Texas, 866 S.W.2d 597" not in source_titles
+
+
+def test_normalize_case_entry_cleans_cached_casetext_boilerplate() -> None:
+    entry = _normalize_case_entry(
+        {
+            "name": "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732",
+            "citation": "819 So. 2d 732",
+            "court": "Supreme Court of Florida\nDate published:&#x",
+            "year": "",
+            "one_liner": (
+                "Siegle v. Progressive Consumers Ins. Co., 819 So. 2d 732 | Casetext Search + Citator\n"
+                "Siegle v. Progressive Consumers Ins. Co.\n"
+                "#### Citing Cases\n"
+                "[Culhane v. Western Nat. Mut. Ins. Co.] \n"
+                "We are not the"
+            ),
+            "url": "https://casetext.com/case/siegle-v-progressive-consumers-ins-co",
+            "badge": "professional",
+        }
+    )
+
+    assert entry["court"] == "Supreme Court of Florida"
+    assert entry["one_liner"] == "We are not the"
+
+
+def test_normalize_case_entry_drops_truncated_bracket_fragments() -> None:
+    entry = _normalize_case_entry(
+        {
+            "name": "Quesada v. Director, Federal Emergency Mgmt. Agency, 577 F. Supp. 695",
+            "citation": "577 F. Supp. 695",
+            "court": "District Court, S",
+            "year": "",
+            "one_liner": (
+                "Quesada v. Director, Federal Emergency Mgmt. Agency, 577 F. Supp. 695 | Casetext Search + Citator\n"
+                "Quesada v. Director, Federal Emergency Mgmt. Agency\n"
+                "#### Citing Cases\n"
+                "[Quesada v. Director, Fed. Emerg"
+            ),
+            "url": "https://casetext.com/case/quesada-v-director-federal-emergency-mgmt-agency",
+            "badge": "professional",
+        }
+    )
+
+    assert entry["court"] == "District Court"
+    assert entry["one_liner"] == ""
 
 
 

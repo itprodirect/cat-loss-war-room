@@ -15,13 +15,13 @@ Given a case intake, it assembles:
 
 This is research acceleration, not legal advice.
 
-## 2) Current status (as of March 18, 2026)
+## 2) Current status (as of March 30, 2026)
 
 | Item | Status |
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 252 passing under editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 268 passing under editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -55,6 +55,7 @@ This is research acceleration, not legal advice.
 - The repository now has a deterministic offline demo preflight command at `python -m war_room --preflight`.
 - The repository now also has a one-command local verification wrapper at `python -m war_room --verify`.
 - The notebook and preflight surfaces now expose a workflow-oriented research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run timeline, so grouped support, issue-level review, section readiness, export posture, and review-required state are visible before the memo is treated as complete.
+- The Milton benchmark fixture lane now normalizes cached citation trust metadata, carrier/case-law runtime quality, and markdown/export readability without changing the scenario registry or overall notebook-era runtime flow.
 
 ## 4) Quick run
 ```bash
@@ -80,9 +81,9 @@ Core implementation lives in `src/war_room/`.
 ## 6) Known limitations
 
 - Notebook UX is useful for demos but not ideal for non-technical users.
-- Case law relevance still needs stricter filtering/ranking in edge cases.
+- Case law relevance and authority summarization still need stricter filtering/ranking in edge cases.
 - Three public/redacted fact patterns are pre-seeded in cache samples, but broader scenario coverage and thresholds are still needed.
-- Export output quality is serviceable, but not yet polished for repeated client-facing use.
+- Export output quality is materially cleaner in the Milton benchmark lane, but it is not yet polished for repeated client-facing use across broader fixture coverage.
 
 ## 7) Roadmap summary
 

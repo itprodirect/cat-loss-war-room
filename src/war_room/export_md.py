@@ -5,6 +5,8 @@ Compiles all module outputs into a structured research memo.
 
 from __future__ import annotations
 
+import html
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping
@@ -101,11 +103,17 @@ def render_markdown_memo(
     lines.append(f"- **Location:** {intake.county} County, {intake.state}")
     lines.append(f"- **Carrier:** {intake.carrier}")
     lines.append(f"- **Policy:** {intake.policy_type}")
-    lines.append(f"- **Posture:** {', '.join(intake.posture)}")
+    lines.append(f"- **Posture:** {', '.join(_humanize_token(item) for item in intake.posture)}")
     if intake.key_facts:
-        lines.append(f"- **Key Facts:** {'; '.join(intake.key_facts)}")
+        lines.append(
+            "- **Key Facts:** "
+            + "; ".join(_clean_inline_text(item, limit=180) for item in intake.key_facts)
+        )
     if intake.coverage_issues:
-        lines.append(f"- **Coverage Issues:** {'; '.join(intake.coverage_issues)}")
+        lines.append(
+            "- **Coverage Issues:** "
+            + "; ".join(_clean_inline_text(item, limit=120) for item in intake.coverage_issues)
+        )
     lines.append("")
     lines.append("---")
     lines.append("")
@@ -134,7 +142,7 @@ def render_markdown_memo(
         lines.append("### Key Observations")
         lines.append("")
         for obs in observations[:6]:
-            lines.append(f"- {obs[:250]}")
+            lines.append(f"- {_clean_inline_text(obs, limit=250)}")
         lines.append("")
 
     _append_sources(lines, weather_payload.get("sources", []), "Weather")
@@ -144,8 +152,10 @@ def render_markdown_memo(
     lines.append("")
     snap = carrier_payload.get("carrier_snapshot", {})
     lines.append(
-        f"**{snap.get('name', '')}** - {snap.get('event', '')} - "
-        f"{snap.get('state', '')} - {snap.get('policy_type', '')}"
+        f"**{_clean_inline_text(snap.get('name', ''), limit=80)}** - "
+        f"{_clean_inline_text(snap.get('event', ''), limit=80)} - "
+        f"{_clean_inline_text(snap.get('state', ''), limit=10)} - "
+        f"{_clean_inline_text(snap.get('policy_type', ''), limit=40)}"
     )
     lines.append("")
     _append_claim_trace(lines, audit_snapshot.memo_claims, "carrier-positioning")
@@ -158,11 +168,16 @@ def render_markdown_memo(
         lines.append("| # | Type | Title | Badge | Why It Matters |")
         lines.append("|---|------|-------|-------|----------------|")
         for i, document in enumerate(docs[:8], 1):
-            title = document.get("title", "")[:60]
+            title = _clean_inline_text(document.get("title", ""), limit=60, table_safe=True)
+            why_it_matters = _clean_inline_text(
+                document.get("why_it_matters", ""),
+                limit=80,
+                table_safe=True,
+            )
             lines.append(
-                f"| {i} | {document.get('doc_type', '')} | "
+                f"| {i} | {_clean_inline_text(document.get('doc_type', ''), limit=32, table_safe=True)} | "
                 f"[{title}]({document.get('url', '')}) | "
-                f"{document.get('badge', '')} | {document.get('why_it_matters', '')[:80]} |"
+                f"{document.get('badge', '')} | {why_it_matters} |"
             )
         lines.append("")
 
@@ -171,7 +186,7 @@ def render_markdown_memo(
         lines.append("### Common Carrier Defenses")
         lines.append("")
         for defense in defenses:
-            lines.append(f"- {defense}")
+            lines.append(f"- {_clean_inline_text(defense, limit=180)}")
         lines.append("")
 
     rebuttals = carrier_payload.get("rebuttal_angles", [])
@@ -179,7 +194,7 @@ def render_markdown_memo(
         lines.append("### Rebuttal Angles")
         lines.append("")
         for rebuttal in rebuttals:
-            lines.append(f"- {rebuttal}")
+            lines.append(f"- {_clean_inline_text(rebuttal, limit=180)}")
         lines.append("")
 
     _append_sources(lines, carrier_payload.get("sources", []), "Carrier")
@@ -193,23 +208,26 @@ def render_markdown_memo(
 
     issues = caselaw_payload.get("issues", [])
     for issue in issues:
-        lines.append(f"### {issue.get('issue', '')}")
+        lines.append(f"### {_clean_inline_text(issue.get('issue', ''), limit=120)}")
         lines.append("")
         for case in issue.get("cases", []):
-            cite_str = f" - {case['citation']}" if case.get("citation") else ""
-            court_str = f" ({case.get('court', '')}" if case.get("court") else ""
-            year_str = f", {case['year']})" if case.get("year") else ")"
+            citation = _clean_inline_text(case.get("citation", ""), limit=80)
+            court = _clean_inline_text(case.get("court", ""), limit=80)
+            year = _clean_inline_text(case.get("year", ""), limit=16)
+            cite_str = f" - {citation}" if citation else ""
+            court_str = f" ({court}" if court else ""
+            year_str = f", {year})" if year else ")"
             if not court_str:
-                year_str = f" ({case['year']})" if case.get("year") else ""
+                year_str = f" ({year})" if year else ""
             lines.append(
-                f"- {case.get('badge', '')} **{case.get('name', '')}**"
+                f"- {case.get('badge', '')} **{_clean_inline_text(case.get('name', ''), limit=120)}**"
                 f"{cite_str}{court_str}{year_str}"
             )
             if case.get("one_liner"):
-                lines.append(f"  - {case['one_liner'][:200]}")
+                lines.append(f"  - {_clean_inline_text(case['one_liner'], limit=200)}")
         lines.append("")
         for note in issue.get("notes", []):
-            lines.append(f"  > {note}")
+            lines.append(f"  > {_clean_inline_text(note, limit=200)}")
         lines.append("")
 
     checks = citecheck_payload.get("checks", [])
@@ -223,13 +241,18 @@ def render_markdown_memo(
         lines.append("| Badge | Case | Citation | Confidence | Source Type | Note |")
         lines.append("|-------|------|----------|------------|-------------|------|")
         for check in checks:
-            source_type = (check.get("source_class") or "unknown").replace("_", " ")
-            note = check.get("note", "")[:60]
+            source_type = _clean_inline_text(
+                (check.get("source_class") or "unknown").replace("_", " "),
+                limit=32,
+                table_safe=True,
+            )
+            note = _clean_inline_text(check.get("note", ""), limit=60, table_safe=True)
             if check.get("alternate_candidate_count"):
                 note = f"{note} ({check['alternate_candidate_count']} alternates)"
             lines.append(
-                f"| {check.get('badge', '')} | {check.get('case_name', '')[:40]} | "
-                f"{check.get('citation', '')} | {check.get('confidence', '')} | "
+                f"| {check.get('badge', '')} | {_clean_inline_text(check.get('case_name', ''), limit=40, table_safe=True)} | "
+                f"{_clean_inline_text(check.get('citation', ''), limit=40, table_safe=True)} | "
+                f"{_clean_inline_text(check.get('confidence', ''), limit=12, table_safe=True)} | "
                 f"{source_type} | {note} |"
             )
         lines.append("")
@@ -244,7 +267,11 @@ def render_markdown_memo(
     lines.append("| Module | Category | Query |")
     lines.append("|--------|----------|-------|")
     for query in query_plan:
-        lines.append(f"| {query.module} | {query.category} | {query.query[:80]} |")
+        lines.append(
+            f"| {_clean_inline_text(query.module, limit=24, table_safe=True)} | "
+            f"{_clean_inline_text(query.category, limit=24, table_safe=True)} | "
+            f"{_clean_inline_text(query.query, limit=80, table_safe=True)} |"
+        )
     lines.append("")
 
     # --- 7. Evidence Appendix ---
@@ -280,8 +307,8 @@ def render_markdown_memo(
     lines.append("|---|-------|--------|-------|-----|")
     for i, src in enumerate(all_sources, 1):
         lines.append(
-            f"| {i} | {src.get('badge', '')} | {src.get('module', '')} | "
-            f"{src.get('title', '')[:50]} | {src.get('url', '')} |"
+            f"| {i} | {src.get('badge', '')} | {_clean_inline_text(src.get('module', ''), limit=20, table_safe=True)} | "
+            f"{_clean_inline_text(src.get('title', ''), limit=50, table_safe=True)} | {src.get('url', '')} |"
         )
     lines.append("")
 
@@ -335,9 +362,10 @@ def _append_evidence_clusters(lines: list[str], evidence_clusters: list[Any]) ->
     lines.append("|---------|------|-------|---------|-----------------|---------|--------------|")
     for cluster in evidence_clusters:
         lines.append(
-            f"| {cluster.cluster_id} | {cluster.cluster_type} | {cluster.label[:50]} | "
+            f"| {cluster.cluster_id} | {cluster.cluster_type} | {_clean_inline_text(cluster.label, limit=50, table_safe=True)} | "
             f"{cluster.member_count} | {len(cluster.provenance_urls)} | "
-            f"{', '.join(cluster.modules)} | {', '.join(cluster.evidence_ids)} |"
+            f"{_clean_inline_text(', '.join(cluster.modules), limit=40, table_safe=True)} | "
+            f"{_clean_inline_text(', '.join(cluster.evidence_ids), limit=120, table_safe=True)} |"
         )
     lines.append("")
 
@@ -388,7 +416,7 @@ def _append_evidence_index(lines: list[str], evidence_items: list[Any]) -> None:
         url = item.url or ""
         lines.append(
             f"| {item.evidence_id} | {item.module} | {item.evidence_type} | "
-            f"{title[:50]} | {item.badge} | {url} |"
+            f"{_clean_inline_text(title, limit=50, table_safe=True)} | {item.badge} | {url} |"
         )
     lines.append("")
 
@@ -398,7 +426,7 @@ def _append_review_log(lines: list[str], review_events: list[Any]) -> None:
     for event in review_events:
         cluster_ids = ", ".join(event.related_cluster_ids) if event.related_cluster_ids else "none"
         lines.append(
-            f"- **{event.label}:** {event.detail} "
+            f"- **{_clean_inline_text(event.label, limit=80)}:** {_clean_inline_text(event.detail, limit=180)} "
             f"| Evidence clusters: {cluster_ids}"
         )
     lines.append("")
@@ -412,8 +440,9 @@ def _append_sources(lines: list[str], sources: list[dict[str, Any]], label: str)
     lines.append("")
     for src in sources[:8]:
         lines.append(
-            f"- {src.get('badge', '')} [{src.get('title', '')[:60]}]({src.get('url', '')})"
-            f" - {src.get('reason', '')}"
+            f"- {src.get('badge', '')} "
+            f"[{_clean_inline_text(src.get('title', ''), limit=60)}]({src.get('url', '')})"
+            f" - {_clean_inline_text(src.get('reason', ''), limit=120)}"
         )
     lines.append("")
 
@@ -425,7 +454,7 @@ def _append_warnings(lines: list[str], warnings: list[str] | None, heading: str)
     lines.append(f"### {heading}")
     lines.append("")
     for warning in warnings:
-        lines.append(f"- {warning}")
+        lines.append(f"- {_clean_inline_text(warning, limit=180)}")
     lines.append("")
 
 
@@ -547,3 +576,24 @@ def _format_count_map(values: dict[str, int]) -> str:
         if value:
             parts.append(f"{key.replace('_', ' ')} {value}")
     return " / ".join(parts)
+
+
+def _clean_inline_text(
+    value: Any,
+    *,
+    limit: int | None = None,
+    table_safe: bool = False,
+) -> str:
+    text = html.unescape(str(value or ""))
+    text = text.replace("\r", " ").replace("\n", " ")
+    text = re.sub(r"\[([^\]]+)\]", r"\1", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    if table_safe:
+        text = text.replace("|", "/")
+    if limit is not None and len(text) > limit:
+        return text[: max(0, limit - 3)].rstrip() + "..."
+    return text
+
+
+def _humanize_token(value: str) -> str:
+    return _clean_inline_text(value.replace("_", " "), limit=40)

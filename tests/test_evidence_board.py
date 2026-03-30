@@ -169,3 +169,59 @@ def test_format_evidence_board_surfaces_review_required_clusters():
     assert "[review_required]" in rendered
     assert "Claims:" in rendered
     assert "Review events:" in rendered
+
+
+def test_build_evidence_board_keeps_verified_citation_cluster_ready_when_only_peer_citations_are_uncertain():
+    intake, weather, carrier, caselaw, _, query_plan = _sample_parts()
+    weather.pop("warnings")
+    caselaw["issues"][0]["cases"].append(
+        {
+            "name": "Roe v. Ins",
+            "citation": "999 So.3d 111",
+            "court": "Fla. App.",
+            "year": "2024",
+            "one_liner": "Secondary authority only.",
+            "url": "https://example.com/other-case",
+            "badge": "professional",
+        }
+    )
+    citecheck = {
+        "module": "citation_verify",
+        "disclaimer": "SPOT-CHECK ONLY",
+        "checks": [
+            {
+                "badge": "verified",
+                "case_name": "Doe v. Ins",
+                "citation": "123 So.3d 456",
+                "status": "verified",
+                "note": "Found on official source",
+                "source_url": "https://www.flcourts.gov/case/123",
+            },
+            {
+                "badge": "warning",
+                "case_name": "Roe v. Ins",
+                "citation": "999 So.3d 111",
+                "status": "uncertain",
+                "note": "Found on professional source",
+                "source_url": "https://casetext.com/case/roe-v-ins",
+            },
+        ],
+        "summary": {"total": 2, "verified": 1, "uncertain": 1, "not_found": 0},
+    }
+
+    board = build_evidence_board_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    verified_card = next(card for card in board.cluster_cards if card.label == "123 so. 3d 456")
+    uncertain_card = next(card for card in board.cluster_cards if card.label == "999 so. 3d 111")
+
+    assert verified_card.review_required is False
+    assert verified_card.review_event_ids == []
+    assert uncertain_card.review_required is True
+    assert uncertain_card.review_event_ids == ["citation-uncertain"]

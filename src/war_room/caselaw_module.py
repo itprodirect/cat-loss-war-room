@@ -7,6 +7,7 @@ Avoids Westlaw/Lexis as primary sources.
 
 from __future__ import annotations
 
+import html
 import re
 from typing import Any, Mapping, Sequence
 from urllib.parse import urlparse
@@ -171,9 +172,12 @@ def build_caselaw_pack(
             if cached is None:
                 cached = cache_get(case_key, cache_dir)
             if cached is not None:
-                return cached
-        return _empty_caselaw_pack(
-            "No Exa client available and no cached case-law pack found.",
+                return _normalize_caselaw_pack(cached, intake=intake)
+        return _normalize_caselaw_pack(
+            _empty_caselaw_pack(
+                "No Exa client available and no cached case-law pack found.",
+            ),
+            intake=intake,
         )
 
     def _fetch() -> dict[str, Any]:
@@ -217,13 +221,14 @@ def build_caselaw_pack(
         payload["run_events"] = run_events
         return caselaw_pack_to_payload(payload)
 
-    return cached_call(
+    pack = cached_call(
         case_key,
         _fetch,
         cache_samples_dir=cache_samples_dir,
         cache_dir=cache_dir,
         use_cache=use_cache,
     )
+    return _normalize_caselaw_pack(pack, intake=intake)
 
 
 def _caselaw_queries(
@@ -332,6 +337,59 @@ def _assemble_pack(
     })
 
 
+def _normalize_caselaw_pack(
+    payload: Mapping[str, Any],
+    *,
+    intake: CaseIntake | None = None,
+) -> dict[str, Any]:
+    """Clean cached/live caselaw payloads before downstream read models consume them."""
+    pack = caselaw_pack_to_payload(payload)
+    issues = []
+    kept_case_urls: set[str] = set()
+    for issue in pack["issues"]:
+        cases = []
+        for case in issue.get("cases", []):
+            normalized = _normalize_case_entry(case)
+            if not _is_case_like(normalized):
+                continue
+            cases.append(normalized)
+            if normalized.get("url"):
+                kept_case_urls.add(normalized["url"])
+        if not cases:
+            continue
+        issues.append(
+            {
+                **issue,
+                "cases": cases,
+            }
+        )
+    issue_labels = [issue["issue"] for issue in issues]
+
+    sources = []
+    seen_source_urls: set[str] = set()
+    for source in pack["sources"]:
+        url = source.get("url", "")
+        if not url or url in seen_source_urls:
+            continue
+        if url not in kept_case_urls and not _is_high_value_caselaw_support_source(
+            source,
+            intake=intake,
+            issue_labels=issue_labels,
+            strong_case_count=len(kept_case_urls),
+        ):
+            continue
+        seen_source_urls.add(url)
+        sources.append(source)
+
+    return caselaw_pack_to_payload(
+        {
+            **pack,
+            "issues": issues,
+            "sources": sources,
+        }
+    )
+
+
 def _case_result_priority(result: dict[str, Any]) -> tuple[int, int, int, int, int, int, str]:
     """Prefer primary-law authorities with citations over commentary and news."""
     tier_rank = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
@@ -363,6 +421,41 @@ def _case_result_priority(result: dict[str, Any]) -> tuple[int, int, int, int, i
         metadata_penalty,
         title,
     )
+
+
+def _normalize_case_entry(case: Mapping[str, Any]) -> dict[str, Any]:
+    score = score_url(case.get("url", ""), case.get("name", ""))
+    name = _clean_case_text(case.get("name", ""))
+    citation = _clean_case_text(case.get("citation", ""))
+    court = _clean_case_court(case.get("court", ""))
+    year = _clean_case_text(case.get("year", "")) or _extract_case_year(
+        " ".join(
+            str(part or "")
+            for part in (
+                case.get("year"),
+                case.get("court"),
+                case.get("one_liner"),
+                case.get("name"),
+            )
+        )
+    )
+    return {
+        **case,
+        "name": name,
+        "citation": citation,
+        "court": court,
+        "year": year,
+        "one_liner": _clean_case_one_liner(
+            case.get("one_liner", ""),
+            case_name=name,
+            citation=citation,
+        ),
+        "source_class": case.get("source_class") or score["source_class"],
+        "source_tier": case.get("source_tier") or score["tier"],
+        "is_primary_authority": bool(
+            case.get("is_primary_authority", score["is_primary_authority"])
+        ),
+    }
 
 
 def _extract_case_info(result: dict) -> dict[str, Any]:
@@ -423,6 +516,115 @@ def _extract_case_info(result: dict) -> dict[str, Any]:
         "source_tier": score["tier"],
         "is_primary_authority": score["is_primary_authority"],
     }
+
+
+def _clean_case_text(value: str) -> str:
+    text = html.unescape(str(value or ""))
+    text = text.replace("\r", " ").replace("\n", " ")
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def _clean_case_court(value: str) -> str:
+    text = _clean_case_text(value)
+    text = re.split(r"\bDate published\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
+    text = re.sub(r"\bDate publi\w*$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bDat$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r",\s*[A-Z]$", "", text)
+    if text.isupper():
+        text = text.title()
+    return text.strip(" -,:;")
+
+
+def _clean_case_one_liner(
+    value: str,
+    *,
+    case_name: str,
+    citation: str,
+) -> str:
+    text = _clean_case_text(value)
+    text = re.sub(r"\|\s*Casetext Search\s*\+\s*Citator", "", text, flags=re.IGNORECASE)
+    if "Citing Cases" in text:
+        candidate = text.split("Citing Cases", 1)[1]
+        candidate = re.sub(r"^\s*\[[^\]]+\]\s*", "", candidate)
+        candidate = _clean_case_text(candidate)
+        if candidate and not candidate.startswith("["):
+            text = candidate
+    case_name_without_citation = case_name
+    if citation:
+        case_name_without_citation = re.sub(
+            rf",?\s*{re.escape(citation)}$",
+            "",
+            case_name_without_citation,
+            flags=re.IGNORECASE,
+        ).strip()
+    if case_name:
+        text = re.sub(rf"^{re.escape(case_name)}\s*", "", text, flags=re.IGNORECASE)
+    if case_name_without_citation:
+        text = re.sub(
+            rf"^{re.escape(case_name_without_citation)}\s*",
+            "",
+            text,
+            flags=re.IGNORECASE,
+        )
+    if citation:
+        text = re.sub(rf"^{re.escape(citation)}\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^#+\s*", "", text)
+    text = re.sub(r"^Citing Cases\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^\s*\[[^\]]+\]\s*", "", text)
+    if text.startswith("["):
+        return ""
+    text = text.lstrip(" ,.;:-|")
+    return text[:200]
+
+
+def _extract_case_year(value: str) -> str:
+    match = re.search(r"\b(?:19|20)\d{2}\b", value)
+    return match.group(0) if match else ""
+
+
+def _is_high_value_caselaw_support_source(
+    source: Mapping[str, Any],
+    *,
+    intake: CaseIntake | None = None,
+    issue_labels: Sequence[str] = (),
+    strong_case_count: int = 0,
+) -> bool:
+    title = source.get("title", "") or ""
+    url = source.get("url", "") or ""
+    score = score_url(source.get("url", ""), title)
+    if score["source_class"] in {"commentary", "news", "other"}:
+        return False
+    if _looks_like_commentary_title(title):
+        return False
+    if strong_case_count >= 4 and intake is not None:
+        if not _is_on_point_support_source(title, url, intake, issue_labels):
+            return False
+    return True
+
+
+def _is_on_point_support_source(
+    title: str,
+    url: str,
+    intake: CaseIntake,
+    issue_labels: Sequence[str],
+) -> bool:
+    haystack = f"{title} {url}".lower()
+    issue_tokens = {
+        token
+        for label in issue_labels
+        for token in re.findall(r"[a-z]{4,}", label.lower())
+        if token not in {"issue", "coverage", "denial", "law"}
+    }
+    state_tokens = {
+        intake.state.lower(),
+        "florida" if intake.state == "FL" else intake.state.lower(),
+        intake.county.lower(),
+        *[token for token in re.findall(r"[a-z]{4,}", intake.carrier.lower()) if token not in {"property", "insurance"}],
+        *[token for token in re.findall(r"[a-z]{4,}", intake.event_name.lower())],
+    }
+    relevant_tokens = issue_tokens | state_tokens
+    return any(token in haystack for token in relevant_tokens)
 
 
 def _thin_case_metadata_penalty(case_info: dict[str, Any]) -> int:

@@ -6,6 +6,7 @@ denial patterns, regulatory signals, and rebuttal angles.
 
 from __future__ import annotations
 
+import re
 from typing import Any, Mapping, Sequence
 
 from war_room.cache_io import cache_get, cached_call
@@ -35,15 +36,39 @@ _HIGH_VALUE_DOC_TERMS = (
     "settlement",
 )
 
-_LOW_VALUE_PAGE_TERMS = (
+_LOW_VALUE_PAGE_TITLES = (
     "about us",
-    "brochure",
+    "consumers",
+    "consumers - floir",
     "contact us",
-    "consumer",
-    "faq",
-    "home",
+    "contact us - floir",
     "organization and operation",
+    "organization and operation - floir",
 )
+
+_LOW_VALUE_PAGE_URL_TERMS = (
+    "/about-us/contact-us",
+    "/about-us/organization-and-operation",
+    "/consumers",
+)
+
+_LOW_SIGNAL_SNIPPET_TERMS = (
+    "continue to site",
+    "skip to content",
+)
+
+_LOW_VALUE_SUPPORT_TITLES = (
+    "what to expect after reporting your claim",
+)
+
+_CARRIER_DOC_TYPE_RANK = {
+    "DOI/Regulatory Complaint": 0,
+    "Claims Handling Guideline": 1,
+    "Regulatory Action": 2,
+    "Bad Faith Signal": 3,
+    "Denial Pattern Analysis": 4,
+    "General": 5,
+}
 
 
 def build_carrier_doc_pack(
@@ -65,10 +90,13 @@ def build_carrier_doc_pack(
             if cached is None:
                 cached = cache_get(case_key, cache_dir)
             if cached is not None:
-                return cached
-        return _empty_carrier_pack(
+                return _normalize_carrier_pack(cached, intake)
+        return _normalize_carrier_pack(
+            _empty_carrier_pack(
+                intake,
+                "No Exa client available and no cached carrier pack found.",
+            ),
             intake,
-            "No Exa client available and no cached carrier pack found.",
         )
 
     def _fetch() -> dict[str, Any]:
@@ -111,13 +139,14 @@ def build_carrier_doc_pack(
         payload["run_events"] = run_events
         return carrier_doc_pack_to_payload(payload)
 
-    return cached_call(
+    pack = cached_call(
         case_key,
         _fetch,
         cache_samples_dir=cache_samples_dir,
         cache_dir=cache_dir,
         use_cache=use_cache,
     )
+    return _normalize_carrier_pack(pack, intake)
 
 
 def _carrier_queries(
@@ -227,6 +256,61 @@ def _assemble_pack(
     })
 
 
+def _normalize_carrier_pack(
+    payload: Mapping[str, Any],
+    intake: CaseIntake,
+) -> dict[str, Any]:
+    """Clean cached/live carrier payloads before downstream read models consume them."""
+    pack = carrier_doc_pack_to_payload(payload)
+    document_pack = []
+    seen_doc_urls: set[str] = set()
+    for document in pack["document_pack"]:
+        entry = {
+            **document,
+            "why_it_matters": _clean_carrier_text(document.get("why_it_matters", "")),
+        }
+        if _is_low_value_carrier_payload_entry(entry, doc_type=document.get("doc_type", "")):
+            continue
+        url = entry.get("url", "")
+        if url and url in seen_doc_urls:
+            continue
+        if url:
+            seen_doc_urls.add(url)
+        document_pack.append(entry)
+    document_pack.sort(key=lambda document: _carrier_payload_priority(document, doc_type=document.get("doc_type", "")))
+    if _strong_carrier_entry_count(document_pack, use_doc_type=True) >= 3:
+        document_pack = [document for document in document_pack if not _is_unvetted_carrier_entry(document)]
+
+    sources = []
+    seen_source_urls: set[str] = set()
+    for source in pack["sources"]:
+        if _is_low_value_carrier_payload_entry(source):
+            continue
+        url = source.get("url", "")
+        if url and url in seen_source_urls:
+            continue
+        if url:
+            seen_source_urls.add(url)
+        sources.append(source)
+    sources.sort(key=_carrier_payload_priority)
+    if _strong_carrier_entry_count(sources) >= 3:
+        sources = [source for source in sources if not _is_unvetted_carrier_entry(source)]
+
+    return carrier_doc_pack_to_payload(
+        {
+            **pack,
+            "carrier_snapshot": pack["carrier_snapshot"] or {
+                "name": intake.carrier,
+                "state": intake.state,
+                "event": intake.event_name,
+                "policy_type": intake.policy_type,
+            },
+            "document_pack": document_pack,
+            "sources": sources,
+        }
+    )
+
+
 def _carrier_result_priority(result: dict[str, Any]) -> tuple[int, int, int, str]:
     """Prefer official, document-like sources over general navigation pages."""
     tier_rank = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
@@ -254,7 +338,7 @@ def _is_low_value_carrier_result(result: dict[str, Any]) -> bool:
     category = result.get("category", "")
 
     if category in {"doi_complaints", "regulatory_action"}:
-        if _contains_any(title, _LOW_VALUE_PAGE_TERMS) or _contains_any(url, _LOW_VALUE_PAGE_TERMS):
+        if _is_low_value_carrier_page(title, url):
             return True
 
     if category == "claims_manual" and _contains_any(title, ("brochure", "faq")):
@@ -263,13 +347,130 @@ def _is_low_value_carrier_result(result: dict[str, Any]) -> bool:
     return False
 
 
+def _is_low_value_carrier_payload_entry(
+    entry: Mapping[str, Any],
+    *,
+    doc_type: str = "",
+) -> bool:
+    title = (entry.get("title", "") or "").lower()
+    url = (entry.get("url", "") or "").lower()
+    normalized_doc_type = doc_type.lower()
+
+    if _is_low_value_carrier_page(title, url):
+        return True
+    if _contains_any(title, _LOW_VALUE_SUPPORT_TITLES):
+        return True
+    if "claims handling guideline" in normalized_doc_type and _contains_any(
+        title,
+        ("brochure", "what to expect after reporting your claim"),
+    ):
+        return True
+    return False
+
+
+def _carrier_payload_priority(
+    entry: Mapping[str, Any],
+    *,
+    doc_type: str = "",
+) -> tuple[int, int, int, int, int, str]:
+    title = entry.get("title", "") or ""
+    url = entry.get("url", "") or ""
+    score = score_url(url, title)
+    hostname = score.get("hostname", "").removeprefix("www.")
+    tier_rank = {"official": 0, "professional": 1, "unvetted": 2, "paywalled": 3}
+    source_class_rank = {
+        "government_guidance": 0,
+        "other": 1,
+        "commentary": 2,
+        "news": 3,
+    }
+    title_lower = title.lower()
+    url_lower = url.lower()
+    doc_rank = _CARRIER_DOC_TYPE_RANK.get(doc_type or "General", 9)
+    high_value_bonus = 0 if (
+        _contains_any(title_lower, _HIGH_VALUE_DOC_TERMS)
+        or _contains_any(url_lower, _HIGH_VALUE_DOC_TERMS)
+        or url_lower.endswith(".pdf")
+    ) else 1
+    carrier_specific_bonus = 0 if (
+        hostname.endswith("floir.com")
+        or hostname.endswith("floir.gov")
+        or hostname.endswith("citizensfla.com")
+    ) else 1
+    return (
+        doc_rank,
+        tier_rank.get(score["tier"], 9),
+        high_value_bonus,
+        carrier_specific_bonus,
+        source_class_rank.get(score.get("source_class"), 9),
+        title_lower,
+    )
+
+
+def _strong_carrier_entry_count(
+    entries: Sequence[Mapping[str, Any]],
+    *,
+    use_doc_type: bool = False,
+) -> int:
+    return sum(
+        1
+        for entry in entries
+        if _is_strong_carrier_entry(
+            entry,
+            doc_type=(entry.get("doc_type", "") if use_doc_type else ""),
+        )
+    )
+
+
+def _is_strong_carrier_entry(
+    entry: Mapping[str, Any],
+    *,
+    doc_type: str = "",
+) -> bool:
+    title = entry.get("title", "") or ""
+    url = entry.get("url", "") or ""
+    score = score_url(url, title)
+    hostname = score.get("hostname", "").removeprefix("www.")
+    title_lower = title.lower()
+    url_lower = url.lower()
+    normalized_doc_type = doc_type.lower()
+
+    if score["tier"] == "official":
+        return True
+    if score["tier"] != "professional":
+        return False
+    if hostname.endswith("citizensfla.com"):
+        return True
+    if normalized_doc_type in {
+        "doi/regulatory complaint",
+        "claims handling guideline",
+        "regulatory action",
+    }:
+        return True
+    return (
+        _contains_any(title_lower, _HIGH_VALUE_DOC_TERMS)
+        or _contains_any(url_lower, _HIGH_VALUE_DOC_TERMS)
+        or url_lower.endswith(".pdf")
+    )
+
+
+def _is_unvetted_carrier_entry(entry: Mapping[str, Any]) -> bool:
+    score = score_url(entry.get("url", "") or "", entry.get("title", "") or "")
+    return score["tier"] == "unvetted"
+
+
 def _contains_any(text: str, needles: tuple[str, ...]) -> bool:
     return any(needle in text for needle in needles)
 
 
+def _is_low_value_carrier_page(title: str, url: str) -> bool:
+    normalized_title = title.strip().lower()
+    return normalized_title in _LOW_VALUE_PAGE_TITLES or _contains_any(url, _LOW_VALUE_PAGE_URL_TERMS)
+
+
 def _why_it_matters(category: str, result: dict, intake: CaseIntake) -> str:
     """Generate a short 'why it matters' note for a document."""
-    snippet = (result.get("snippet", "") or "")[:200].strip()
+    snippet = _clean_carrier_text((result.get("snippet", "") or "")[:200].strip())
     if category == "denial_patterns":
         return f"Documents {intake.carrier} denial patterns - {snippet[:100]}"
     if category == "doi_complaints":
@@ -284,6 +485,18 @@ def _why_it_matters(category: str, result: dict, intake: CaseIntake) -> str:
     if category == "bad_faith_history":
         return f"Prior bad faith signals for {intake.carrier} in {intake.state}"
     return snippet[:150] if snippet else "Potentially relevant carrier document"
+
+
+def _clean_carrier_text(text: str) -> str:
+    normalized = text.replace("\r", " ").replace("\n", " ")
+    normalized = re.sub(r"[#*]+", " ", normalized)
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    lowered = normalized.lower()
+    for marker in _LOW_SIGNAL_SNIPPET_TERMS:
+        lowered = lowered.replace(marker, " ")
+        normalized = re.sub(marker, " ", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"\s+", " ", normalized).strip(" -")
+    return normalized
 
 
 def _extract_defenses(denial_results: list[dict], intake: CaseIntake) -> list[str]:

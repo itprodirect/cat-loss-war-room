@@ -13,7 +13,7 @@ import pytest
 
 from war_room.carrier_module import build_carrier_doc_pack
 from war_room.caselaw_module import build_caselaw_pack
-from war_room.citation_verify import spot_check_citations
+from war_room.citation_verify import MAX_CHECKS, spot_check_citations
 from war_room.models import CaseIntake
 from war_room.weather_module import build_weather_brief
 
@@ -226,7 +226,8 @@ def test_scenario_resolves_through_cache_first_runtime(case_key: str):
     assert len(caselaw["issues"]) > 0
 
     citecheck = spot_check_citations(caselaw, _FixtureProvider(), cache_samples_dir=cache_samples_dir)
-    assert citecheck["summary"]["total"] == SCENARIOS[case_key]["expected_checks"]
+    runtime_case_count = sum(len(issue["cases"]) for issue in caselaw["issues"])
+    assert citecheck["summary"]["total"] == min(runtime_case_count, MAX_CHECKS)
 
 
 def test_milton_weather_sample_excludes_generic_weather_reference_pages():
@@ -246,6 +247,56 @@ def test_milton_caselaw_sample_excludes_commentary_titles_from_case_entries():
     case_titles = [case["name"].lower() for issue in data["issues"] for case in issue["cases"]]
     for marker in _CASE_COMMENTARY_MARKERS:
         assert all(marker not in title for title in case_titles)
+
+
+def test_milton_runtime_carrier_pack_excludes_generic_regulator_navigation_pages():
+    intake = _intake("milton_citizens_pinellas")
+    carrier = build_carrier_doc_pack(intake, None, cache_samples_dir=str(CACHE_SAMPLES_ROOT))
+
+    titles = {document["title"].strip().lower() for document in carrier["document_pack"]}
+    assert not titles.intersection(_GENERIC_CARRIER_TITLES)
+
+
+def test_milton_runtime_carrier_pack_prioritizes_stronger_evidence_before_unvetted_rows():
+    intake = _intake("milton_citizens_pinellas")
+    carrier = build_carrier_doc_pack(intake, None, cache_samples_dir=str(CACHE_SAMPLES_ROOT))
+
+    titles = [document["title"] for document in carrier["document_pack"]]
+    assert titles[0] == "[PDF] CITIZENS PROPERTY INSURANCE CORPORATION"
+    assert titles[1] == "Orders and Memoranda - Florida Office of Insurance Regulation"
+    assert all("Insurance Business" not in title for title in titles[:4])
+
+
+def test_milton_runtime_caselaw_pack_excludes_commentary_titles_from_case_entries():
+    intake = _intake("milton_citizens_pinellas")
+    caselaw = build_caselaw_pack(intake, None, cache_samples_dir=str(CACHE_SAMPLES_ROOT))
+
+    case_titles = [case["name"].lower() for issue in caselaw["issues"] for case in issue["cases"]]
+    for marker in _CASE_COMMENTARY_MARKERS:
+        assert all(marker not in title for title in case_titles)
+
+
+def test_milton_runtime_caselaw_sources_drop_tangential_texas_authority():
+    intake = _intake("milton_citizens_pinellas")
+    caselaw = build_caselaw_pack(intake, None, cache_samples_dir=str(CACHE_SAMPLES_ROOT))
+
+    source_titles = [source["title"] for source in caselaw["sources"]]
+    assert "Lyons v. Millers Cas. Ins. Co. of Texas, 866 S.W.2d 597" not in source_titles
+
+
+def test_milton_runtime_caselaw_case_fields_strip_cached_boilerplate():
+    intake = _intake("milton_citizens_pinellas")
+    caselaw = build_caselaw_pack(intake, None, cache_samples_dir=str(CACHE_SAMPLES_ROOT))
+
+    cases = [case for issue in caselaw["issues"] for case in issue["cases"]]
+    one_liners = [case["one_liner"] for case in cases]
+    courts = [case["court"] for case in cases]
+
+    assert all("Citing Cases" not in one_liner for one_liner in one_liners)
+    assert all("| Casetext Search + Citator" not in one_liner for one_liner in one_liners)
+    assert all(not one_liner.startswith("[") for one_liner in one_liners if one_liner)
+    assert "Court Of Appeals For The Eleventh Circuit" in courts
+    assert "District Court" in courts
 
 
 def test_milton_citation_checks_reference_case_titles_not_commentary():
