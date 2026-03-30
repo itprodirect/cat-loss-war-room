@@ -737,9 +737,8 @@ def adapt_citation_verify_pack(
     payload: Mapping[str, Any] | CitationVerifyPack,
 ) -> CitationVerifyPack:
     """Validate/coerce citation-verify payload into typed model."""
-    if isinstance(payload, CitationVerifyPack):
-        return payload
-    return CitationVerifyPack.model_validate(payload)
+    pack = payload if isinstance(payload, CitationVerifyPack) else CitationVerifyPack.model_validate(payload)
+    return pack.model_copy(update={"checks": [_enrich_citation_check(check) for check in pack.checks]})
 
 
 def memo_render_input_from_parts(
@@ -986,9 +985,27 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
     citation_summary = citecheck_payload.get("summary", {})
     uncertain = citation_summary.get("uncertain", 0)
     not_found = citation_summary.get("not_found", 0)
+    uncertain_evidence_ids = [
+        evidence_id
+        for evidence_id, check in zip(
+            evidence_ids_by_module["citation_verify"],
+            citecheck_payload.get("checks", []),
+            strict=False,
+        )
+        if check.get("status") == "uncertain"
+    ]
+    not_found_evidence_ids = [
+        evidence_id
+        for evidence_id, check in zip(
+            evidence_ids_by_module["citation_verify"],
+            citecheck_payload.get("checks", []),
+            strict=False,
+        )
+        if check.get("status") == "not_found"
+    ]
     if uncertain:
         related_cluster_ids = _cluster_ids_for_evidence_ids(
-            evidence_ids_by_module["citation_verify"],
+            uncertain_evidence_ids,
             evidence_cluster_ids_by_evidence_id,
         )
         claim_id = claim_ids_by_module["citation_verify"]
@@ -1002,7 +1019,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
                 module="citation_verify",
                 target_type="memo_claim",
                 target_ids=[claim_id],
-                related_evidence_ids=evidence_ids_by_module["citation_verify"],
+                related_evidence_ids=uncertain_evidence_ids,
                 related_cluster_ids=related_cluster_ids,
                 related_claim_ids=[claim_id],
                 created_at=created_at,
@@ -1010,7 +1027,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         )
     if not_found:
         related_cluster_ids = _cluster_ids_for_evidence_ids(
-            evidence_ids_by_module["citation_verify"],
+            not_found_evidence_ids,
             evidence_cluster_ids_by_evidence_id,
         )
         claim_id = claim_ids_by_module["citation_verify"]
@@ -1024,7 +1041,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
                 module="citation_verify",
                 target_type="memo_claim",
                 target_ids=[claim_id],
-                related_evidence_ids=evidence_ids_by_module["citation_verify"],
+                related_evidence_ids=not_found_evidence_ids,
                 related_cluster_ids=related_cluster_ids,
                 related_claim_ids=[claim_id],
                 created_at=created_at,
@@ -1296,6 +1313,123 @@ def _authority_key_from_parts(
     if normalized_url:
         return f"url:{normalized_url}"
     return None
+
+
+def _enrich_citation_check(check: CitationCheck) -> CitationCheck:
+    has_source_url = bool(check.source_url)
+    source_profile = (
+        score_url(
+            check.source_url or "",
+            check.case_name or check.citation or check.note,
+        )
+        if has_source_url
+        else {}
+    )
+    source_tier = check.source_tier or (source_profile.get("tier") if has_source_url else None)
+    source_class = check.source_class or (source_profile.get("source_class") if has_source_url else None)
+    is_primary_authority = bool(
+        check.is_primary_authority
+        or (source_profile.get("is_primary_authority") if has_source_url else False)
+    )
+    status_reason = (check.status_reason or "").strip() or _infer_citation_status_reason(
+        check.status,
+        source_tier=source_tier,
+        is_primary_authority=is_primary_authority,
+        note=check.note,
+    )
+    trust_explanation = (check.trust_explanation or "").strip() or _citation_trust_explanation(
+        status_reason
+    )
+    confidence = (
+        check.confidence
+        if (check.status_reason or "").strip()
+        else _infer_citation_confidence(
+            check.status,
+            status_reason=status_reason,
+            source_tier=source_tier,
+            is_primary_authority=is_primary_authority,
+        )
+    )
+    return check.model_copy(
+        update={
+            "confidence": confidence,
+            "status_reason": status_reason,
+            "trust_explanation": trust_explanation,
+            "source_tier": source_tier,
+            "source_class": source_class,
+            "is_primary_authority": is_primary_authority,
+        }
+    )
+
+
+def _infer_citation_status_reason(
+    status: str,
+    *,
+    source_tier: str | None,
+    is_primary_authority: bool,
+    note: str,
+) -> str:
+    normalized_note = note.lower()
+    if "budget exhausted" in normalized_note:
+        return "budget_exhausted"
+    if "search error" in normalized_note:
+        return "search_error"
+    if "no relevant citation match" in normalized_note:
+        return "no_relevant_match"
+    if "no results found" in normalized_note:
+        return "no_results"
+    if "name match only" in normalized_note or "case-name match only" in normalized_note:
+        return "name_match_only"
+    if "non-authoritative" in normalized_note:
+        return "non_authoritative_match"
+
+    if status == "not_found":
+        return "no_results"
+    if status == "verified":
+        if source_tier == "official" and is_primary_authority:
+            return "official_citation_match"
+        if source_tier == "official":
+            return "official_non_primary_match"
+        if source_tier == "professional":
+            return "secondary_authority_match"
+    if status == "uncertain":
+        if source_tier == "official" and not is_primary_authority:
+            return "official_non_primary_match"
+        if source_tier in {"official", "professional"}:
+            return "secondary_authority_match"
+        return "non_authoritative_match"
+    return ""
+
+
+def _infer_citation_confidence(
+    status: str,
+    *,
+    status_reason: str,
+    source_tier: str | None,
+    is_primary_authority: bool,
+) -> str:
+    if status == "verified" and source_tier == "official" and is_primary_authority:
+        return "high"
+    if status_reason in {"secondary_authority_match", "official_non_primary_match"}:
+        return "medium"
+    return "low"
+
+
+def _citation_trust_explanation(status_reason: str) -> str:
+    explanations = {
+        "official_citation_match": "Citation text matched on a primary legal authority source.",
+        "official_non_primary_match": "Citation text matched, but the best hit is not a primary court-opinion authority.",
+        "secondary_authority_match": "Citation text matched, but the best hit is not a primary court-opinion authority.",
+        "multiple_conflicting_hits": "Multiple citation-aligned hits were found with conflicting authority strength, so manual review is still required.",
+        "name_match_only": "The case name matched a reviewable source, but the citation text was not confirmed in the reviewed hit.",
+        "non_authoritative_match": "Only commentary, news, or otherwise non-authoritative sources aligned with this citation search.",
+        "no_results": "No citation-check search results were returned for this authority.",
+        "no_relevant_match": "The reviewed hits did not contain a matching citation or sufficient case-name overlap.",
+        "retrieval_failed": "Live citation retrieval failed, so this result requires manual verification.",
+        "budget_exhausted": "Citation verification stopped because the live retrieval budget was exhausted.",
+        "search_error": "Citation verification hit a live-search error and should be reviewed manually.",
+    }
+    return explanations.get(status_reason, "")
 
 
 def _normalize_citation_value(value: str | None) -> str | None:

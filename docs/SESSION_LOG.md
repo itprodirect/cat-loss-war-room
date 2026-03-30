@@ -1237,3 +1237,100 @@ Status: Complete
   - `$env:PYTHONPATH='src'; pytest -q tests/test_preflight.py tests/test_scenarios.py` -> `13 passed`
   - `$env:PYTHONPATH='src'; pytest -q` -> `252 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify` -> passed, offline preflight now reports export-history state
+
+## Session 69 - Milton Trust And Export Readability Slice
+Date: 2026-03-30
+Status: Complete
+
+- Inspected the committed `milton_pinellas_citizens_ho3` fixture lane end to end using an empty temp cache so the review reflected `cache_samples/` rather than stale local runtime cache.
+- What changed:
+  - `src/war_room/models.py` now backfills sparse citation-check trust metadata from existing source URLs when older cached fixtures omit `status_reason`, `source_tier`, `source_class`, `trust_explanation`, and calibrated confidence.
+  - Citation review events now target only the non-verified citation evidence rows instead of attaching review-required state to every citation cluster in the run.
+  - `src/war_room/export_md.py` now normalizes multiline free text before rendering bullets and tables so weather observations, carrier document rows, case-law entries, and appendix tables stay readable in markdown output.
+  - `src/war_room/evidence_board.py` now keeps cluster cards scoped to cluster-level review state instead of inheriting a blanket review-required marker from a degraded section claim.
+  - Regression coverage was added and updated across citation contract, export, evidence-board, and issue-workspace tests.
+- Why:
+  - the Milton benchmark memo was surfacing blank citation reasons, low-confidence verified checks, broken markdown table rows, and a falsely degraded verified citation cluster, which reduced operator trust in the export and evidence telemetry
+  - this keeps the current notebook/runtime flow intact while tightening one benchmark scenario's trust/readability posture
+- Verification:
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m pytest tests/test_memo_contracts.py tests/test_export.py tests/test_evidence_board.py tests/test_issue_workspace.py -q` -> `30 passed`
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m war_room --verify` -> passed, `256 passed, 1 warning`; offline preflight passed for 4 committed fixture scenarios
+
+## Session 70 - Milton Carrier And Caselaw Source Cleanup
+Date: 2026-03-30
+Status: Complete
+
+- Continued the Milton benchmark slice by tightening carrier and case-law payload normalization in the offline cache-backed path instead of rewriting retrieval or fixture files.
+- What changed:
+  - `src/war_room/carrier_module.py` now normalizes cached/live carrier packs before returning them, filtering generic regulator navigation pages and low-value brochure/support rows from the runtime output.
+  - Carrier note text now strips obvious boilerplate markers so `why_it_matters` fields are cleaner when older cached snippets include repeated navigation text.
+  - `src/war_room/caselaw_module.py` now normalizes cached/live case-law packs before returning them, dropping commentary-like authorities from issue case lists and trimming low-value support sources from the source appendix.
+  - Offline pack smoke tests were updated to assert against normalized runtime behavior for the Milton fixture lane.
+- Why:
+  - the first Milton trust slice improved citation telemetry and export formatting, but the offline runtime was still surfacing noisy carrier support rows and commentary/homepage-style case-law sources because raw cached payloads bypassed the newer quality filters
+  - this keeps the benchmark slice narrow while improving trust in the actual cache-backed demo output
+- Verification:
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m pytest tests/test_offline_demo_pack.py tests/test_carrier.py tests/test_caselaw.py -q` -> `54 passed`
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m war_room --verify` -> passed, `260 passed, 1 warning`; offline preflight passed for 4 committed fixture scenarios
+
+## Session 71 - Milton Carrier Ordering Tightening
+Date: 2026-03-30
+Status: Complete
+
+- Tightened the Milton carrier runtime output one step further by moving strong-evidence ordering into carrier payload normalization so cached fixture output no longer inherits stale document/source ordering.
+- What changed:
+  - `src/war_room/carrier_module.py` now re-sorts normalized carrier documents and sources with regulator exam reports, orders, and carrier/regulator materials ahead of news/commentary rows.
+  - Carrier snippet cleaning now strips simple markdown heading/list markers that leaked into `why_it_matters` text from cached snippets.
+  - Carrier regression and offline smoke coverage were updated to assert the new runtime ordering behavior directly.
+- Why:
+  - the prior cleanup removed obvious noise, but the Milton carrier pack was still leading with unvetted denial-pattern/news links because cached payload order was preserved
+  - this keeps the slice narrow while making the first visible carrier evidence rows more credible for the demo
+- Verification:
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m pytest tests/test_offline_demo_pack.py tests/test_carrier.py -q` -> `45 passed`
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m war_room --verify` -> passed, `261 passed, 1 warning`; offline preflight passed for 4 committed fixture scenarios
+
+## Session 72 - Milton Carrier Suppression Tightening
+Date: 2026-03-30
+Status: Complete
+
+- Tightened the carrier runtime normalization one step further so unvetted carrier rows are suppressed from the Milton document pack and source appendix once enough stronger official/professional carrier evidence is already present.
+- What changed:
+  - `src/war_room/carrier_module.py` now counts strong carrier evidence in normalized output and drops unvetted rows from the pack/source list when that threshold is met.
+  - Carrier regression and Milton runtime smoke tests were updated to assert the stronger-evidence-only runtime behavior.
+- Why:
+  - the ordering pass improved which rows appeared first, but the pack still contained avoidable unvetted carrier noise lower in the list
+  - this keeps the benchmark slice narrow while making the visible carrier evidence set substantially more credible for demo review
+- Verification:
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m pytest tests/test_carrier.py tests/test_offline_demo_pack.py -q` -> `47 passed`
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m war_room --verify` -> passed, `263 passed, 1 warning`; offline preflight passed for 4 committed fixture scenarios
+
+## Session 73 - Milton Caselaw Appendix Relevance Tightening
+Date: 2026-03-30
+Status: Complete
+
+- Tightened the Milton case-law source appendix one more step by requiring supplemental non-case sources to be on-point for the active intake when the issue buckets already contain enough stronger authorities.
+- What changed:
+  - `src/war_room/caselaw_module.py` now passes intake context into case-law payload normalization and drops tangential supplemental authorities when they are not clearly tied to the intake state, carrier, event, county, or issue labels.
+  - Caselaw regression and Milton runtime smoke tests were updated to assert removal of the tangential Texas `Lyons` authority from the runtime source appendix.
+- Why:
+  - the prior cleanup left one remaining tangential support authority in the Milton appendix even though the issue buckets already contained stronger on-point Florida authorities
+  - this keeps the benchmark slice narrow while making the case-law appendix cleaner and easier to trust during demo review
+- Verification:
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m pytest tests/test_caselaw.py tests/test_offline_demo_pack.py -q` -> `47 passed`
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m war_room --verify` -> passed, `265 passed, 1 warning`; offline preflight passed for 4 committed fixture scenarios
+
+## Session 74 - Milton Cached Authority Field Cleanup
+Date: 2026-03-30
+Status: Complete
+
+- Closed the Milton benchmark slice by tightening cached case-authority field cleanup in the case-law normalization path instead of rewriting fixture JSON or changing retrieval flow.
+- What changed:
+  - `src/war_room/caselaw_module.py` now strips leftover Casetext boilerplate from cached case one-liners, removes truncated bracket-only fragments, and normalizes obviously broken court labels before downstream export/read models consume them.
+  - `tests/test_caselaw.py` now covers cached authority cleanup directly for the Milton-shaped `Siegle` and `Quesada` fixture patterns.
+  - `tests/test_offline_demo_pack.py` now asserts that the Milton runtime case-law pack no longer surfaces `Citing Cases` boilerplate or bracket-fragment summaries.
+- Why:
+  - the earlier Milton source cleanup made the authority set more trustworthy, but several cached case entries still rendered with scraped Casetext scaffolding and visibly truncated court/summary fields
+  - this keeps the slice narrow while making the memo and appendix easier to read without touching the scenario registry, fixtures, or retrieval architecture
+- Verification:
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m pytest tests/test_caselaw.py tests/test_offline_demo_pack.py -q` -> `50 passed, 1 warning`
+  - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m war_room --verify` -> passed, `268 passed, 1 warning`; offline preflight passed for 4 committed fixture scenarios

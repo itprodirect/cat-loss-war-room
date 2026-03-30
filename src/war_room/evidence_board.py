@@ -103,7 +103,6 @@ def build_evidence_board(
         review_required = (
             cluster.review_required
             or bool(linked_events)
-            or any(claim.status == "review_required" for claim in linked_claims)
         )
         cards.append(
             EvidenceBoardClusterCard(

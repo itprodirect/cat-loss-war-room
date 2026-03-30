@@ -153,13 +153,17 @@ def test_build_issue_workspace_links_clusters_claims_and_citation_outcomes():
     workspace = build_issue_workspace(snapshot)
 
     assert len(workspace.issue_cards) == 2
-    assert workspace.review_required_issue_count == 2
+    assert workspace.review_required_issue_count == 1
     first_card = workspace.issue_cards[0]
-    assert first_card.issue_label == "scope of repair"
+    assert first_card.issue_label == "wind vs water causation"
     assert first_card.review_required is True
     assert first_card.evidence_cluster_ids
     assert first_card.case_candidates
-    assert first_card.citation_outcomes[0].status == "verified"
+    assert first_card.citation_outcomes[0].status == "uncertain"
+    second_card = workspace.issue_cards[1]
+    assert second_card.issue_label == "scope of repair"
+    assert second_card.review_required is False
+    assert second_card.citation_outcomes[0].status == "verified"
 
 
 def test_build_issue_workspace_from_parts_matches_snapshot_builder():
@@ -195,8 +199,8 @@ def test_format_issue_workspace_surfaces_issue_status_and_authorities():
     rendered = format_issue_workspace(workspace)
 
     assert "ISSUE WORKSPACE" in rendered
-    assert "Review Required:   2 issues" in rendered
+    assert "Review Required:   1 issues" in rendered
     assert "[review_required] wind vs water causation" in rendered
-    assert "[review_required] scope of repair" in rendered
+    assert "[ready] scope of repair" in rendered
     assert "Strongest authorities:" in rendered
     assert "Citation outcomes:" in rendered

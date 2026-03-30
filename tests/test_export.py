@@ -185,6 +185,29 @@ def test_render_shows_canonical_authority_and_alternate_counts():
     assert "Alternate aligned candidates: 2" in md
 
 
+def test_render_sanitizes_multiline_export_text_and_backfills_citation_reasoning():
+    intake, weather, carrier, caselaw, citecheck, queries = _sample_data()
+    weather["key_observations"] = ["Line one\nLine two [Home] | extra"]
+    carrier["document_pack"][0]["title"] = "Doc line 1\nDoc line 2"
+    carrier["document_pack"][0]["why_it_matters"] = "Relevant |\nwith break"
+    caselaw["issues"][0]["cases"][0]["court"] = "Fla. App.\nSecond DCA"
+    caselaw["issues"][0]["cases"][0]["one_liner"] = "Coverage upheld\nwith note"
+    citecheck["checks"][0]["status"] = "uncertain"
+    citecheck["checks"][0]["badge"] = "warning"
+    citecheck["checks"][0]["source_url"] = "https://casetext.com/case/doe-v-ins"
+    citecheck["checks"][0]["note"] = "Found on professional source: casetext.com - verify independently"
+    citecheck["summary"] = {"total": 1, "verified": 0, "uncertain": 1, "not_found": 0}
+
+    md = render_markdown_memo(intake, weather, carrier, caselaw, citecheck, queries)
+
+    assert "- Line one Line two Home | extra" in md
+    assert "| 1 | Denial | [Doc line 1 Doc line 2](https://example.com) | professional | Relevant / with break |" in md
+    assert "- professional **Doe v. Ins** - 123 So.3d 456 (Fla. App. Second DCA, 2023)" in md
+    assert "  - Coverage upheld with note" in md
+    assert "- Reasons: secondary authority match 1" in md
+    assert "| warning | Doe v. Ins | 123 So.3d 456 | medium | court opinion |" in md
+
+
 def test_render_surfaces_claim_cluster_references():
     md = render_markdown_memo(*_sample_data())
 

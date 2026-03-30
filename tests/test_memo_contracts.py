@@ -130,6 +130,25 @@ def test_citation_verify_pack_adapter_round_trip():
     assert dumped["summary"]["total"] == 1
 
 
+def test_citation_verify_pack_adapter_backfills_sparse_trust_metadata():
+    _, _, _, _, citecheck, _ = _sample_payloads()
+    citecheck["checks"][0].pop("source_url", None)
+    citecheck["checks"][0]["source_url"] = "https://casetext.com/case/doe-v-ins"
+    citecheck["checks"][0]["status"] = "uncertain"
+    citecheck["checks"][0]["note"] = "Found on professional source: casetext.com - verify independently"
+    citecheck["summary"] = {"total": 1, "verified": 0, "uncertain": 1, "not_found": 0}
+
+    typed = adapt_citation_verify_pack(citecheck)
+    check = typed.checks[0]
+
+    assert check.status_reason == "secondary_authority_match"
+    assert check.trust_explanation
+    assert check.source_tier == "professional"
+    assert check.source_class == "court_opinion"
+    assert check.is_primary_authority is True
+    assert check.confidence == "medium"
+
+
 def test_citation_verify_summary_validation_rejects_bad_totals():
     _, _, _, _, citecheck, _ = _sample_payloads()
     citecheck["summary"] = {"total": 99, "verified": 1, "uncertain": 0, "not_found": 0}
@@ -246,6 +265,62 @@ def test_run_audit_snapshot_tracks_review_events_and_claim_status():
     )
     assert snapshot.export_artifact.review_required is True
     assert snapshot.export_artifact.section_ids[9] == "appendix-review-log"
+
+
+def test_run_audit_snapshot_scopes_citation_review_events_to_non_verified_checks():
+    intake, weather, carrier, caselaw, _, query_plan = _sample_payloads()
+    caselaw["issues"][0]["cases"].append(
+        {
+            "name": "Roe v. Ins",
+            "citation": "999 So.3d 111",
+            "court": "Fla. App.",
+            "year": "2024",
+            "one_liner": "Secondary authority only.",
+            "url": "https://example.com/other-case",
+            "badge": "professional",
+        }
+    )
+    citecheck = {
+        "module": "citation_verify",
+        "disclaimer": "SPOT-CHECK ONLY",
+        "checks": [
+            {
+                "badge": "verified",
+                "case_name": "Doe v. Ins",
+                "citation": "123 So.3d 456",
+                "status": "verified",
+                "note": "Found on official source",
+                "source_url": "https://www.flcourts.gov/case/123",
+            },
+            {
+                "badge": "warning",
+                "case_name": "Roe v. Ins",
+                "citation": "999 So.3d 111",
+                "status": "uncertain",
+                "note": "Found on professional source",
+                "source_url": "https://casetext.com/case/roe-v-ins",
+            },
+        ],
+        "summary": {"total": 2, "verified": 1, "uncertain": 1, "not_found": 0},
+    }
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    citation_event = next(event for event in snapshot.review_events if event.event_id == "citation-uncertain")
+
+    assert citation_event.related_evidence_ids == ["citation-check-2"]
+    assert citation_event.related_cluster_ids == ["cluster-4"]
+    verified_cluster = next(cluster for cluster in snapshot.evidence_clusters if cluster.cluster_id == "cluster-3")
+    uncertain_cluster = next(cluster for cluster in snapshot.evidence_clusters if cluster.cluster_id == "cluster-4")
+    assert verified_cluster.review_required is False
+    assert uncertain_cluster.review_required is True
 
 
 def test_render_markdown_memo_accepts_mixed_typed_and_dict_inputs():
