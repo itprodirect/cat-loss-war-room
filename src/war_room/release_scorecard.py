@@ -6,10 +6,11 @@ import argparse
 import json
 import re
 from dataclasses import asdict, dataclass, field
-from datetime import date
+from datetime import date, datetime, UTC
 from pathlib import Path
 
 from war_room.bootstrap import bootstrap_runtime
+from war_room.preflight import DemoPreflightReport
 from war_room.scenarios import default_scenario_id as get_default_scenario_id, list_scenarios
 
 DEFAULT_VERIFICATION_COMMAND = "pytest -q"
@@ -94,14 +95,40 @@ class CalibrationThreshold:
 
 
 @dataclass(frozen=True)
+class PreflightScenarioSummary:
+    """One scenario outcome from the live offline preflight lane."""
+
+    case_key: str
+    passed: bool
+    workflow_status: str
+    workflow_review_required: bool
+    availability_status: str
+    failed_checks: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class PreflightSummary:
+    """Structured summary of the live offline preflight run."""
+
+    passed: bool
+    scenario_count: int
+    passed_scenario_count: int
+    scenario_keys: list[str]
+    scenarios: list[PreflightScenarioSummary]
+
+
+@dataclass(frozen=True)
 class ReleaseScorecard:
     """Structured release scorecard artifact."""
 
+    run_id: str
     date: str
     candidate: str
     target_release_level: str
     evaluators: list[str]
     evidence_bundle: list[str]
+    preflight_artifact_path: str | None
+    preflight_summary: PreflightSummary | None
     fixture_coverage: FixtureCoverageSummary | None
     scenario_registry: ScenarioRegistrySummary | None
     calibration_thresholds: list[CalibrationThreshold]
@@ -184,27 +211,58 @@ def collect_scenario_registry_coverage(
     )
 
 
+def summarize_preflight_report(report: DemoPreflightReport) -> PreflightSummary:
+    """Collapse the live preflight report into scorecard-friendly evidence."""
+
+    scenarios = [
+        PreflightScenarioSummary(
+            case_key=scenario.case_key,
+            passed=all(check.passed for check in scenario.checks),
+            workflow_status=scenario.workflow_status,
+            workflow_review_required=scenario.workflow_review_required,
+            availability_status=scenario.availability.status,
+            failed_checks=[check.name for check in scenario.checks if not check.passed],
+        )
+        for scenario in report.scenarios
+    ]
+    return PreflightSummary(
+        passed=report.passed,
+        scenario_count=report.scenario_count,
+        passed_scenario_count=sum(1 for scenario in scenarios if scenario.passed),
+        scenario_keys=[scenario.case_key for scenario in scenarios],
+        scenarios=scenarios,
+    )
+
+
 def build_demo_release_scorecard(
     *,
     candidate: str,
     verification_summary: str,
     verification_command: str = DEFAULT_VERIFICATION_COMMAND,
     artifact_date: str | None = None,
+    run_id: str | None = None,
     evaluators: list[str] | None = None,
     blocking_gaps: list[str] | None = None,
     decision: str = "Ship",
+    preflight_artifact_path: str | None = None,
+    preflight_summary: PreflightSummary | None = None,
     fixture_coverage: FixtureCoverageSummary | None = None,
     scenario_registry: ScenarioRegistrySummary | None = None,
 ) -> ReleaseScorecard:
     """Build the current demo-ready baseline scorecard."""
 
     chosen_date = artifact_date or date.today().isoformat()
+    resolved_run_id = run_id or _default_run_id()
     verification_passed = _verification_summary_passed(verification_summary)
     calibration_thresholds = _build_demo_ready_thresholds(fixture_coverage)
     thresholds_passed = all(threshold.passed for threshold in calibration_thresholds)
+    offline_demo_passed = preflight_summary.passed if preflight_summary else bool(
+        fixture_coverage and fixture_coverage.scenario_count
+    )
+    offline_preflight_evidence = _preflight_evidence(preflight_summary)
     evidence_bundle = [
         f"Verification: {verification_command} -> {verification_summary}",
-        "Offline demo lane uses committed cache_samples fixtures.",
+        offline_preflight_evidence,
         "Rubric source of truth: docs/V2_RELEASE_RUBRIC.md",
     ]
     if fixture_coverage and fixture_coverage.scenario_count:
@@ -230,7 +288,7 @@ def build_demo_release_scorecard(
 
     reliability_evidence = [
         f"Supported verification path passed ({verification_summary}).",
-        "Offline demo lane is established with committed fixtures.",
+        offline_preflight_evidence,
     ]
     evidence_quality_evidence = [
         "Evidence quality is calibrated against explicit committed-fixture thresholds instead of narrative-only baseline text.",
@@ -239,6 +297,10 @@ def build_demo_release_scorecard(
         "Bootstrap and runtime boundaries are documented.",
         "This script now emits repeatable local scorecard artifacts into runs/.",
     ]
+    if preflight_summary:
+        operational_evidence.append(
+            "Verify-driven scorecards now record the live offline preflight result alongside fixture calibration."
+        )
     if fixture_coverage and fixture_coverage.scenario_count:
         fixture_line = (
             f"Committed fixture lane now spans {fixture_coverage.scenario_count} scenarios "
@@ -267,8 +329,24 @@ def build_demo_release_scorecard(
     dimensions = [
         ScorecardDimension(
             name="Reliability",
-            score=3 if verification_passed and thresholds_passed else 2 if verification_passed else 0,
-            verdict="Strong" if verification_passed and thresholds_passed else "Acceptable" if verification_passed else "Blocked",
+            score=(
+                3
+                if verification_passed and offline_demo_passed and thresholds_passed
+                else 2
+                if verification_passed and offline_demo_passed
+                else 1
+                if verification_passed
+                else 0
+            ),
+            verdict=(
+                "Strong"
+                if verification_passed and offline_demo_passed and thresholds_passed
+                else "Acceptable"
+                if verification_passed and offline_demo_passed
+                else "Weak"
+                if verification_passed
+                else "Blocked"
+            ),
             evidence=reliability_evidence,
             notes="Fresh-env and exa-py compatibility CI gates exist, and the scorecard now evaluates the supported verification lane against explicit demo-ready fixture thresholds.",
         ),
@@ -335,8 +413,8 @@ def build_demo_release_scorecard(
         ),
         MustPassGate(
             name="Offline demo lane completes",
-            passed=bool(fixture_coverage and fixture_coverage.scenario_count),
-            evidence=_offline_gate_evidence(fixture_coverage),
+            passed=offline_demo_passed,
+            evidence=_offline_gate_evidence(fixture_coverage, preflight_summary),
         ),
         MustPassGate(
             name="Committed fixture coverage meets demo-ready threshold",
@@ -367,11 +445,14 @@ def build_demo_release_scorecard(
             merged_blocking_gaps.append(gap)
 
     return ReleaseScorecard(
+        run_id=resolved_run_id,
         date=chosen_date,
         candidate=candidate,
         target_release_level="Demo-ready",
         evaluators=evaluators or ["local builder"],
         evidence_bundle=evidence_bundle,
+        preflight_artifact_path=preflight_artifact_path,
+        preflight_summary=preflight_summary,
         fixture_coverage=fixture_coverage,
         scenario_registry=scenario_registry,
         calibration_thresholds=calibration_thresholds,
@@ -388,6 +469,7 @@ def render_release_scorecard_markdown(scorecard: ReleaseScorecard) -> str:
     lines = [
         "# Release Scorecard",
         "",
+        f"- Run id: {scorecard.run_id}",
         f"- Date: {scorecard.date}",
         f"- Candidate / branch: {scorecard.candidate}",
         f"- Target release level: {scorecard.target_release_level}",
@@ -396,6 +478,30 @@ def render_release_scorecard_markdown(scorecard: ReleaseScorecard) -> str:
     ]
     for entry in scorecard.evidence_bundle:
         lines.append(f"  - {entry}")
+    if scorecard.preflight_artifact_path:
+        lines.append(f"  - Preflight artifact: {scorecard.preflight_artifact_path}")
+
+    if scorecard.preflight_summary and scorecard.preflight_summary.scenario_count:
+        lines.extend(
+            [
+                "",
+                "## Offline Preflight",
+                f"- Passed: {'Yes' if scorecard.preflight_summary.passed else 'No'}",
+                (
+                    f"- Scenario coverage: {scorecard.preflight_summary.passed_scenario_count}/"
+                    f"{scorecard.preflight_summary.scenario_count} scenarios passed"
+                ),
+            ]
+        )
+        for scenario in scorecard.preflight_summary.scenarios:
+            failed_checks = ", ".join(scenario.failed_checks) if scenario.failed_checks else "none"
+            lines.append(
+                f"- {scenario.case_key}: {'passed' if scenario.passed else 'failed'} | "
+                f"workflow {scenario.workflow_status or 'unknown'} | "
+                f"availability {scenario.availability_status} | "
+                f"review_required {'yes' if scenario.workflow_review_required else 'no'} | "
+                f"failed checks: {failed_checks}"
+            )
 
     if scorecard.fixture_coverage and scorecard.fixture_coverage.scenario_count:
         lines.extend(
@@ -483,7 +589,7 @@ def write_release_scorecard_artifacts(
     """Write JSON and Markdown scorecard artifacts."""
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    stem = f"{scorecard.date}_{_slugify(scorecard.candidate)}"
+    stem = f"{scorecard.date}_{_slugify(scorecard.candidate)}_{scorecard.run_id.lower()}"
     json_path = output_dir / f"{stem}.json"
     markdown_path = output_dir / f"{stem}.md"
 
@@ -573,7 +679,26 @@ def _clean_fixture_text(value: str) -> str:
     )
 
 
-def _offline_gate_evidence(fixture_coverage: FixtureCoverageSummary | None) -> str:
+def _preflight_evidence(preflight_summary: PreflightSummary | None) -> str:
+    if not preflight_summary:
+        return "Offline demo lane uses committed cache_samples fixtures."
+    return (
+        "Offline preflight: "
+        f"{preflight_summary.passed_scenario_count}/{preflight_summary.scenario_count} "
+        "committed scenarios passed."
+    )
+
+
+def _offline_gate_evidence(
+    fixture_coverage: FixtureCoverageSummary | None,
+    preflight_summary: PreflightSummary | None = None,
+) -> str:
+    if preflight_summary:
+        return (
+            "Live offline preflight result: "
+            f"{preflight_summary.passed_scenario_count}/{preflight_summary.scenario_count} "
+            f"scenarios passed ({', '.join(preflight_summary.scenario_keys)})."
+        )
     if not fixture_coverage or not fixture_coverage.scenario_count:
         return "Committed cache_samples fixtures support the offline demo lane."
     return (
@@ -642,6 +767,10 @@ def _verification_summary_passed(summary: str) -> bool:
 def _slugify(value: str) -> str:
     normalized = re.sub(r"[^A-Za-z0-9]+", "-", value.strip().lower()).strip("-")
     return normalized or "candidate"
+
+
+def _default_run_id() -> str:
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
 if __name__ == "__main__":

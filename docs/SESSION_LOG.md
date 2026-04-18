@@ -1334,3 +1334,127 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m pytest tests/test_caselaw.py tests/test_offline_demo_pack.py -q` -> `50 passed, 1 warning`
   - `$env:PYTHONPATH='src'; .venv\Scripts\python.exe -m war_room --verify` -> passed, `268 passed, 1 warning`; offline preflight passed for 4 committed fixture scenarios
+
+## Session 75 - Verify Command Release Scorecard Emission
+Date: 2026-04-18
+Status: Complete
+
+- Tightened the `#27` local operational path by making the supported verification command emit release-scorecard artifacts directly instead of requiring a second manual command after verification passes.
+- What changed:
+  - `src/war_room/bootstrap.py` now accepts an optional `--release-candidate` override for `python -m war_room --verify`.
+  - Successful verify runs now capture the pytest result summary, resolve a candidate label from the current branch when available, and write paired JSON/Markdown release-scorecard artifacts into `runs/release_scorecards/`.
+  - When branch detection is unavailable or detached, the verify path falls back to `local-verify` instead of failing the supported command.
+  - `tests/test_bootstrap.py` now covers verify-path scorecard emission, candidate override/fallback behavior, and pytest summary extraction.
+  - `docs/V2_RELEASE_RUBRIC.md` and `docs/BUILD_CHECKLIST.md` now describe the one-command local release-evidence flow while keeping the standalone scorecard CLI documented for CI/manual use.
+- Why:
+  - `#27` already had a rubric, local scorecard generator, and CI artifact job, but the supported local verification path still required a second manual step to create matching release evidence.
+  - Wiring scorecard emission into `python -m war_room --verify` makes the documented contributor path closer to the actual release-readiness workflow without changing notebook-era runtime behavior.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_bootstrap.py tests/test_release_scorecard.py -q` -> `15 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate local-verify` -> passed, `272 passed`; offline preflight passed for 4 committed fixture scenarios; scorecard artifacts written under `runs/release_scorecards/2026-04-18_local-verify.*`
+
+## Session 76 - Release Scorecard Live Preflight Evidence
+Date: 2026-04-18
+Status: Complete
+
+- Continued the `#27` operationalization path by teaching verify-driven scorecards to record the actual offline preflight result instead of inferring the offline gate only from committed fixture presence.
+- What changed:
+  - `src/war_room/release_scorecard.py` now defines a structured preflight summary, can summarize `DemoPreflightReport`, and includes an `Offline Preflight` section in Markdown artifacts when live preflight evidence is available.
+  - The scorecard's `Offline demo lane completes` must-pass gate now uses the live preflight result when `python -m war_room --verify` generated the artifact, while the standalone scorecard CLI still falls back to fixture-based evidence.
+  - `src/war_room/bootstrap.py` now passes the already-computed preflight report into scorecard generation so the verify path produces one coherent release-evidence artifact.
+  - `tests/test_release_scorecard.py` and `tests/test_bootstrap.py` now cover preflight-summary capture, failed preflight gating, and verify-path handoff of the live report.
+  - `docs/V2_RELEASE_RUBRIC.md` and `docs/BUILD_CHECKLIST.md` now describe the live-preflight-backed verify workflow.
+- Why:
+  - the previous slice made `python -m war_room --verify` emit scorecards automatically, but the offline-lane gate inside the artifact still depended on fixture coverage instead of the actual preflight result from that same run.
+  - this keeps the artifact closer to real release evidence without broadening scope into new CI layers or changing notebook runtime behavior.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_bootstrap.py tests/test_release_scorecard.py tests/test_preflight.py -q` -> `21 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate local-verify` -> passed, `274 passed`; offline preflight passed for 4 committed fixture scenarios; scorecard artifacts refreshed under `runs/release_scorecards/2026-04-18_local-verify.*`
+
+## Session 77 - Linked Preflight Artifacts For Verify
+Date: 2026-04-18
+Status: Complete
+
+- Continued the `#27` evidence path by persisting the live preflight payload from `python -m war_room --verify` and linking that artifact from the release scorecard.
+- What changed:
+  - `src/war_room/preflight.py` now writes machine-readable preflight JSON artifacts under `runs/preflight/`.
+  - `src/war_room/bootstrap.py` now writes that preflight artifact during `--verify`, prints its path, and passes the path into scorecard generation.
+  - `src/war_room/release_scorecard.py` now records `preflight_artifact_path` in the structured scorecard artifact and surfaces it in the Markdown evidence bundle.
+  - `tests/test_preflight.py`, `tests/test_bootstrap.py`, and `tests/test_release_scorecard.py` now cover preflight artifact writing, verify-path handoff, and scorecard-path persistence.
+  - `docs/V2_RELEASE_RUBRIC.md` and `docs/BUILD_CHECKLIST.md` now describe the linked preflight-artifact workflow.
+- Why:
+  - the prior slice summarized the live preflight result inside the scorecard, but the scorecard still did not point to the exact machine-readable offline artifact produced by that verify run.
+  - this keeps release evidence auditable without adding new dependencies or broadening scope into CI redesign.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_bootstrap.py tests/test_release_scorecard.py tests/test_preflight.py -q` -> `22 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate local-verify` -> passed, `275 passed`; offline preflight passed for 4 committed fixture scenarios; preflight artifact written under `runs/preflight/2026-04-18_local-verify.json`; scorecard artifacts refreshed under `runs/release_scorecards/2026-04-18_local-verify.*`
+
+## Session 78 - Shared Run Id For Verify Evidence
+Date: 2026-04-18
+Status: Complete
+
+- Continued the `#27` release-evidence path by making verify-generated preflight and scorecard artifacts run-scoped instead of day-scoped.
+- What changed:
+  - `src/war_room/preflight.py` now accepts a shared `run_id` when writing artifacts, stores that `run_id` in the preflight JSON payload, and includes it in the artifact filename.
+  - `src/war_room/release_scorecard.py` now records `run_id` on the structured scorecard artifact and includes that `run_id` in scorecard filenames and Markdown output.
+  - `src/war_room/bootstrap.py` now resolves one shared run id from the live preflight timestamp and uses it for both the preflight artifact and the scorecard artifact during `python -m war_room --verify`.
+  - `tests/test_preflight.py`, `tests/test_release_scorecard.py`, and `tests/test_bootstrap.py` now cover the shared run id, the new filename shapes, and the persisted payload fields.
+  - `docs/V2_RELEASE_RUBRIC.md` and `docs/BUILD_CHECKLIST.md` now describe the run-scoped verify artifact flow.
+- Why:
+  - the prior slice linked the preflight artifact from the scorecard, but repeated verify runs on the same day for the same candidate still overwrote the prior evidence files.
+  - adding a shared run id keeps the preflight and scorecard artifacts paired while making repeated validations auditable instead of lossy.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_bootstrap.py tests/test_release_scorecard.py tests/test_preflight.py -q` -> `22 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate local-verify` -> passed, `275 passed`; offline preflight passed for 4 committed fixture scenarios; preflight artifact written under `runs/preflight/2026-04-18_local-verify_20260418t162818z.json`; scorecard artifacts written under `runs/release_scorecards/2026-04-18_local-verify_20260418t162818z.*`
+
+## Session 79 - Verify Run Manifest
+Date: 2026-04-18
+Status: Complete
+
+- Continued the `#27` release-evidence path by adding a single verify-run manifest that points to the exact artifacts generated by each supported `--verify` run.
+- What changed:
+  - `src/war_room/bootstrap.py` now writes a JSON manifest into `runs/verify/` after the preflight and scorecard artifacts are written.
+  - The verify manifest records `run_id`, `created_at`, `candidate`, `verification_summary`, `repo_root`, and the exact preflight / scorecard artifact paths for that run.
+  - Verify console output now prints a dedicated `Verify Manifest` section before the preflight and scorecard paths.
+  - `tests/test_bootstrap.py` now covers manifest creation and ensures failed test runs do not write a manifest.
+  - `docs/V2_RELEASE_RUBRIC.md` and `docs/BUILD_CHECKLIST.md` now describe the new `runs/verify/` top-level evidence pointer.
+- Why:
+  - the previous slice made preflight and scorecard artifacts collision-safe, but there was still no single machine-readable file that indexed the whole verify run.
+  - the manifest makes each verify run queryable without scanning multiple directories or reconstructing artifact relationships from filenames.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_bootstrap.py tests/test_release_scorecard.py tests/test_preflight.py -q` -> `22 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate local-verify` -> passed, `275 passed`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-04-18_local-verify_20260418t163443z.json`; preflight artifact written under `runs/preflight/2026-04-18_local-verify_20260418t163443z.json`; scorecard artifacts written under `runs/release_scorecards/2026-04-18_local-verify_20260418t163443z.*`
+
+## Session 80 - Latest Verify Pointer
+Date: 2026-04-18
+Status: Complete
+
+- Continued the `#27` release-evidence path by adding a stable discovery pointer for the newest successful supported verify run.
+- What changed:
+  - `src/war_room/bootstrap.py` now writes `runs/verify/latest.json` after each successful verify manifest write.
+  - The latest pointer records the newest verify `run_id`, `created_at`, `candidate`, and the exact manifest path to follow for the full evidence bundle.
+  - Verify console output now surfaces the `latest.json` path directly in the `Verify Manifest` section.
+  - `tests/test_bootstrap.py` now covers latest-pointer emission during successful verify runs, the guard that failed runs do not write it, and the concrete `latest.json` payload shape.
+  - `docs/V2_RELEASE_RUBRIC.md` and `docs/BUILD_CHECKLIST.md` now describe the stable verify discovery pointer.
+- Why:
+  - the previous slice made each verify run queryable through its own manifest, but consumers still had to scan `runs/verify/` to find the newest run.
+  - `latest.json` keeps the current workflow simple while giving downstream tooling one stable file to open first.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_bootstrap.py tests/test_release_scorecard.py tests/test_preflight.py -q` -> `23 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate local-verify` -> passed, `276 passed`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-04-18_local-verify_20260418t164252z.json`; latest pointer refreshed at `runs/verify/latest.json`; preflight artifact written under `runs/preflight/2026-04-18_local-verify_20260418t164252z.json`; scorecard artifacts written under `runs/release_scorecards/2026-04-18_local-verify_20260418t164252z.*`
+
+## Session 81 - Verify Artifact Consistency Guard
+Date: 2026-04-18
+Status: Complete
+
+- Continued the `#27` release-evidence path by adding an end-to-end test that reloads the verify manifest and checks the linked artifact bundle for consistency.
+- What changed:
+  - `tests/test_bootstrap.py` now writes a real preflight artifact, a real release scorecard artifact, and a real verify manifest into a temporary `runs/` tree during one focused test.
+  - That test reloads the manifest JSON, asserts the linked preflight and scorecard artifact paths exist, and verifies that the manifest, preflight payload, and scorecard payload all share the same `run_id`.
+  - `docs/BUILD_CHECKLIST.md` now notes that the end-to-end artifact consistency guard has landed in the local `#27` verification path.
+- Why:
+  - the previous slice made the newest verify run easy to discover through `runs/verify/latest.json`, but there was still no explicit regression guard proving that the manifest and its linked artifacts stayed internally consistent.
+  - this gives the release-evidence workflow one concrete integrity check before packaging the PR.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_bootstrap.py tests/test_release_scorecard.py tests/test_preflight.py -q` -> `24 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate local-verify` -> passed, `277 passed`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-04-18_local-verify_20260418t164745z.json`; latest pointer refreshed at `runs/verify/latest.json`; preflight artifact written under `runs/preflight/2026-04-18_local-verify_20260418t164745z.json`; scorecard artifacts written under `runs/release_scorecards/2026-04-18_local-verify_20260418t164745z.*`
