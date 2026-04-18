@@ -41,6 +41,7 @@ Preserve the stable V0 notebook demo while finishing the active foundation tranc
 - Citation verification summaries.
 - Markdown research memo exports with disclaimers and audit linkage.
 - Preflight and verification results for demo readiness.
+- Run-scoped preflight, scorecard, and verify-manifest artifacts for the supported local release-evidence path.
 
 ## Quality bar
 

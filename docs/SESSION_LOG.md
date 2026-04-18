@@ -1458,3 +1458,19 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_bootstrap.py tests/test_release_scorecard.py tests/test_preflight.py -q` -> `24 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate local-verify` -> passed, `277 passed`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-04-18_local-verify_20260418t164745z.json`; latest pointer refreshed at `runs/verify/latest.json`; preflight artifact written under `runs/preflight/2026-04-18_local-verify_20260418t164745z.json`; scorecard artifacts written under `runs/release_scorecards/2026-04-18_local-verify_20260418t164745z.*`
+
+## Session 82 - Post-Merge Status Sync
+Date: 2026-04-18
+Status: Complete
+
+- Synced the repo-status docs and active milestone issues to the merged `#27` release-evidence state instead of leaving the codebase framed by pre-merge March notes.
+- What changed:
+  - `README.md`, `AGENTS.md`, `docs/HANDOFF.md`, `docs/heartbeat.md`, `docs/repo-brief.md`, `docs/ROADMAP.md`, `docs/V2_ISSUE_MAP.md`, `docs/BUILD_CHECKLIST.md`, `docs/DECISION_LOG.md`, and `docs/V2_RELEASE_RUBRIC.md` now reflect the live repo name, current test count, current `#27` status, and the merged verify-evidence workflow.
+  - Broken GitHub issue links pointing at `cat-loss-war-room-demo` were updated to the live `cat-loss-war-room` repository across the planning and status docs.
+  - GitHub issues `#6`, `#7`, `#8`, `#9`, and `#27` now include current-status sections that match the merged codebase instead of older March-era progress notes.
+  - `docs/heartbeat.md` and `AGENTS.md` now point builders at the live session log rather than the old one-off March memory file.
+- Why:
+  - the local release-evidence stack was merged cleanly, but the repo still described itself in several places as if that work were pending or as if the old repo slug were still current.
+  - this keeps the repo orientation docs and active issue tracker aligned with the actual codebase before the next implementation slice starts.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate post-merge-status-sync` -> passed, `277 passed`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-04-18_post-merge-status-sync_20260418t170708z.json`; latest pointer refreshed at `runs/verify/latest.json`; preflight artifact written under `runs/preflight/2026-04-18_post-merge-status-sync_20260418t170708z.json`; scorecard artifacts written under `runs/release_scorecards/2026-04-18_post-merge-status-sync_20260418t170708z.*`

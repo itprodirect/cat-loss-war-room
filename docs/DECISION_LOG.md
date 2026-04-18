@@ -95,5 +95,5 @@ Track key architecture and design decisions so future sessions (human or AI) und
 ## D018: Release scorecards derive fixture coverage from committed scenarios
 **Date:** 2026-03-11
 **Decision:** Treat committed scenario folders under `cache_samples/` as the source of truth for local release-scorecard fixture coverage reporting.
-**Reason:** The repo now has three public/redacted offline scenarios across Florida, Texas, and Louisiana. Scorecard artifacts should report real committed coverage instead of a hardcoded narrative so `#27` calibration stays aligned with `#8` fixture work and `#9` CI smoke evidence.
+**Reason:** The repo now has four public/redacted offline scenarios across Florida, Texas, and Louisiana. Scorecard artifacts should report real committed coverage instead of a hardcoded narrative so `#27` calibration stays aligned with `#8` fixture work and `#9` CI smoke evidence.
 **Impact:** When fixture scenarios are added, removed, or materially changed, the release scorecard should reflect that automatically and the canonical docs should be updated with the new coverage and supported test count.
