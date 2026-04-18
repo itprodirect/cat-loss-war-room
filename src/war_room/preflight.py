@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, UTC
 from pathlib import Path
@@ -376,6 +377,31 @@ def report_to_payload(report: DemoPreflightReport) -> dict[str, Any]:
     }
 
 
+def write_preflight_artifact(
+    report: DemoPreflightReport,
+    *,
+    output_dir: Path,
+    artifact_label: str | None = None,
+    run_id: str | None = None,
+) -> Path:
+    """Write the machine-readable preflight payload to disk."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    resolved_run_id = run_id or preflight_run_id(report)
+    stem = _preflight_artifact_stem(report, artifact_label=artifact_label, run_id=resolved_run_id)
+    output_path = output_dir / f"{stem}.json"
+    payload = report_to_payload(report) | {"run_id": resolved_run_id}
+    output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return output_path
+
+
+def preflight_run_id(report: DemoPreflightReport) -> str:
+    """Return a stable run id for the preflight report timestamp."""
+
+    created_at = datetime.fromisoformat(report.created_at.replace("Z", "+00:00")).astimezone(UTC)
+    return created_at.strftime("%Y%m%dT%H%M%SZ")
+
+
 def _discover_scenario_dirs(cache_samples_dir: Path) -> list[Path]:
     if not cache_samples_dir.exists():
         return []
@@ -475,3 +501,21 @@ def _memo_checks(memo: str, memo_sections: list[str]) -> list[PreflightCheck]:
         ),
     ]
     return checks
+
+
+def _preflight_artifact_stem(
+    report: DemoPreflightReport,
+    *,
+    artifact_label: str | None = None,
+    run_id: str,
+) -> str:
+    created_at = datetime.fromisoformat(report.created_at.replace("Z", "+00:00"))
+    date_prefix = created_at.date().isoformat()
+    if artifact_label:
+        return f"{date_prefix}_{_slugify_artifact_label(artifact_label)}_{run_id.lower()}"
+    return f"{date_prefix}_{run_id.lower()}"
+
+
+def _slugify_artifact_label(value: str) -> str:
+    normalized = re.sub(r"[^A-Za-z0-9]+", "-", value.strip().lower()).strip("-")
+    return normalized or "preflight"

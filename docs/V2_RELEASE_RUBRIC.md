@@ -1,6 +1,6 @@
 # V2 Quality Rubric and Release Scorecard
 
-Last updated: March 18, 2026
+Last updated: April 18, 2026
 
 This document is the first-pass output of issue `#27`.
 
@@ -348,29 +348,42 @@ Use this template for future release candidates.
 
 The rubric now has a lightweight local operational path.
 
-After running the supported verification command, generate a scorecard artifact with:
+The supported verification command now writes a paired scorecard artifact automatically:
+
+```bash
+python -m war_room --verify
+```
+
+Optional candidate override for local release evidence:
+
+```bash
+python -m war_room --verify --release-candidate local-demo
+```
+
+What this does now:
+
+- runs the deterministic offline preflight and the supported `pytest -q` path
+- writes Markdown and JSON scorecard artifacts into `runs/release_scorecards/`
+- writes the underlying machine-readable offline preflight payload into `runs/preflight/`
+- assigns a shared run id to the preflight and scorecard artifacts so repeated same-day verify runs do not overwrite each other
+- writes a verify-run manifest into `runs/verify/` that points to the exact preflight and scorecard artifacts for that run
+- refreshes `runs/verify/latest.json` so downstream tooling can discover the newest successful verify run without scanning filenames
+- records the current demo-ready baseline in a repeatable format from the same supported local verification command
+- records the live offline preflight result in the scorecard artifact, so the offline-lane gate is tied to the actual `--verify` run rather than fixture coverage alone
+- records that shared run id and the preflight artifact path in the scorecard JSON/Markdown so release evidence can be traced back to the exact offline run
+- captures committed fixture coverage from `cache_samples/` so the scorecard reflects the live offline scenario set
+- surfaces scenario-registry and offline-ready coverage alongside committed fixture coverage
+- evaluates explicit demo-ready fixture thresholds inside the artifact
+- runs in CI, validates the ship thresholds, and uploads the same artifact from the release-scorecard job
+- creates a concrete artifact that later `#9` CI work can extend beyond the current demo-ready gate
+
+Manual and CI-specific scorecard generation still remains available with:
 
 ```bash
 python -m war_room.release_scorecard \
   --candidate local-demo \
   --verification-summary "252 passed"
 ```
-
-Default verification command recorded in the artifact:
-
-```bash
-pytest -q
-```
-
-What this does now:
-
-- writes Markdown and JSON scorecard artifacts into `runs/release_scorecards/`
-- records the current demo-ready baseline in a repeatable format
-- captures committed fixture coverage from `cache_samples/` so the scorecard reflects the live offline scenario set
-- surfaces scenario-registry and offline-ready coverage alongside committed fixture coverage
-- evaluates explicit demo-ready fixture thresholds inside the artifact
-- runs in CI, validates the ship thresholds, and uploads the same artifact from the release-scorecard job
-- creates a concrete artifact that later `#9` CI work can extend beyond the current demo-ready gate
 
 What it does not do yet:
 

@@ -6,7 +6,12 @@ import json
 from pathlib import Path
 
 from war_room.bootstrap import bootstrap_runtime, main as bootstrap_main
-from war_room.preflight import render_demo_preflight_report, run_demo_preflight
+from war_room.preflight import (
+    preflight_run_id,
+    render_demo_preflight_report,
+    run_demo_preflight,
+    write_preflight_artifact,
+)
 from war_room.query_plan import build_research_plan, load_case_intake
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -94,6 +99,26 @@ def test_bootstrap_cli_preflight_json_output(monkeypatch, capsys):
     assert payload["scenarios"][0]["issue_count"] > 0
     assert payload["scenarios"][0]["memo_section_count"] > 0
     assert payload["scenarios"][0]["export_artifact_count"] == 1
+
+
+def test_write_preflight_artifact_writes_json_payload(tmp_path: Path):
+    context = bootstrap_runtime(start_path=ROOT, ensure_dirs=False)
+    report = run_demo_preflight(context)
+    run_id = preflight_run_id(report)
+
+    output_path = write_preflight_artifact(
+        report,
+        output_dir=tmp_path / "preflight",
+        artifact_label="local-verify",
+        run_id=run_id,
+    )
+
+    assert output_path.exists()
+    assert output_path.name == f"2026-04-18_local-verify_{run_id.lower()}.json"
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["run_id"] == run_id
+    assert payload["passed"] is True
+    assert payload["scenario_count"] == len(_expected_scenario_keys())
 
 
 def test_demo_preflight_reuses_one_shared_query_plan(monkeypatch):
