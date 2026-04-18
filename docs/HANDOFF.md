@@ -15,13 +15,13 @@ Given a case intake, it assembles:
 
 This is research acceleration, not legal advice.
 
-## 2) Current status (as of March 30, 2026)
+## 2) Current status (as of April 18, 2026)
 
 | Item | Status |
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 268 passing under editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 277 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -30,7 +30,7 @@ This is research acceleration, not legal advice.
 | Product foundation (`#22`) | Complete and closed: packaging/bootstrap lane implemented |
 | Workflow IA spec (`#23`) | Complete and closed as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
 | Evidence schema spec (`#24`) | Complete and closed as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |
-| Quality rubric (`#27`) | First-pass rubric plus local artifact workflow landed in `docs/V2_RELEASE_RUBRIC.md`; demo-ready threshold calibration is now explicit in the scorecard, while CI and pilot operationalization remain open |
+| Quality rubric (`#27`) | First-pass rubric plus local and CI artifact workflows landed in `docs/V2_RELEASE_RUBRIC.md`; demo-ready threshold calibration, live preflight evidence, run-scoped verify artifacts, verify manifests, and a stable latest pointer are now explicit, while broader CI and pilot operationalization remain open |
 | Cache samples | Milton/Citizens/Pinellas + TX hail/Allstate/Tarrant + TX hail matching/Allstate Texas Lloyds/Tarrant DP-3 + Ida/Lloyd's/Orleans committed |
 
 ## 3) What changed recently
@@ -54,6 +54,7 @@ This is research acceleration, not legal advice.
 - CI now includes an explicit offline fixture smoke job, and the local release scorecard records fixture coverage from the committed scenario set.
 - The repository now has a deterministic offline demo preflight command at `python -m war_room --preflight`.
 - The repository now also has a one-command local verification wrapper at `python -m war_room --verify`.
+- The supported verify flow now emits a linked release-evidence bundle: run-scoped preflight artifacts, run-scoped scorecards, verify manifests, a stable `runs/verify/latest.json` pointer, and an integrity test that reloads the linked artifact set.
 - The notebook and preflight surfaces now expose a workflow-oriented research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run timeline, so grouped support, issue-level review, section readiness, export posture, and review-required state are visible before the memo is treated as complete.
 - The Milton benchmark fixture lane now normalizes cached citation trust metadata, carrier/case-law runtime quality, and markdown/export readability without changing the scenario registry or overall notebook-era runtime flow.
 
@@ -82,13 +83,13 @@ Core implementation lives in `src/war_room/`.
 
 - Notebook UX is useful for demos but not ideal for non-technical users.
 - Case law relevance and authority summarization still need stricter filtering/ranking in edge cases.
-- Three public/redacted fact patterns are pre-seeded in cache samples, but broader scenario coverage and thresholds are still needed.
-- Export output quality is materially cleaner in the Milton benchmark lane, but it is not yet polished for repeated client-facing use across broader fixture coverage.
+- Four public/redacted fact patterns are pre-seeded in cache samples, but broader scenario coverage and thresholds are still needed.
+- Export output quality is materially cleaner than earlier notebook-era baselines, but it is not yet polished for repeated client-facing use across broader fixture coverage.
 
 ## 7) Roadmap summary
 
 ### Now
-- #27 quality rubric and release scorecard calibration
+- #27 broader CI and pilot operationalization of the release scorecard
 - #6 typed domain contracts
 - #7 retrieval provider abstraction and contracts (provider seam, notebook retrieval-state, and citation-verify slices landed)
 - #8 multi-jurisdiction fixtures and snapshots

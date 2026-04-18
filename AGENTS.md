@@ -12,11 +12,11 @@ This repo exists to support demo-ready legal research acceleration for Merlin La
 2. [`docs/HANDOFF.md`](./docs/HANDOFF.md) for current implemented-vs-planned status.
 3. [`docs/repo-brief.md`](./docs/repo-brief.md) for the short operating brief.
 4. [`docs/heartbeat.md`](./docs/heartbeat.md) for the current branch, focus, and next best task.
-5. [`logs/2026-03-27-session.md`](./logs/2026-03-27-session.md) for the latest memory-stack session note.
+5. [`docs/SESSION_LOG.md`](./docs/SESSION_LOG.md) for the latest build-session memory and validation trail.
 
 ## Current milestone
 
-Keep the V0 notebook demo stable while operationalizing issue `#27` and completing the remaining `#6` to `#9` foundation slices. The active runtime is still the notebook plus `src/war_room/`; `apps/`, `workers/`, and `packages/` remain future-boundary placeholders.
+Keep the V0 notebook demo stable while finishing the remaining operationalization in issue `#27` and completing the remaining `#6` to `#9` foundation slices. The active runtime is still the notebook plus `src/war_room/`; `apps/`, `workers/`, and `packages/` remain future-boundary placeholders.
 
 ## Non-goals
 

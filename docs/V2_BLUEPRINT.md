@@ -383,10 +383,10 @@ Measure at least:
 
 Goal: lock the shape of V2 before heavy implementation.
 
-- [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) product foundation
-- [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23) workflow + design system
-- [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24) canonical evidence graph + audit schema
-- [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) quality rubric + release scorecard
+- [#22](https://github.com/itprodirect/cat-loss-war-room/issues/22) product foundation
+- [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) workflow + design system
+- [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) canonical evidence graph + audit schema
+- [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) quality rubric + release scorecard
 
 Exit criteria:
 
@@ -399,10 +399,10 @@ Exit criteria:
 
 Goal: make the existing engine safe to build on.
 
-- [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) typed domain models
-- [#7](https://github.com/itprodirect/cat-loss-war-room-demo/issues/7) retrieval contracts
-- [#8](https://github.com/itprodirect/cat-loss-war-room-demo/issues/8) scenario fixtures
-- [#9](https://github.com/itprodirect/cat-loss-war-room-demo/issues/9) CI quality gates
+- [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) typed domain models
+- [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) retrieval contracts
+- [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) scenario fixtures
+- [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) CI quality gates
 
 Exit criteria:
 
@@ -415,12 +415,12 @@ Exit criteria:
 
 Goal: turn the prototype engine into a usable product workflow.
 
-- [#10](https://github.com/itprodirect/cat-loss-war-room-demo/issues/10) orchestration API
-- [#11](https://github.com/itprodirect/cat-loss-war-room-demo/issues/11) web intake + run status UX
-- [#12](https://github.com/itprodirect/cat-loss-war-room-demo/issues/12) evidence normalization
-- [#13](https://github.com/itprodirect/cat-loss-war-room-demo/issues/13) case-law quality v2
-- [#25](https://github.com/itprodirect/cat-loss-war-room-demo/issues/25) AI guardrails + eval harness
-- [#26](https://github.com/itprodirect/cat-loss-war-room-demo/issues/26) human review workflow
+- [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) orchestration API
+- [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) web intake + run status UX
+- [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) evidence normalization
+- [#13](https://github.com/itprodirect/cat-loss-war-room/issues/13) case-law quality v2
+- [#25](https://github.com/itprodirect/cat-loss-war-room/issues/25) AI guardrails + eval harness
+- [#26](https://github.com/itprodirect/cat-loss-war-room/issues/26) human review workflow
 
 Exit criteria:
 
@@ -433,12 +433,12 @@ Exit criteria:
 
 Goal: make V2 pilotable in a serious legal environment.
 
-- [#14](https://github.com/itprodirect/cat-loss-war-room-demo/issues/14) citation verification v2
-- [#15](https://github.com/itprodirect/cat-loss-war-room-demo/issues/15) memo workspace/export v2
-- [#16](https://github.com/itprodirect/cat-loss-war-room-demo/issues/16) firm memory v1
-- [#17](https://github.com/itprodirect/cat-loss-war-room-demo/issues/17) observability + cost controls
-- [#18](https://github.com/itprodirect/cat-loss-war-room-demo/issues/18) security baseline
-- [#19](https://github.com/itprodirect/cat-loss-war-room-demo/issues/19) attorney pilot validation
+- [#14](https://github.com/itprodirect/cat-loss-war-room/issues/14) citation verification v2
+- [#15](https://github.com/itprodirect/cat-loss-war-room/issues/15) memo workspace/export v2
+- [#16](https://github.com/itprodirect/cat-loss-war-room/issues/16) firm memory v1
+- [#17](https://github.com/itprodirect/cat-loss-war-room/issues/17) observability + cost controls
+- [#18](https://github.com/itprodirect/cat-loss-war-room/issues/18) security baseline
+- [#19](https://github.com/itprodirect/cat-loss-war-room/issues/19) attorney pilot validation
 
 Exit criteria:
 
@@ -460,7 +460,8 @@ Exit criteria:
 
 ## 13) Immediate Next Actions
 
-1. Finish the remaining typed-domain work in [#6](https://github.com/itprodirect/cat-loss-war-room-demo/issues/6) with explicit schema-versioning rules.
-2. Use completed [#22](https://github.com/itprodirect/cat-loss-war-room-demo/issues/22) as the bootstrap baseline, then push [#23](https://github.com/itprodirect/cat-loss-war-room-demo/issues/23), [#24](https://github.com/itprodirect/cat-loss-war-room-demo/issues/24), and [#27](https://github.com/itprodirect/cat-loss-war-room-demo/issues/27) before major V2 implementation.
+1. Finish the remaining typed-domain work in [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) with explicit schema-versioning rules.
+2. Use completed [#22](https://github.com/itprodirect/cat-loss-war-room/issues/22) as the bootstrap baseline, then push [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23), [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24), and [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) before major V2 implementation.
 3. Use the current notebook plus fixture lane as the regression harness while API and web surfaces come online.
-4. Only introduce AI into V2 through the guardrailed path defined in [#25](https://github.com/itprodirect/cat-loss-war-room-demo/issues/25).
+4. Only introduce AI into V2 through the guardrailed path defined in [#25](https://github.com/itprodirect/cat-loss-war-room/issues/25).
+
