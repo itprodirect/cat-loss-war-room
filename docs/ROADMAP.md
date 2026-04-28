@@ -1,6 +1,6 @@
 # Roadmap (Simple, Current)
 
-Last updated: April 18, 2026
+Last updated: April 28, 2026
 
 This is the short version. Clean, practical, no drama.
 
@@ -116,4 +116,3 @@ Goal: trust, polish, and real-world adoption readiness.
 - Release rubric source of truth: [V2_RELEASE_RUBRIC.md](V2_RELEASE_RUBRIC.md)
 - Workflow and IA source of truth: [V2_WORKFLOW_IA.md](V2_WORKFLOW_IA.md)
 - Evidence schema source of truth: [V2_EVIDENCE_SCHEMA.md](V2_EVIDENCE_SCHEMA.md)
-

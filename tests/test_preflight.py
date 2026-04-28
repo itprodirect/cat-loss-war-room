@@ -114,7 +114,8 @@ def test_write_preflight_artifact_writes_json_payload(tmp_path: Path):
     )
 
     assert output_path.exists()
-    assert output_path.name == f"2026-04-18_local-verify_{run_id.lower()}.json"
+    artifact_date = report.created_at[:10]
+    assert output_path.name == f"{artifact_date}_local-verify_{run_id.lower()}.json"
     payload = json.loads(output_path.read_text(encoding="utf-8"))
     assert payload["run_id"] == run_id
     assert payload["passed"] is True

@@ -15,7 +15,7 @@ Given a case intake, it assembles:
 
 This is research acceleration, not legal advice.
 
-## 2) Current status (as of April 18, 2026)
+## 2) Current status (as of April 28, 2026)
 
 | Item | Status |
 |---|---|

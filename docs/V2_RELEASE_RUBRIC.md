@@ -1,6 +1,6 @@
 # V2 Quality Rubric and Release Scorecard
 
-Last updated: April 18, 2026
+Last updated: April 28, 2026
 
 This document is the first-pass output of issue `#27`.
 
@@ -280,7 +280,7 @@ The local scorecard now evaluates demo-ready fixture calibration against the fol
 
 These thresholds are intentionally scoped to the current demo-ready release level. Beta-ready and Pilot-ready still need broader scenario coverage, stronger output-quality measures, and CI or pilot evidence beyond the local scorecard.
 
-## 8) Current Baseline Snapshot (April 18, 2026)
+## 8) Current Baseline Snapshot (April 28, 2026)
 
 This is the current scorecard entry using the rubric above.
 
