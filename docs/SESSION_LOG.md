@@ -1474,3 +1474,23 @@ Status: Complete
   - this keeps the repo orientation docs and active issue tracker aligned with the actual codebase before the next implementation slice starts.
 - Verification:
   - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate post-merge-status-sync` -> passed, `277 passed`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-04-18_post-merge-status-sync_20260418t170708z.json`; latest pointer refreshed at `runs/verify/latest.json`; preflight artifact written under `runs/preflight/2026-04-18_post-merge-status-sync_20260418t170708z.json`; scorecard artifacts written under `runs/release_scorecards/2026-04-18_post-merge-status-sync_20260418t170708z.*`
+
+## Session 83 - Final Docs Closeout
+Date: 2026-04-28
+Status: Complete
+
+- Ran a final closeout pass after the `#27` release-evidence sync had landed on `main`.
+- What changed:
+  - `docs/HANDOFF.md`, `docs/ROADMAP.md`, and `docs/V2_RELEASE_RUBRIC.md` now carry the April 28 status date.
+  - `docs/heartbeat.md` now points to the closeout branch, latest validation command, current focus, and April 28 session log.
+  - `MEMORY.md` now points to the latest file under `logs/`.
+  - `CLAUDE.md` now reflects the current 277-test baseline and next-session focus.
+  - `docs/repo-brief.md` now describes the remaining `#27` work as broader CI/pilot operationalization rather than the already-merged local verify bundle.
+  - `tests/test_preflight.py` now derives the expected preflight artifact date from the report timestamp instead of hard-coding the prior April 18 validation date.
+  - `logs/2026-04-28-session.md` records the final closeout state for future resumption.
+- Why:
+  - the repo was functionally current, but the end-of-night orientation docs still had a few stale branch/date/session pointers.
+  - the supported verification path exposed one date-rollover test expectation that needed to follow the live preflight report date.
+  - this keeps the memory stack clean before the next foundation slice starts.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate final-docs-closeout` -> passed, `277 passed`; offline preflight passed for 4 committed fixture scenarios.

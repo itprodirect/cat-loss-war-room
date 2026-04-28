@@ -44,7 +44,7 @@ notebooks/          # Jupyter notebooks (the demo surface)
 cache_samples/      # Committed demo fixtures (run without API key)
 cache/              # Runtime cache (gitignored)
 output/             # Generated reports (gitignored)
-tests/              # pytest test suite (168 tests, no network)
+tests/              # pytest test suite (277 tests, no network)
 scripts/            # Seed scripts (manual, not CI)
 docs/               # Project documentation
 apps/               # V2 app placeholders (web/api)
@@ -82,9 +82,9 @@ Prioritize in this order:
 - `fix/` - bug fixes
 
 ## Current phase
-v0-demo shipped, issues #22, #23, and #24 are complete and closed, and active V2 execution work is now concentrated in #27 and the remaining #6 to #9 foundation slices. Cells 0-7 remain stable and CI runs package-installed tests.
+v0-demo shipped, issues #22, #23, and #24 are complete and closed, and active V2 execution work is now concentrated in broader #27 CI/pilot operationalization plus the remaining #6 to #9 foundation slices. Cells 0-7 remain stable and CI runs package-installed tests.
 
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
 Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
-Next priority: continue #27 operationalization plus the remaining #6, #7, #8, and #9 foundation work, then move downstream implementation into #10 onward.
+Next priority: pick the next small foundation slice in #6 or #9, then continue #7/#8 as needed before moving downstream implementation into #10 onward.

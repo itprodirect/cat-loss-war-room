@@ -8,7 +8,7 @@ This file is the front door to the repo's existing memory stack. It points to th
 2. [AGENTS.md](./AGENTS.md)
 3. [docs/repo-brief.md](./docs/repo-brief.md)
 4. [docs/heartbeat.md](./docs/heartbeat.md)
-5. Latest file in [`logs/`](./logs/) (currently [`logs/2026-03-27-session.md`](./logs/2026-03-27-session.md))
+5. Latest file in [`logs/`](./logs/) (currently [`logs/2026-04-28-session.md`](./logs/2026-04-28-session.md))
 6. [docs/DECISION_LOG.md](./docs/DECISION_LOG.md) if the task touches a durable naming, scope, or architecture decision
 
 ## Current operational memory files
