@@ -2,12 +2,22 @@
 
 from __future__ import annotations
 
+import pytest
+from pydantic import ValidationError
+
 from war_room.memo_composer import (
     build_memo_composer,
     build_memo_composer_from_parts,
     format_memo_composer,
 )
-from war_room.models import CaseIntake, QuerySpec, run_audit_snapshot_from_parts
+from war_room.models import (
+    CaseIntake,
+    MemoComposerReadModel,
+    QuerySpec,
+    adapt_memo_composer,
+    memo_composer_to_payload,
+    run_audit_snapshot_from_parts,
+)
 
 
 def _sample_parts():
@@ -156,6 +166,28 @@ def test_build_memo_composer_from_parts_matches_snapshot_builder():
     assert len(from_parts.section_cards) == len(from_snapshot.section_cards)
     assert from_parts.export_eligibility == from_snapshot.export_eligibility
     assert from_parts.review_required_section_count == from_snapshot.review_required_section_count
+
+
+def test_memo_composer_payload_round_trips_with_schema_version():
+    composer = build_memo_composer_from_parts(*_sample_parts())
+
+    payload = memo_composer_to_payload(composer)
+    restored = adapt_memo_composer(payload)
+    rendered = format_memo_composer(payload)
+
+    assert isinstance(composer, MemoComposerReadModel)
+    assert payload["schema_version"] == "v2alpha1"
+    assert restored.section_cards[0].section_id == composer.section_cards[0].section_id
+    assert "MEMO COMPOSER" in rendered
+
+
+def test_memo_composer_contract_rejects_unexpected_nested_fields():
+    composer = build_memo_composer_from_parts(*_sample_parts())
+    payload = memo_composer_to_payload(composer)
+    payload["section_cards"][0]["unexpected"] = "loose dict drift"
+
+    with pytest.raises(ValidationError):
+        adapt_memo_composer(payload)
 
 
 def test_format_memo_composer_surfaces_section_status_and_export_eligibility():

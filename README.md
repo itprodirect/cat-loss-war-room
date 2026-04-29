@@ -114,7 +114,7 @@ Only the Milton benchmark currently has committed offline cache fixtures, so cac
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline summary on top of the canonical contracts, `287` tests are passing under the supported bootstrap path, the supported `--verify` flow now writes a linked run-scoped release-evidence bundle, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline summary on top of the canonical contracts, `289` tests are passing under the supported bootstrap path, the supported `--verify` flow now writes a linked run-scoped release-evidence bundle, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - Offline fixture smoke validation across committed scenarios
@@ -123,7 +123,7 @@ Only the Milton benchmark currently has committed offline cache fixtures, so cac
 
 **Specified, not built yet:** `docs/V2_WORKFLOW_IA.md`, `docs/V2_EVIDENCE_SCHEMA.md`, and `docs/V2_RELEASE_RUBRIC.md` are the written source-of-truth specs for the current V2 planning layer, while `apps/`, `workers/`, and `packages/` remain placeholder boundaries for later implementation.
 
-Issues `#4`, `#5`, `#22`, `#23`, and `#24` are complete and closed. The written source-of-truth specs for `#23` and `#24` live in `docs/V2_WORKFLOW_IA.md` and `docs/V2_EVIDENCE_SCHEMA.md`, while downstream implementation remains tracked in later issues. Issue `#27` now has a calibrated demo-ready scorecard, CI artifact emission plus validation, and a linked local verify-evidence workflow in `docs/V2_RELEASE_RUBRIC.md`, and remains open for broader CI/pilot operationalization. Issue `#6` is underway with slices 1-10 landed, including schema-versioned runtime cache envelopes with legacy raw-cache loading plus typed Evidence Board and Issue Workspace read-model contracts, and issue `#7` has four slices landed: the provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing.
+Issues `#4`, `#5`, `#22`, `#23`, and `#24` are complete and closed. The written source-of-truth specs for `#23` and `#24` live in `docs/V2_WORKFLOW_IA.md` and `docs/V2_EVIDENCE_SCHEMA.md`, while downstream implementation remains tracked in later issues. Issue `#27` now has a calibrated demo-ready scorecard, CI artifact emission plus validation, and a linked local verify-evidence workflow in `docs/V2_RELEASE_RUBRIC.md`, and remains open for broader CI/pilot operationalization. Issue `#6` is underway with slices 1-11 landed, including schema-versioned runtime cache envelopes with legacy raw-cache loading plus typed Evidence Board, Issue Workspace, and Memo Composer read-model contracts, and issue `#7` has four slices landed: the provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing.
 
 ## Roadmap (Simple)
 

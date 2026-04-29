@@ -1570,3 +1570,22 @@ Status: Complete
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_issue_workspace.py tests/test_preflight.py -q` -> `10 passed`
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_export_history.py tests/test_memo_composer.py -q` -> `23 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-issue-workspace-contract` -> passed, `287 passed`; offline preflight passed for 4 committed fixture scenarios.
+
+## Session 88 - Issue 6 Memo Composer Read Model Contract
+Date: 2026-04-28 local / 2026-04-29 UTC
+Status: Complete
+
+- Continued `#6` by replacing the Memo Composer's local dataclass read model with a typed `v2alpha1` Pydantic contract.
+- What changed:
+  - `src/war_room/models.py` now defines `MemoComposerClaimLink`, `MemoComposerSectionCard`, and `MemoComposerReadModel`.
+  - `adapt_memo_composer()` and `memo_composer_to_payload()` now validate and serialize the memo-composer contract.
+  - `src/war_room/memo_composer.py` now builds the typed model and validates dict-shaped payloads before rendering.
+  - `tests/test_memo_composer.py` now covers schema-versioned payload round-trip and rejection of unexpected nested fields.
+  - Active status docs now reflect the 289-test baseline and `#6` slice 11.
+- Why:
+  - the V2 evidence schema requires a stable Memo Composer read model for ordered sections, claim support links, review-required state, and export eligibility.
+  - this keeps the notebook renderer behavior stable while reducing another workflow-layer loose dict seam before future API/UI work.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_memo_composer.py tests/test_preflight.py -q` -> `10 passed`
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_issue_workspace.py tests/test_export_history.py -q` -> `25 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-memo-composer-contract` -> passed, `289 passed`; offline preflight passed for 4 committed fixture scenarios.

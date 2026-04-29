@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 from war_room.models import (
@@ -10,45 +9,16 @@ from war_room.models import (
     CaseLawPack,
     CarrierDocPack,
     CitationVerifyPack,
+    MemoComposerClaimLink,
+    MemoComposerReadModel,
+    MemoComposerSectionCard,
     QuerySpec,
     RunAuditSnapshot,
     WeatherBrief,
+    adapt_memo_composer,
     adapt_run_audit_snapshot,
     run_audit_snapshot_from_parts,
 )
-
-
-@dataclass(frozen=True)
-class MemoComposerClaimLink:
-    """Claim-level support row for a memo section."""
-
-    claim_id: str
-    text: str
-    status: str
-    cluster_ids: list[str] = field(default_factory=list)
-    evidence_ids: list[str] = field(default_factory=list)
-
-
-@dataclass(frozen=True)
-class MemoComposerSectionCard:
-    """Section-first memo-composer card."""
-
-    section_id: str
-    title: str
-    status: str
-    claim_links: list[MemoComposerClaimLink] = field(default_factory=list)
-    review_event_ids: list[str] = field(default_factory=list)
-    review_required: bool = False
-
-
-@dataclass(frozen=True)
-class MemoComposerReadModel:
-    """Memo-composer read model for notebook-era flows."""
-
-    run_id: str
-    export_eligibility: str
-    review_required_section_count: int
-    section_cards: list[MemoComposerSectionCard] = field(default_factory=list)
 
 
 def build_memo_composer(
@@ -139,9 +109,10 @@ def build_memo_composer_from_parts(
     )
 
 
-def format_memo_composer(composer: MemoComposerReadModel) -> str:
+def format_memo_composer(composer: Mapping[str, Any] | MemoComposerReadModel) -> str:
     """Render the memo-composer read model as a notebook-friendly text block."""
 
+    composer = adapt_memo_composer(composer)
     lines = [
         "=" * 60,
         "MEMO COMPOSER",
