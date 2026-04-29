@@ -7,10 +7,16 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import re
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Mapping, Optional
+
+from war_room.models import SCHEMA_VERSION_DEFAULT
+
+CACHE_ENTRY_TYPE = "war_room.cache_entry"
+CACHE_ENTRY_TYPE_KEY = "cache_entry_type"
+CACHE_PAYLOAD_KEY = "payload"
+SUPPORTED_CACHE_SCHEMA_VERSIONS = {SCHEMA_VERSION_DEFAULT}
 
 
 def normalize_key(raw: str) -> str:
@@ -35,7 +41,7 @@ def cache_get(key: str, cache_dir: str | Path) -> Optional[Any]:
     """Read a cached value, or None if not found."""
     path = _cache_path(cache_dir, key)
     if path.exists():
-        return json.loads(path.read_text(encoding="utf-8"))
+        return _unwrap_cache_value(json.loads(path.read_text(encoding="utf-8")))
     return None
 
 
@@ -43,7 +49,10 @@ def cache_set(key: str, value: Any, cache_dir: str | Path) -> Path:
     """Write a value to the cache. Returns the file path."""
     path = _cache_path(cache_dir, key)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2, default=str), encoding="utf-8")
+    path.write_text(
+        json.dumps(_wrap_cache_value(value), indent=2, default=str),
+        encoding="utf-8",
+    )
     return path
 
 
@@ -76,3 +85,37 @@ def cached_call(
     result = fn()
     cache_set(key, result, cache_dir)
     return result
+
+
+def _wrap_cache_value(value: Any) -> dict[str, Any]:
+    """Return the current schema-versioned cache envelope for a payload."""
+    if _is_cache_envelope(value):
+        return dict(value)
+    return {
+        CACHE_ENTRY_TYPE_KEY: CACHE_ENTRY_TYPE,
+        "schema_version": SCHEMA_VERSION_DEFAULT,
+        CACHE_PAYLOAD_KEY: value,
+    }
+
+
+def _unwrap_cache_value(raw: Any) -> Any:
+    """Read current cache envelopes while preserving legacy raw-cache payloads."""
+    if not _is_cache_envelope(raw):
+        return raw
+
+    schema_version = str(raw.get("schema_version", "")).strip()
+    if schema_version not in SUPPORTED_CACHE_SCHEMA_VERSIONS:
+        supported = ", ".join(sorted(SUPPORTED_CACHE_SCHEMA_VERSIONS))
+        raise ValueError(
+            f"Unsupported cache schema_version '{schema_version}'. "
+            f"Supported versions: {supported}."
+        )
+    return raw[CACHE_PAYLOAD_KEY]
+
+
+def _is_cache_envelope(value: Any) -> bool:
+    return (
+        isinstance(value, Mapping)
+        and value.get(CACHE_ENTRY_TYPE_KEY) == CACHE_ENTRY_TYPE
+        and CACHE_PAYLOAD_KEY in value
+    )

@@ -25,7 +25,7 @@ Written source-of-truth specs for `#23` and `#24` are complete and those definit
 
 | Focus | Issue | Notes |
 |---|---|---|
-| Typed domain models | [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) | In progress: intake/query, pack, citation/export, graph/version, issue/authority, run/retrieval, and review/export graph-linkage slices are landed against the canonical schema in `#24` |
+| Typed domain models | [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) | In progress: intake/query, pack, citation/export, graph/version, issue/authority, run/retrieval, review/export graph-linkage, and schema-versioned runtime cache-envelope slices are landed against the canonical schema in `#24` |
 | Retrieval adapter contract tests | [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) | In progress: provider seam, notebook retrieval-state emission, citation-verify tracking, deterministic retrieval-task timing, and Exa compatibility tests landed |
 | Scenario fixture suite | [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) | Four committed scenario directories now cover Florida, Texas, and Louisiana and feed `#27`; the next step is broader breadth plus comparable thresholds |
 | CI quality gate pipeline | [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) | Fresh-env + exa compatibility + offline fixture smoke now exist; release-scorecard artifact emission and validation plus the local verify-evidence workflow are wired, and the next step is broader CI layering, fixture breadth, and failure categorization |
@@ -61,4 +61,3 @@ Written source-of-truth specs for `#23` and `#24` are complete and those definit
 | Provenance and canonical contracts | [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) | Backbone for evidence trust, review, audit, and export |
 | AI guardrails | [#25](https://github.com/itprodirect/cat-loss-war-room/issues/25) | Required for any serious AI-assisted extraction or drafting |
 | Release scorecard | [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) | Shared benchmark language across CI, dashboards, and pilot work; local artifacts now record committed fixture coverage and the supported verify path emits a linked release-evidence bundle |
-

@@ -1512,3 +1512,23 @@ Status: Complete
 - Verification:
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_export.py tests/test_weather.py tests/test_offline_demo_pack.py -q` -> `62 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate export-readability-guard` -> passed, `279 passed`; offline preflight passed for 4 committed fixture scenarios; Milton weather sources reduced to 9 after cached weather normalization.
+
+## Session 85 - Issue 6 Cache Schema Envelope
+Date: 2026-04-28 local / 2026-04-29 UTC
+Status: Complete
+
+- Continued `#6` by making runtime cache compatibility explicit without changing the committed raw fixture shape.
+- What changed:
+  - `src/war_room/cache_io.py` now writes new cache entries inside a small `war_room.cache_entry` envelope with `schema_version: v2alpha1`.
+  - `cache_get()` unwraps the current envelope transparently so existing module callers still receive the original payload shape.
+  - `cache_get()` remains backward-compatible with legacy raw JSON payloads already present in `cache_samples/` and `cache/`.
+  - Unsupported future cache schema versions now fail explicitly instead of being consumed silently.
+  - `tests/test_cache_io.py` now covers envelope writing, legacy raw-cache loading, unsupported-version rejection, and `cached_call()` runtime writes.
+  - Active status docs now reflect the 283-test baseline and `#6` slice 8.
+- Why:
+  - issue `#6` explicitly calls for schema-versioned cache adapters and backward-compatible loaders.
+  - this gives new runtime cache artifacts a version marker while preserving the offline demo lane and avoiding a broad fixture rewrite.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_cache_io.py -q` -> `12 passed`
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_cache_io.py tests/test_offline_demo_pack.py tests/test_weather.py tests/test_carrier.py tests/test_caselaw.py tests/test_citation_verify.py -q` -> `98 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-cache-envelope` -> passed, `283 passed`; offline preflight passed for 4 committed fixture scenarios.
