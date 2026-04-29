@@ -765,6 +765,58 @@ class IssueWorkspaceReadModel(BaseModel):
         return _validate_schema_version(value)
 
 
+class MemoComposerClaimLink(BaseModel):
+    """Claim-level support row for a memo section."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    claim_id: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+    status: Literal["supported", "review_required"]
+    cluster_ids: list[str] = Field(default_factory=list)
+    evidence_ids: list[str] = Field(default_factory=list)
+
+    @field_validator("cluster_ids", "evidence_ids")
+    @classmethod
+    def _validate_string_lists(cls, value: list[str], info: Any) -> list[str]:
+        return _validate_non_empty_string_list(value, info.field_name)
+
+
+class MemoComposerSectionCard(BaseModel):
+    """Section-first memo-composer card."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    section_id: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    status: MemoSectionStatus
+    claim_links: list[MemoComposerClaimLink] = Field(default_factory=list)
+    review_event_ids: list[str] = Field(default_factory=list)
+    review_required: bool = False
+
+    @field_validator("review_event_ids")
+    @classmethod
+    def _validate_review_event_ids(cls, value: list[str]) -> list[str]:
+        return _validate_non_empty_string_list(value, "review_event_ids")
+
+
+class MemoComposerReadModel(BaseModel):
+    """Memo-composer read model for notebook-era flows."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    schema_version: str = SCHEMA_VERSION_DEFAULT
+    run_id: str = Field(min_length=1)
+    export_eligibility: Literal["review_required_export", "ready_to_export"]
+    review_required_section_count: int = Field(ge=0)
+    section_cards: list[MemoComposerSectionCard] = Field(default_factory=list)
+
+    @field_validator("schema_version")
+    @classmethod
+    def _validate_schema_version(cls, value: str) -> str:
+        return _validate_schema_version(value)
+
+
 def adapt_case_intake(payload: Mapping[str, Any] | CaseIntake) -> CaseIntake:
     """Validate/coerce intake payload into typed model."""
     if isinstance(payload, CaseIntake):
@@ -918,6 +970,15 @@ def adapt_issue_workspace(
     if isinstance(payload, IssueWorkspaceReadModel):
         return payload
     return IssueWorkspaceReadModel.model_validate(payload)
+
+
+def adapt_memo_composer(
+    payload: Mapping[str, Any] | MemoComposerReadModel,
+) -> MemoComposerReadModel:
+    """Validate/coerce a memo-composer read model into the typed contract."""
+    if isinstance(payload, MemoComposerReadModel):
+        return payload
+    return MemoComposerReadModel.model_validate(payload)
 
 
 def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditSnapshot:
@@ -1790,6 +1851,13 @@ def issue_workspace_to_payload(
 ) -> dict[str, Any]:
     """Return an issue-workspace read model normalized against the typed contract."""
     return _model_to_payload(adapt_issue_workspace(payload))
+
+
+def memo_composer_to_payload(
+    payload: Mapping[str, Any] | MemoComposerReadModel,
+) -> dict[str, Any]:
+    """Return a memo-composer read model normalized against the typed contract."""
+    return _model_to_payload(adapt_memo_composer(payload))
 
 
 def carrier_doc_pack_to_payload(
