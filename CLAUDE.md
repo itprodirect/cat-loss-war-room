@@ -44,7 +44,7 @@ notebooks/          # Jupyter notebooks (the demo surface)
 cache_samples/      # Committed demo fixtures (run without API key)
 cache/              # Runtime cache (gitignored)
 output/             # Generated reports (gitignored)
-tests/              # pytest test suite (291 tests, no network)
+tests/              # pytest test suite (293 tests, no network)
 scripts/            # Seed scripts (manual, not CI)
 docs/               # Project documentation
 apps/               # V2 app placeholders (web/api)
@@ -87,4 +87,4 @@ v0-demo shipped, issues #22, #23, and #24 are complete and closed, and active V2
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
 Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
-Next priority: pick the next small foundation slice in #6 or #9, then continue #7/#8 as needed before moving downstream implementation into #10 onward.
+Next priority: review the final #6 contract closeout PR, then move to the next small #9 or #8 foundation slice before downstream implementation in #10 onward.

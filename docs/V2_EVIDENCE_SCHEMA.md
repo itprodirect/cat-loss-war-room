@@ -1,6 +1,6 @@
 # V2 Evidence Graph and Audit Schema
 
-Last updated: March 8, 2026
+Last updated: April 29, 2026
 
 This document is the concrete output of issue `#24`.
 
@@ -735,6 +735,18 @@ Must include:
 - disclaimer state
 - whether the export came from a completed or partial-success run
 - pointer to the audit bundle or canonical run snapshot used to create it
+
+### Current implementation note
+
+The notebook-era runtime now has typed `v2alpha1` read-model envelopes for all five workflow read models:
+
+- `RunTimelineReadModel`
+- `EvidenceBoardReadModel`
+- `IssueWorkspaceReadModel`
+- `MemoComposerReadModel`
+- `ExportHistoryReadModel`
+
+These are still transitional read models over the current v0 audit snapshot and canonical `Run` / `RunStage` records. They are not a storage layer or a claim that the V2 API/UI exists.
 
 ## 10) Mapping From Current Typed Models
 

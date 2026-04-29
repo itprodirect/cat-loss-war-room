@@ -1608,3 +1608,23 @@ Status: Complete
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_export_history.py tests/test_preflight.py -q` -> `10 passed`
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_issue_workspace.py tests/test_memo_composer.py -q` -> `27 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-export-history-contract` -> passed, `291 passed`; offline preflight passed for 4 committed fixture scenarios.
+
+## Session 90 - Issue 6 Final Contract and Docs Closeout
+Date: 2026-04-29
+Status: Complete
+
+- Completed the final `#6` workflow read-model contract pass by adding a schema-versioned Run Timeline envelope over the existing canonical `Run` and `RunStage` contracts.
+- What changed:
+  - `src/war_room/models.py` now defines `RunTimelineReadModel`.
+  - `adapt_run_timeline()` and `run_timeline_to_payload()` now validate and serialize the run-timeline contract.
+  - `src/war_room/workflow_summary.py` now exposes `build_run_timeline_read_model()` while keeping the existing `build_run_timeline()` tuple API intact.
+  - `format_run_timeline()` now accepts a typed read model or dict payload and still supports the old `Run` plus stage-list call shape.
+  - `tests/test_workflow_summary.py` now covers schema-versioned payload round-trip and rejection of stages from a different run.
+  - Active status docs now reflect the 293-test baseline and `#6` slice 13.
+- Why:
+  - the other workflow read models were already behind `v2alpha1` payload contracts, and Run Timeline was the remaining read-model surface called out by the V2 evidence schema.
+  - this keeps the notebook/preflight behavior stable while giving future API/UI work one typed contract path for the timeline surface.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_workflow_summary.py tests/test_preflight.py -q` -> `11 passed`
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_issue_workspace.py tests/test_memo_composer.py tests/test_export_history.py -q` -> `32 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-final-contract-docs` -> passed, `293 passed`; offline preflight passed for 4 committed fixture scenarios.

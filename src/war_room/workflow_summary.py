@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 from war_room.models import (
     CaseIntake,
@@ -13,7 +13,11 @@ from war_room.models import (
     ResearchPlan,
     Run,
     RunStage,
+    RunTimelineReadModel,
     WeatherBrief,
+    adapt_run,
+    adapt_run_stage,
+    adapt_run_timeline,
     adapt_research_plan,
     memo_render_input_from_parts,
     run_audit_snapshot_from_memo_input,
@@ -248,30 +252,69 @@ def build_run_timeline(
     return run, stages
 
 
-def format_run_timeline(run: Run, stages: list[RunStage]) -> str:
+def build_run_timeline_read_model(
+    intake: Mapping[str, Any] | CaseIntake,
+    research_plan: Mapping[str, Any] | ResearchPlan,
+    weather: Mapping[str, Any] | WeatherBrief,
+    carrier: Mapping[str, Any] | CarrierDocPack,
+    caselaw: Mapping[str, Any] | CaseLawPack,
+    citecheck: Mapping[str, Any] | CitationVerifyPack,
+    *,
+    environment: str = "notebook",
+    export_written: bool = False,
+) -> RunTimelineReadModel:
+    """Build the schema-versioned run-timeline read-model envelope."""
+
+    run, stages = build_run_timeline(
+        intake,
+        research_plan,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        environment=environment,
+        export_written=export_written,
+    )
+    return RunTimelineReadModel(run=run, stages=stages)
+
+
+def format_run_timeline(
+    run: Mapping[str, Any] | Run | RunTimelineReadModel,
+    stages: Sequence[Mapping[str, Any] | RunStage] | None = None,
+) -> str:
     """Render a compact workflow timeline for notebook or CLI output."""
 
-    completed = sum(stage.status == "completed" for stage in stages)
-    degraded = sum(stage.status == "degraded" for stage in stages)
-    failed = sum(stage.status == "failed" for stage in stages)
-    skipped = sum(stage.status == "skipped" for stage in stages)
+    if _is_timeline_payload(run, stages):
+        timeline = adapt_run_timeline(run)
+        typed_run = timeline.run
+        typed_stages = timeline.stages
+    else:
+        if stages is None:
+            raise ValueError("stages are required when formatting a Run directly.")
+        typed_run = adapt_run(run)
+        typed_stages = [adapt_run_stage(stage) for stage in stages]
+
+    completed = sum(stage.status == "completed" for stage in typed_stages)
+    degraded = sum(stage.status == "degraded" for stage in typed_stages)
+    failed = sum(stage.status == "failed" for stage in typed_stages)
+    skipped = sum(stage.status == "skipped" for stage in typed_stages)
     lines = [
         "=" * 60,
         "RUN TIMELINE",
         "=" * 60,
-        f"  Run ID:            {run.run_id}",
-        f"  Environment:       {run.environment}",
-        f"  Status:            {run.status}",
-        f"  Review Required:   {'yes' if run.review_required else 'no'}",
+        f"  Run ID:            {typed_run.run_id}",
+        f"  Environment:       {typed_run.environment}",
+        f"  Status:            {typed_run.status}",
+        f"  Review Required:   {'yes' if typed_run.review_required else 'no'}",
         (
             "  Stage Summary:     "
             f"{completed} completed, {degraded} degraded, {failed} failed, {skipped} skipped"
         ),
-        f"  Next Step:         {_next_step(run, stages)}",
+        f"  Next Step:         {_next_step(typed_run, typed_stages)}",
         "",
     ]
 
-    for stage in stages:
+    for stage in typed_stages:
         lines.append(
             f"  [{stage.status}] {_STAGE_LABELS.get(stage.stage_key, stage.stage_key)}"
         )
@@ -283,6 +326,18 @@ def format_run_timeline(run: Run, stages: list[RunStage]) -> str:
 
     lines.append("=" * 60)
     return "\n".join(lines)
+
+
+def _is_timeline_payload(
+    run: Mapping[str, Any] | Run | RunTimelineReadModel,
+    stages: Sequence[Mapping[str, Any] | RunStage] | None,
+) -> bool:
+    return isinstance(run, RunTimelineReadModel) or (
+        stages is None
+        and isinstance(run, Mapping)
+        and "run" in run
+        and "stages" in run
+    )
 
 
 def _module_stage(
