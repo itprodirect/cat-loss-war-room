@@ -817,6 +817,39 @@ class MemoComposerReadModel(BaseModel):
         return _validate_schema_version(value)
 
 
+class ExportHistoryEntry(BaseModel):
+    """Single export-history row for the current run."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    artifact_id: str = Field(min_length=1)
+    artifact_type: Literal["markdown_memo", "docx_memo", "pdf_memo", "audit_bundle"]
+    title: str = Field(min_length=1)
+    artifact_uri: str = ""
+    created_at: str = ""
+    disclaimer_present: bool
+    review_required: bool
+    run_status: RunStatus
+    delivery_state: Literal["written", "not_written"]
+    audit_snapshot_ref: str = Field(min_length=1)
+
+
+class ExportHistoryReadModel(BaseModel):
+    """Export-history read model for notebook-era flows."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    schema_version: str = SCHEMA_VERSION_DEFAULT
+    run_id: str = Field(min_length=1)
+    entries: list[ExportHistoryEntry] = Field(default_factory=list)
+    review_required_export_count: int = Field(default=0, ge=0)
+
+    @field_validator("schema_version")
+    @classmethod
+    def _validate_schema_version(cls, value: str) -> str:
+        return _validate_schema_version(value)
+
+
 def adapt_case_intake(payload: Mapping[str, Any] | CaseIntake) -> CaseIntake:
     """Validate/coerce intake payload into typed model."""
     if isinstance(payload, CaseIntake):
@@ -979,6 +1012,15 @@ def adapt_memo_composer(
     if isinstance(payload, MemoComposerReadModel):
         return payload
     return MemoComposerReadModel.model_validate(payload)
+
+
+def adapt_export_history(
+    payload: Mapping[str, Any] | ExportHistoryReadModel,
+) -> ExportHistoryReadModel:
+    """Validate/coerce an export-history read model into the typed contract."""
+    if isinstance(payload, ExportHistoryReadModel):
+        return payload
+    return ExportHistoryReadModel.model_validate(payload)
 
 
 def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditSnapshot:
@@ -1858,6 +1900,13 @@ def memo_composer_to_payload(
 ) -> dict[str, Any]:
     """Return a memo-composer read model normalized against the typed contract."""
     return _model_to_payload(adapt_memo_composer(payload))
+
+
+def export_history_to_payload(
+    payload: Mapping[str, Any] | ExportHistoryReadModel,
+) -> dict[str, Any]:
+    """Return an export-history read model normalized against the typed contract."""
+    return _model_to_payload(adapt_export_history(payload))
 
 
 def carrier_doc_pack_to_payload(
