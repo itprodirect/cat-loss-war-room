@@ -21,11 +21,11 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 291 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 293 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
-| Typed domain contracts (#6) | Slices 1-12 complete (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Evidence Board read-model contract + Issue Workspace read-model contract + Memo Composer read-model contract + Export History read-model contract) |
+| Typed domain contracts (#6) | Slices 1-13 complete and ready for closeout review (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Run Timeline, Evidence Board, Issue Workspace, Memo Composer, and Export History read-model contracts) |
 | Retrieval contracts (#7) | Four slices landed: provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing |
 | Product foundation (`#22`) | Complete and closed: packaging/bootstrap lane implemented |
 | Workflow IA spec (`#23`) | Complete and closed as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
@@ -63,6 +63,7 @@ This is research acceleration, not legal advice.
 - The Issue Workspace read model now also lives behind a typed `v2alpha1` Pydantic contract with a payload adapter, so issue-level support, citation outcomes, claims, and review events validate before rendering.
 - The Memo Composer read model now also lives behind a typed `v2alpha1` Pydantic contract with a payload adapter, so section readiness, claim support links, review events, and export eligibility validate before rendering.
 - The Export History read model now also lives behind a typed `v2alpha1` Pydantic contract with a payload adapter, so artifact delivery state, disclaimer state, review-required state, and audit references validate before rendering.
+- The Run Timeline read model now has a typed `v2alpha1` envelope over canonical `Run` and `RunStage` records, with payload validation for cross-run stage drift before rendering.
 
 ## 4) Quick run
 ```bash

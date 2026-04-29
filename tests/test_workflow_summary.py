@@ -2,10 +2,19 @@
 
 from __future__ import annotations
 
-from war_room.models import CaseIntake
+import pytest
+from pydantic import ValidationError
+
+from war_room.models import (
+    CaseIntake,
+    RunTimelineReadModel,
+    adapt_run_timeline,
+    run_timeline_to_payload,
+)
 from war_room.query_plan import build_research_plan
 from war_room.workflow_summary import (
     build_run_timeline,
+    build_run_timeline_read_model,
     format_research_plan_preview,
     format_run_timeline,
 )
@@ -253,3 +262,34 @@ def test_format_run_timeline_includes_stage_summary_and_next_step():
     assert "Stage Summary:" in timeline
     assert "Move into evidence review before relying on memo language." in timeline
     assert "[degraded] Citation Spot-Check" in timeline
+
+
+def test_run_timeline_payload_round_trips_with_schema_version():
+    timeline = build_run_timeline_read_model(
+        *_sample_workflow_parts(),
+        environment="notebook",
+        export_written=True,
+    )
+
+    payload = run_timeline_to_payload(timeline)
+    restored = adapt_run_timeline(payload)
+    rendered = format_run_timeline(payload)
+
+    assert isinstance(timeline, RunTimelineReadModel)
+    assert payload["schema_version"] == "v2alpha1"
+    assert restored.run.run_id == timeline.run.run_id
+    assert len(restored.stages) == len(timeline.stages)
+    assert "RUN TIMELINE" in rendered
+
+
+def test_run_timeline_contract_rejects_stage_from_another_run():
+    timeline = build_run_timeline_read_model(
+        *_sample_workflow_parts(),
+        environment="notebook",
+        export_written=True,
+    )
+    payload = run_timeline_to_payload(timeline)
+    payload["stages"][0]["run_id"] = "wrong-run"
+
+    with pytest.raises(ValidationError):
+        adapt_run_timeline(payload)

@@ -850,6 +850,32 @@ class ExportHistoryReadModel(BaseModel):
         return _validate_schema_version(value)
 
 
+class RunTimelineReadModel(BaseModel):
+    """Run-timeline read model wrapping canonical run and stage state."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    schema_version: str = SCHEMA_VERSION_DEFAULT
+    run: Run
+    stages: list[RunStage] = Field(default_factory=list)
+
+    @field_validator("schema_version")
+    @classmethod
+    def _validate_schema_version(cls, value: str) -> str:
+        return _validate_schema_version(value)
+
+    @model_validator(mode="after")
+    def _validate_stage_run_ids(self) -> "RunTimelineReadModel":
+        mismatched_stage_ids = [
+            stage.stage_id
+            for stage in self.stages
+            if stage.run_id != self.run.run_id
+        ]
+        if mismatched_stage_ids:
+            raise ValueError("all timeline stages must belong to the run.")
+        return self
+
+
 def adapt_case_intake(payload: Mapping[str, Any] | CaseIntake) -> CaseIntake:
     """Validate/coerce intake payload into typed model."""
     if isinstance(payload, CaseIntake):
@@ -1021,6 +1047,15 @@ def adapt_export_history(
     if isinstance(payload, ExportHistoryReadModel):
         return payload
     return ExportHistoryReadModel.model_validate(payload)
+
+
+def adapt_run_timeline(
+    payload: Mapping[str, Any] | RunTimelineReadModel,
+) -> RunTimelineReadModel:
+    """Validate/coerce a run-timeline read model into the typed contract."""
+    if isinstance(payload, RunTimelineReadModel):
+        return payload
+    return RunTimelineReadModel.model_validate(payload)
 
 
 def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditSnapshot:
@@ -1907,6 +1942,13 @@ def export_history_to_payload(
 ) -> dict[str, Any]:
     """Return an export-history read model normalized against the typed contract."""
     return _model_to_payload(adapt_export_history(payload))
+
+
+def run_timeline_to_payload(
+    payload: Mapping[str, Any] | RunTimelineReadModel,
+) -> dict[str, Any]:
+    """Return a run-timeline read model normalized against the typed contract."""
+    return _model_to_payload(adapt_run_timeline(payload))
 
 
 def carrier_doc_pack_to_payload(
