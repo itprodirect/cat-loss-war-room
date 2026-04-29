@@ -1,9 +1,21 @@
 """Tests for cache_io module."""
 
+import json
 import tempfile
 from pathlib import Path
 
-from war_room.cache_io import normalize_key, cache_get, cache_set, cached_call
+import pytest
+
+from war_room.cache_io import (
+    CACHE_ENTRY_TYPE,
+    CACHE_ENTRY_TYPE_KEY,
+    CACHE_PAYLOAD_KEY,
+    cache_get,
+    cache_set,
+    cached_call,
+    normalize_key,
+)
+from war_room.models import SCHEMA_VERSION_DEFAULT
 
 
 def test_normalize_key_basic():
@@ -24,6 +36,48 @@ def test_cache_roundtrip():
         cache_set("test_key", data, tmpdir)
         result = cache_get("test_key", tmpdir)
         assert result == data
+
+
+def test_cache_set_writes_schema_versioned_envelope():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        data = {"results": [1, 2, 3], "query": "test"}
+        path = cache_set("test_key", data, tmpdir)
+        raw = json.loads(path.read_text(encoding="utf-8"))
+
+        assert raw[CACHE_ENTRY_TYPE_KEY] == CACHE_ENTRY_TYPE
+        assert raw["schema_version"] == SCHEMA_VERSION_DEFAULT
+        assert raw[CACHE_PAYLOAD_KEY] == data
+        assert cache_get("test_key", tmpdir) == data
+
+
+def test_cache_get_reads_legacy_unversioned_payload():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        data = {"source": "legacy-fixture"}
+        path = cache_set("legacy_key", {"source": "placeholder"}, tmpdir)
+        path.write_text(
+            json.dumps(data),
+            encoding="utf-8",
+        )
+
+        assert cache_get("legacy_key", tmpdir) == data
+
+
+def test_cache_get_rejects_unsupported_schema_version():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path = cache_set("future_key", {"source": "placeholder"}, tmpdir)
+        path.write_text(
+            json.dumps(
+                {
+                    CACHE_ENTRY_TYPE_KEY: CACHE_ENTRY_TYPE,
+                    "schema_version": "v999",
+                    CACHE_PAYLOAD_KEY: {"source": "future"},
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(ValueError, match="Unsupported cache schema_version"):
+            cache_get("future_key", tmpdir)
 
 
 def test_cache_get_missing():
@@ -50,6 +104,23 @@ def test_cached_call_uses_cache():
         result2 = cached_call("my_key", expensive_fn, cache_dir=tmpdir, cache_samples_dir=tmpdir)
         assert result2 == {"value": 42}
         assert call_count == 1  # fn not called again
+
+
+def test_cached_call_writes_schema_versioned_runtime_cache():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = cached_call(
+            "my_key",
+            lambda: {"value": 42},
+            cache_dir=tmpdir,
+            cache_samples_dir=tmpdir,
+        )
+        cache_files = list(Path(tmpdir).glob("*.json"))
+        raw = json.loads(cache_files[0].read_text(encoding="utf-8"))
+
+        assert result == {"value": 42}
+        assert len(cache_files) == 1
+        assert raw["schema_version"] == SCHEMA_VERSION_DEFAULT
+        assert raw[CACHE_PAYLOAD_KEY] == {"value": 42}
 
 
 def test_cached_call_bypass_cache():
