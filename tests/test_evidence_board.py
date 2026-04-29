@@ -2,11 +2,21 @@
 
 from __future__ import annotations
 
-from war_room.models import CaseIntake, QuerySpec, run_audit_snapshot_from_parts
+import pytest
+from pydantic import ValidationError
+
 from war_room.evidence_board import (
     build_evidence_board,
     build_evidence_board_from_parts,
     format_evidence_board,
+)
+from war_room.models import (
+    CaseIntake,
+    EvidenceBoardReadModel,
+    QuerySpec,
+    adapt_evidence_board,
+    evidence_board_to_payload,
+    run_audit_snapshot_from_parts,
 )
 
 
@@ -157,6 +167,28 @@ def test_build_evidence_board_from_parts_matches_snapshot_builder():
     assert from_parts.total_clusters == from_snapshot.total_clusters
     assert from_parts.review_required_clusters == from_snapshot.review_required_clusters
     assert from_parts.cluster_cards[0].cluster_id == from_snapshot.cluster_cards[0].cluster_id
+
+
+def test_evidence_board_payload_round_trips_with_schema_version():
+    board = build_evidence_board_from_parts(*_sample_parts())
+
+    payload = evidence_board_to_payload(board)
+    restored = adapt_evidence_board(payload)
+    rendered = format_evidence_board(payload)
+
+    assert isinstance(board, EvidenceBoardReadModel)
+    assert payload["schema_version"] == "v2alpha1"
+    assert restored.cluster_cards[0].cluster_id == board.cluster_cards[0].cluster_id
+    assert "EVIDENCE BOARD" in rendered
+
+
+def test_evidence_board_contract_rejects_unexpected_nested_fields():
+    board = build_evidence_board_from_parts(*_sample_parts())
+    payload = evidence_board_to_payload(board)
+    payload["cluster_cards"][0]["unexpected"] = "loose dict drift"
+
+    with pytest.raises(ValidationError):
+        adapt_evidence_board(payload)
 
 
 def test_format_evidence_board_surfaces_review_required_clusters():

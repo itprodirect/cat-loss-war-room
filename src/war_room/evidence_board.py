@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 from war_room.models import (
@@ -10,58 +9,16 @@ from war_room.models import (
     CaseLawPack,
     CarrierDocPack,
     CitationVerifyPack,
+    EvidenceBoardClusterCard,
+    EvidenceBoardItemPreview,
+    EvidenceBoardReadModel,
     QuerySpec,
     RunAuditSnapshot,
     WeatherBrief,
+    adapt_evidence_board,
     adapt_run_audit_snapshot,
     run_audit_snapshot_from_parts,
 )
-
-
-@dataclass(frozen=True)
-class EvidenceBoardItemPreview:
-    """Compact evidence-item preview for board rendering."""
-
-    evidence_id: str
-    module: str
-    title: str
-    summary: str
-    badge: str
-    source_tier: str
-    url: str | None = None
-
-
-@dataclass(frozen=True)
-class EvidenceBoardClusterCard:
-    """Cluster-first evidence card for the transitional read model."""
-
-    cluster_id: str
-    cluster_type: str
-    label: str
-    member_count: int
-    modules: list[str] = field(default_factory=list)
-    source_tier_summary: str = ""
-    issue_labels: list[str] = field(default_factory=list)
-    claim_ids: list[str] = field(default_factory=list)
-    review_event_ids: list[str] = field(default_factory=list)
-    provenance_urls: list[str] = field(default_factory=list)
-    review_required: bool = False
-    evidence_previews: list[EvidenceBoardItemPreview] = field(default_factory=list)
-
-
-@dataclass(frozen=True)
-class EvidenceBoardReadModel:
-    """Cluster-first evidence-board read model for current notebook-era flows."""
-
-    run_id: str
-    total_clusters: int
-    total_evidence_items: int
-    review_required_clusters: int
-    primary_source_count: int
-    secondary_source_count: int
-    fallback_to_item_view: bool = False
-    cluster_cards: list[EvidenceBoardClusterCard] = field(default_factory=list)
-    ungrouped_items: list[EvidenceBoardItemPreview] = field(default_factory=list)
 
 
 def build_evidence_board(
@@ -195,9 +152,10 @@ def build_evidence_board_from_parts(
     )
 
 
-def format_evidence_board(board: EvidenceBoardReadModel) -> str:
+def format_evidence_board(board: Mapping[str, Any] | EvidenceBoardReadModel) -> str:
     """Render the evidence-board read model as a notebook-friendly text block."""
 
+    board = adapt_evidence_board(board)
     lines = [
         "=" * 60,
         "EVIDENCE BOARD",

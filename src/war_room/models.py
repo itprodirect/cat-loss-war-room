@@ -635,6 +635,72 @@ class RunAuditSnapshot(BaseModel):
         return _validate_schema_version(value)
 
 
+class EvidenceBoardItemPreview(BaseModel):
+    """Compact evidence-item preview for board rendering."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    evidence_id: str = Field(min_length=1)
+    module: str = Field(min_length=1)
+    title: str = ""
+    summary: str = ""
+    badge: str = Field(min_length=1)
+    source_tier: str = Field(min_length=1)
+    url: str | None = None
+
+
+class EvidenceBoardClusterCard(BaseModel):
+    """Cluster-first evidence card for the transitional read model."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    cluster_id: str = Field(min_length=1)
+    cluster_type: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    member_count: int = Field(ge=0)
+    modules: list[str] = Field(default_factory=list)
+    source_tier_summary: str = ""
+    issue_labels: list[str] = Field(default_factory=list)
+    claim_ids: list[str] = Field(default_factory=list)
+    review_event_ids: list[str] = Field(default_factory=list)
+    provenance_urls: list[str] = Field(default_factory=list)
+    review_required: bool = False
+    evidence_previews: list[EvidenceBoardItemPreview] = Field(default_factory=list)
+
+    @field_validator(
+        "modules",
+        "issue_labels",
+        "claim_ids",
+        "review_event_ids",
+        "provenance_urls",
+    )
+    @classmethod
+    def _validate_string_lists(cls, value: list[str], info: Any) -> list[str]:
+        return _validate_non_empty_string_list(value, info.field_name)
+
+
+class EvidenceBoardReadModel(BaseModel):
+    """Cluster-first evidence-board read model for current notebook-era flows."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    schema_version: str = SCHEMA_VERSION_DEFAULT
+    run_id: str = Field(min_length=1)
+    total_clusters: int = Field(ge=0)
+    total_evidence_items: int = Field(ge=0)
+    review_required_clusters: int = Field(ge=0)
+    primary_source_count: int = Field(ge=0)
+    secondary_source_count: int = Field(ge=0)
+    fallback_to_item_view: bool = False
+    cluster_cards: list[EvidenceBoardClusterCard] = Field(default_factory=list)
+    ungrouped_items: list[EvidenceBoardItemPreview] = Field(default_factory=list)
+
+    @field_validator("schema_version")
+    @classmethod
+    def _validate_schema_version(cls, value: str) -> str:
+        return _validate_schema_version(value)
+
+
 def adapt_case_intake(payload: Mapping[str, Any] | CaseIntake) -> CaseIntake:
     """Validate/coerce intake payload into typed model."""
     if isinstance(payload, CaseIntake):
@@ -770,6 +836,15 @@ def adapt_run_audit_snapshot(
     if isinstance(payload, RunAuditSnapshot):
         return payload
     return RunAuditSnapshot.model_validate(payload)
+
+
+def adapt_evidence_board(
+    payload: Mapping[str, Any] | EvidenceBoardReadModel,
+) -> EvidenceBoardReadModel:
+    """Validate/coerce an evidence-board read model into the typed contract."""
+    if isinstance(payload, EvidenceBoardReadModel):
+        return payload
+    return EvidenceBoardReadModel.model_validate(payload)
 
 
 def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditSnapshot:
@@ -1628,6 +1703,13 @@ def run_audit_snapshot_to_payload(
 ) -> dict[str, Any]:
     """Return a run audit snapshot normalized against the typed contract."""
     return _model_to_payload(adapt_run_audit_snapshot(payload))
+
+
+def evidence_board_to_payload(
+    payload: Mapping[str, Any] | EvidenceBoardReadModel,
+) -> dict[str, Any]:
+    """Return an evidence-board read model normalized against the typed contract."""
+    return _model_to_payload(adapt_evidence_board(payload))
 
 
 def carrier_doc_pack_to_payload(
