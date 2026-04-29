@@ -2,12 +2,22 @@
 
 from __future__ import annotations
 
+import pytest
+from pydantic import ValidationError
+
 from war_room.issue_workspace import (
     build_issue_workspace,
     build_issue_workspace_from_parts,
     format_issue_workspace,
 )
-from war_room.models import CaseIntake, QuerySpec, run_audit_snapshot_from_parts
+from war_room.models import (
+    CaseIntake,
+    IssueWorkspaceReadModel,
+    QuerySpec,
+    adapt_issue_workspace,
+    issue_workspace_to_payload,
+    run_audit_snapshot_from_parts,
+)
 
 
 def _sample_parts():
@@ -191,6 +201,28 @@ def test_build_issue_workspace_from_parts_matches_snapshot_builder():
     assert len(from_parts.issue_cards) == len(from_snapshot.issue_cards)
     assert from_parts.review_required_issue_count == from_snapshot.review_required_issue_count
     assert from_parts.issue_cards[0].issue_label == from_snapshot.issue_cards[0].issue_label
+
+
+def test_issue_workspace_payload_round_trips_with_schema_version():
+    workspace = build_issue_workspace_from_parts(*_sample_parts())
+
+    payload = issue_workspace_to_payload(workspace)
+    restored = adapt_issue_workspace(payload)
+    rendered = format_issue_workspace(payload)
+
+    assert isinstance(workspace, IssueWorkspaceReadModel)
+    assert payload["schema_version"] == "v2alpha1"
+    assert restored.issue_cards[0].issue_label == workspace.issue_cards[0].issue_label
+    assert "ISSUE WORKSPACE" in rendered
+
+
+def test_issue_workspace_contract_rejects_unexpected_nested_fields():
+    workspace = build_issue_workspace_from_parts(*_sample_parts())
+    payload = issue_workspace_to_payload(workspace)
+    payload["issue_cards"][0]["unexpected"] = "loose dict drift"
+
+    with pytest.raises(ValidationError):
+        adapt_issue_workspace(payload)
 
 
 def test_format_issue_workspace_surfaces_issue_status_and_authorities():

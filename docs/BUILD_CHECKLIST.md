@@ -22,7 +22,7 @@ Simple execution checklist aligned with the live GitHub roadmap.
 ## Immediate Execution Priorities
 
 - [x] [#5](https://github.com/itprodirect/cat-loss-war-room/issues/5) intake schema alignment
-- [ ] [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) typed domain models (slices 1-9 complete: intake/query + module packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Evidence Board read-model contract)
+- [ ] [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) typed domain models (slices 1-10 complete: intake/query + module packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Evidence Board and Issue Workspace read-model contracts)
 - [ ] [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) retrieval contracts (provider seam + notebook retrieval-state + citation-verify + deterministic retrieval-task timing slices landed)
 - [ ] [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) scenario fixtures + snapshots (four committed scenario directories now cover Florida, Texas, and Louisiana; broader breadth and snapshot thresholds still needed)
 - [ ] [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) expanded CI gates (offline fixture smoke gate, release-scorecard artifact emission plus validation, and the supported local verify-evidence workflow landed; broader CI layering still needed)

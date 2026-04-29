@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 from war_room.models import (
@@ -10,9 +9,14 @@ from war_room.models import (
     CaseLawPack,
     CarrierDocPack,
     CitationVerifyPack,
+    IssueWorkspaceCard,
+    IssueWorkspaceCaseCandidate,
+    IssueWorkspaceCitationOutcome,
+    IssueWorkspaceReadModel,
     QuerySpec,
     RunAuditSnapshot,
     WeatherBrief,
+    adapt_issue_workspace,
     adapt_run_audit_snapshot,
     run_audit_snapshot_from_parts,
 )
@@ -26,55 +30,6 @@ _TIER_RANK = {
     "unvetted": 3,
     "unknown": 4,
 }
-
-
-@dataclass(frozen=True)
-class IssueWorkspaceCaseCandidate:
-    """Compact authority row for an issue workspace."""
-
-    evidence_id: str
-    name: str
-    citation: str
-    source_tier: str
-    badge: str
-    summary: str
-    url: str | None = None
-
-
-@dataclass(frozen=True)
-class IssueWorkspaceCitationOutcome:
-    """Citation-check outcome linked to an issue workspace."""
-
-    evidence_id: str
-    status: str
-    citation: str
-    note: str
-    source_tier: str
-    url: str | None = None
-
-
-@dataclass(frozen=True)
-class IssueWorkspaceCard:
-    """Issue-level read model derived from current canonical graph objects."""
-
-    issue_label: str
-    summary: str
-    status: str
-    evidence_cluster_ids: list[str] = field(default_factory=list)
-    case_candidates: list[IssueWorkspaceCaseCandidate] = field(default_factory=list)
-    citation_outcomes: list[IssueWorkspaceCitationOutcome] = field(default_factory=list)
-    claim_ids: list[str] = field(default_factory=list)
-    review_event_ids: list[str] = field(default_factory=list)
-    review_required: bool = False
-
-
-@dataclass(frozen=True)
-class IssueWorkspaceReadModel:
-    """Issue-workspace read model for notebook-era flows."""
-
-    run_id: str
-    issue_cards: list[IssueWorkspaceCard] = field(default_factory=list)
-    review_required_issue_count: int = 0
 
 
 def build_issue_workspace(
@@ -166,9 +121,10 @@ def build_issue_workspace_from_parts(
     )
 
 
-def format_issue_workspace(workspace: IssueWorkspaceReadModel) -> str:
+def format_issue_workspace(workspace: Mapping[str, Any] | IssueWorkspaceReadModel) -> str:
     """Render the issue-workspace read model as a notebook-friendly text block."""
 
+    workspace = adapt_issue_workspace(workspace)
     lines = [
         "=" * 60,
         "ISSUE WORKSPACE",

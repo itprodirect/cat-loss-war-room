@@ -44,7 +44,7 @@ notebooks/          # Jupyter notebooks (the demo surface)
 cache_samples/      # Committed demo fixtures (run without API key)
 cache/              # Runtime cache (gitignored)
 output/             # Generated reports (gitignored)
-tests/              # pytest test suite (285 tests, no network)
+tests/              # pytest test suite (287 tests, no network)
 scripts/            # Seed scripts (manual, not CI)
 docs/               # Project documentation
 apps/               # V2 app placeholders (web/api)

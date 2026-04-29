@@ -701,6 +701,70 @@ class EvidenceBoardReadModel(BaseModel):
         return _validate_schema_version(value)
 
 
+class IssueWorkspaceCaseCandidate(BaseModel):
+    """Compact authority row for an issue workspace."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    evidence_id: str = Field(min_length=1)
+    name: str = ""
+    citation: str = ""
+    source_tier: str = Field(min_length=1)
+    badge: str = Field(min_length=1)
+    summary: str = ""
+    url: str | None = None
+
+
+class IssueWorkspaceCitationOutcome(BaseModel):
+    """Citation-check outcome linked to an issue workspace."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    evidence_id: str = Field(min_length=1)
+    status: str = Field(min_length=1)
+    citation: str = ""
+    note: str = ""
+    source_tier: str = Field(min_length=1)
+    url: str | None = None
+
+
+class IssueWorkspaceCard(BaseModel):
+    """Issue-level read model derived from current canonical graph objects."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    issue_label: str = Field(min_length=1)
+    summary: str = ""
+    status: Literal["review_required", "ready"]
+    evidence_cluster_ids: list[str] = Field(default_factory=list)
+    case_candidates: list[IssueWorkspaceCaseCandidate] = Field(default_factory=list)
+    citation_outcomes: list[IssueWorkspaceCitationOutcome] = Field(default_factory=list)
+    claim_ids: list[str] = Field(default_factory=list)
+    review_event_ids: list[str] = Field(default_factory=list)
+    review_required: bool = False
+
+    @field_validator("evidence_cluster_ids", "claim_ids", "review_event_ids")
+    @classmethod
+    def _validate_string_lists(cls, value: list[str], info: Any) -> list[str]:
+        return _validate_non_empty_string_list(value, info.field_name)
+
+
+class IssueWorkspaceReadModel(BaseModel):
+    """Issue-workspace read model for notebook-era flows."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+
+    schema_version: str = SCHEMA_VERSION_DEFAULT
+    run_id: str = Field(min_length=1)
+    issue_cards: list[IssueWorkspaceCard] = Field(default_factory=list)
+    review_required_issue_count: int = Field(default=0, ge=0)
+
+    @field_validator("schema_version")
+    @classmethod
+    def _validate_schema_version(cls, value: str) -> str:
+        return _validate_schema_version(value)
+
+
 def adapt_case_intake(payload: Mapping[str, Any] | CaseIntake) -> CaseIntake:
     """Validate/coerce intake payload into typed model."""
     if isinstance(payload, CaseIntake):
@@ -845,6 +909,15 @@ def adapt_evidence_board(
     if isinstance(payload, EvidenceBoardReadModel):
         return payload
     return EvidenceBoardReadModel.model_validate(payload)
+
+
+def adapt_issue_workspace(
+    payload: Mapping[str, Any] | IssueWorkspaceReadModel,
+) -> IssueWorkspaceReadModel:
+    """Validate/coerce an issue-workspace read model into the typed contract."""
+    if isinstance(payload, IssueWorkspaceReadModel):
+        return payload
+    return IssueWorkspaceReadModel.model_validate(payload)
 
 
 def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditSnapshot:
@@ -1710,6 +1783,13 @@ def evidence_board_to_payload(
 ) -> dict[str, Any]:
     """Return an evidence-board read model normalized against the typed contract."""
     return _model_to_payload(adapt_evidence_board(payload))
+
+
+def issue_workspace_to_payload(
+    payload: Mapping[str, Any] | IssueWorkspaceReadModel,
+) -> dict[str, Any]:
+    """Return an issue-workspace read model normalized against the typed contract."""
+    return _model_to_payload(adapt_issue_workspace(payload))
 
 
 def carrier_doc_pack_to_payload(

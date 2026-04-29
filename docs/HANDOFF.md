@@ -21,11 +21,11 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 285 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 287 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
-| Typed domain contracts (#6) | Slices 1-9 complete (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Evidence Board read-model contract) |
+| Typed domain contracts (#6) | Slices 1-10 complete (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Evidence Board read-model contract + Issue Workspace read-model contract) |
 | Retrieval contracts (#7) | Four slices landed: provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing |
 | Product foundation (`#22`) | Complete and closed: packaging/bootstrap lane implemented |
 | Workflow IA spec (`#23`) | Complete and closed as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
@@ -60,6 +60,7 @@ This is research acceleration, not legal advice.
 - The Milton rendered-memo path now has an export readability guard that blocks obvious mojibake, scraped navigation text, generic weather pages, Casetext boilerplate, and broken markdown-table rows from reappearing in demo output.
 - Runtime cache writes now use a small `v2alpha1` schema-versioned envelope, while cache reads still accept the legacy raw JSON fixture shape already committed in `cache_samples/`.
 - The Evidence Board read model now lives behind a typed `v2alpha1` Pydantic contract with a payload adapter, so dict-shaped board data is validated before rendering.
+- The Issue Workspace read model now also lives behind a typed `v2alpha1` Pydantic contract with a payload adapter, so issue-level support, citation outcomes, claims, and review events validate before rendering.
 
 ## 4) Quick run
 ```bash
