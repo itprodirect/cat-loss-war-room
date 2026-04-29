@@ -6,6 +6,7 @@ Extracts metrics only when present in retrieved content.
 
 from __future__ import annotations
 
+import html
 import re
 from typing import Any, Mapping, Sequence
 
@@ -52,6 +53,9 @@ _NAVIGATION_MARKERS = (
     "[home]",
     "[mobile site]",
     "[text version]",
+    "![skip navigation links]",
+    "mobile site",
+    "text version",
     "skip navigation",
     "storm events database - event details",
 )
@@ -79,7 +83,7 @@ def build_weather_brief(
             if cached is None:
                 cached = cache_get(case_key, cache_dir)
             if cached is not None:
-                return cached
+                return _normalize_weather_brief(cached, intake)
         return _empty_weather_brief(
             intake,
             "No Exa client available and no cached weather brief found.",
@@ -125,12 +129,15 @@ def build_weather_brief(
         payload["run_events"] = run_events
         return weather_brief_to_payload(payload)
 
-    return cached_call(
-        case_key,
-        _fetch,
-        cache_samples_dir=cache_samples_dir,
-        cache_dir=cache_dir,
-        use_cache=use_cache,
+    return _normalize_weather_brief(
+        cached_call(
+            case_key,
+            _fetch,
+            cache_samples_dir=cache_samples_dir,
+            cache_dir=cache_dir,
+            use_cache=use_cache,
+        ),
+        intake,
     )
 
 
@@ -160,6 +167,65 @@ def _empty_weather_brief(intake: CaseIntake, reason: str) -> dict[str, Any]:
         "sources": [],
         "warnings": [reason],
     })
+
+
+def _normalize_weather_brief(
+    payload: Mapping[str, Any],
+    intake: CaseIntake,
+) -> dict[str, Any]:
+    """Clean cached/live weather payloads before memo and workflow rendering."""
+    brief = weather_brief_to_payload(payload)
+
+    observations = []
+    for observation in brief["key_observations"]:
+        cleaned = _clean_weather_text(observation)
+        if not cleaned:
+            continue
+        if _is_navigation_heavy_text(cleaned) or _is_low_value_weather_text(cleaned):
+            continue
+        if cleaned not in observations:
+            observations.append(cleaned)
+
+    sources = []
+    seen_source_urls: set[str] = set()
+    for source in brief["sources"]:
+        title = _clean_weather_text(source.get("title", ""))
+        url = source.get("url", "")
+        if url and url in seen_source_urls:
+            continue
+        candidate = {
+            **source,
+            "title": title,
+            "reason": _clean_weather_text(source.get("reason", "")),
+        }
+        if _is_low_value_weather_result(candidate):
+            continue
+        if _is_navigation_heavy_text(f"{title} {candidate.get('reason', '')}"):
+            continue
+        if url:
+            seen_source_urls.add(url)
+        score = score_url(url, title)
+        sources.append(
+            {
+                **candidate,
+                "badge": score["badge"],
+                "reason": candidate.get("reason") or score["label"],
+            }
+        )
+
+    return weather_brief_to_payload(
+        {
+            **brief,
+            "event_summary": _clean_weather_text(brief.get("event_summary", "")),
+            "key_observations": observations,
+            "sources": sources,
+            "warnings": [
+                cleaned
+                for warning in brief.get("warnings", [])
+                if (cleaned := _clean_weather_text(warning))
+            ],
+        }
+    )
 
 
 def _assemble_brief(
@@ -261,12 +327,11 @@ def _has_location_signal(result: dict[str, Any], intake: CaseIntake) -> bool:
 
 
 def _extract_observation(result: dict[str, Any], intake: CaseIntake) -> str | None:
-    snippet = " ".join((result.get("snippet", "") or "").split())
+    snippet = _clean_weather_text(result.get("snippet", ""))
     if not snippet:
         return None
 
-    lowered = snippet.lower()
-    if any(marker in lowered for marker in _NAVIGATION_MARKERS):
+    if _is_navigation_heavy_text(snippet):
         return None
     if not (_has_location_signal(result, intake) or _is_report_like(result)):
         return None
@@ -281,6 +346,23 @@ def _is_report_like(result: dict[str, Any]) -> bool:
 
 def _contains_any(text: str, needles: tuple[str, ...]) -> bool:
     return any(needle in text for needle in needles)
+
+
+def _clean_weather_text(value: Any) -> str:
+    text = html.unescape(str(value or ""))
+    text = text.replace("\r", " ").replace("\n", " ")
+    text = re.sub(r"!\[([^\]]*)\](?:\([^)]*\))?", r"\1", text)
+    text = re.sub(r"\[([^\]]+)\]", r"\1", text)
+    text = re.sub(r"[#*`]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _is_navigation_heavy_text(text: str) -> bool:
+    return _contains_any(text.lower(), _NAVIGATION_MARKERS)
+
+
+def _is_low_value_weather_text(text: str) -> bool:
+    return _contains_any(text.lower(), _LOW_VALUE_WEATHER_TERMS)
 
 
 def _extract_metrics(text: str) -> dict[str, Any]:

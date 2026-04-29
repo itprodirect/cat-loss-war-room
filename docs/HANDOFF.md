@@ -21,7 +21,7 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 277 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 279 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -57,6 +57,7 @@ This is research acceleration, not legal advice.
 - The supported verify flow now emits a linked release-evidence bundle: run-scoped preflight artifacts, run-scoped scorecards, verify manifests, a stable `runs/verify/latest.json` pointer, and an integrity test that reloads the linked artifact set.
 - The notebook and preflight surfaces now expose a workflow-oriented research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run timeline, so grouped support, issue-level review, section readiness, export posture, and review-required state are visible before the memo is treated as complete.
 - The Milton benchmark fixture lane now normalizes cached citation trust metadata, carrier/case-law runtime quality, and markdown/export readability without changing the scenario registry or overall notebook-era runtime flow.
+- The Milton rendered-memo path now has an export readability guard that blocks obvious mojibake, scraped navigation text, generic weather pages, Casetext boilerplate, and broken markdown-table rows from reappearing in demo output.
 
 ## 4) Quick run
 ```bash

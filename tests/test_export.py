@@ -1,9 +1,39 @@
 """Tests for export_md module - no network calls."""
 
 import tempfile
+from pathlib import Path
 
+from war_room.carrier_module import build_carrier_doc_pack
+from war_room.caselaw_module import build_caselaw_pack
+from war_room.citation_verify import spot_check_citations
 from war_room.export_md import render_markdown_memo, write_markdown
 from war_room.models import CaseIntake, QuerySpec
+from war_room.query_plan import generate_query_plan
+from war_room.weather_module import build_weather_brief
+
+
+ROOT = Path(__file__).resolve().parent.parent
+CACHE_SAMPLES_ROOT = ROOT / "cache_samples"
+
+_MILTON_EXPORT_NOISE_MARKERS = (
+    "\u00e2\u20ac",  # Common UTF-8 mojibake prefix: â€...
+    "\u00f0\u0178",  # Common emoji mojibake prefix: ðŸ...
+    "CONTINUE TO SITE",
+    "Skip Navigation",
+    "Mobile Site",
+    "Text Version",
+    "| Casetext Search + Citator",
+    "Citing Cases",
+    "[![Skip Navigation Links]]",
+    "Hurricane Costs",
+    "News and Media: Disaster 4834",
+    "DR-4834 Public Notice 001",
+    "Potentially relevant carrier document",
+)
+
+
+class _FixtureProvider:
+    provider_name = "fixture"
 
 
 def _sample_data():
@@ -104,6 +134,70 @@ def _sample_data():
     return intake, weather, carrier, caselaw, citecheck, queries
 
 
+def _milton_fixture_memo() -> str:
+    intake = CaseIntake(
+        event_name="Hurricane Milton",
+        event_date="2024-10-09",
+        state="FL",
+        county="Pinellas",
+        carrier="Citizens Property Insurance",
+        policy_type="HO-3 Dwelling",
+        posture=["denial", "bad_faith"],
+        key_facts=[
+            "Category 3 at landfall near Siesta Key",
+            "Roof damage and water intrusion reported within 48 hours",
+            "Claim denied citing pre-existing conditions",
+        ],
+        coverage_issues=[
+            "wind vs water causation",
+            "anti-concurrent causation clause",
+            "duty to investigate",
+        ],
+    )
+    cache_samples_dir = str(CACHE_SAMPLES_ROOT)
+    query_plan = generate_query_plan(intake)
+    weather = build_weather_brief(
+        intake,
+        None,
+        query_plan=query_plan,
+        cache_samples_dir=cache_samples_dir,
+    )
+    carrier = build_carrier_doc_pack(
+        intake,
+        None,
+        query_plan=query_plan,
+        cache_samples_dir=cache_samples_dir,
+    )
+    caselaw = build_caselaw_pack(
+        intake,
+        None,
+        query_plan=query_plan,
+        cache_samples_dir=cache_samples_dir,
+    )
+    citecheck = spot_check_citations(
+        caselaw,
+        _FixtureProvider(),
+        cache_samples_dir=cache_samples_dir,
+    )
+
+    return render_markdown_memo(intake, weather, carrier, caselaw, citecheck, query_plan)
+
+
+def _markdown_table_blocks(markdown: str) -> list[list[str]]:
+    blocks: list[list[str]] = []
+    current: list[str] = []
+    for line in markdown.splitlines():
+        if line.startswith("|"):
+            current.append(line)
+            continue
+        if current:
+            blocks.append(current)
+            current = []
+    if current:
+        blocks.append(current)
+    return blocks
+
+
 def test_render_contains_all_sections():
     md = render_markdown_memo(*_sample_data())
     assert "DRAFT" in md
@@ -121,6 +215,30 @@ def test_render_contains_all_sections():
     assert "Evidence Index" in md
     assert "All Sources" in md
     assert "Methodology" in md
+
+
+def test_milton_fixture_render_is_demo_readable():
+    md = _milton_fixture_memo()
+
+    assert "DEMO RESEARCH MEMO - VERIFY CITATIONS - NOT LEGAL ADVICE" in md
+    assert "Hurricane Milton" in md
+    assert "Pinellas County, FL" in md
+    assert "Citizens Property Insurance" in md
+    assert "## Weather Corroboration" in md
+    assert "## Carrier Document Pack" in md
+    assert "## Case Law" in md
+    assert "### Citation Spot-Check" in md
+
+    for marker in _MILTON_EXPORT_NOISE_MARKERS:
+        assert marker not in md
+
+
+def test_milton_fixture_render_keeps_markdown_tables_aligned():
+    md = _milton_fixture_memo()
+
+    for block in _markdown_table_blocks(md):
+        pipe_counts = {line.count("|") for line in block}
+        assert len(pipe_counts) == 1, block
 
 
 def test_render_contains_case_details():
