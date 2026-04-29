@@ -1532,3 +1532,22 @@ Status: Complete
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_cache_io.py -q` -> `12 passed`
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_cache_io.py tests/test_offline_demo_pack.py tests/test_weather.py tests/test_carrier.py tests/test_caselaw.py tests/test_citation_verify.py -q` -> `98 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-cache-envelope` -> passed, `283 passed`; offline preflight passed for 4 committed fixture scenarios.
+
+## Session 86 - Issue 6 Evidence Board Read Model Contract
+Date: 2026-04-28 local / 2026-04-29 UTC
+Status: Complete
+
+- Continued `#6` by replacing the Evidence Board's local dataclass read model with a typed `v2alpha1` Pydantic contract.
+- What changed:
+  - `src/war_room/models.py` now defines `EvidenceBoardItemPreview`, `EvidenceBoardClusterCard`, and `EvidenceBoardReadModel`.
+  - `adapt_evidence_board()` and `evidence_board_to_payload()` now validate and serialize the board contract.
+  - `src/war_room/evidence_board.py` now builds the typed model and validates dict-shaped payloads before rendering.
+  - `tests/test_evidence_board.py` now covers schema-versioned payload round-trip and rejection of unexpected nested fields.
+  - Active status docs now reflect the 285-test baseline and `#6` slice 9.
+- Why:
+  - the V2 evidence schema calls out workflow read models as first-class contracts, and Evidence Board is the highest-value board seam because it carries cluster, review, claim, and source-tier state.
+  - this keeps the current notebook rendering behavior stable while making future API/UI consumers less dependent on loose dict shape assumptions.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_evidence_board.py tests/test_preflight.py -q` -> `11 passed`
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_memo_contracts.py tests/test_export_history.py tests/test_issue_workspace.py tests/test_memo_composer.py -q` -> `20 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-evidence-board-contract` -> passed, `285 passed`; offline preflight passed for 4 committed fixture scenarios.

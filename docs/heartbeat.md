@@ -3,13 +3,13 @@
 - Repo: `cat-loss-war-room`
 - Current milestone: Stabilize the notebook demo while finishing `#27` and the remaining `#6` to `#9` foundation work.
 - Current status: V0 demo is stable; active runtime is still `src/war_room/` plus `notebooks/01_case_war_room.ipynb`; the `#27` local release-evidence stack is now merged, including live preflight-backed scorecards, run-scoped verify artifacts, verify manifests, and a stable latest pointer.
-- Current branch: `codex/issue-6-contract-slice`
-- Last validated: 2026-04-28 local / 2026-04-29 UTC via `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-cache-envelope` (`283 passed`; offline preflight passed for 4 fixture scenarios)
-- Current focus: `#6` schema-versioned cache-compatibility slice: runtime cache writes carry a `v2alpha1` envelope, while legacy raw cache fixtures still load.
-- Hot files: `README.md`, `CLAUDE.md`, `docs/BUILD_CHECKLIST.md`, `docs/HANDOFF.md`, `docs/ROADMAP.md`, `docs/V2_ISSUE_MAP.md`, `docs/V2_RELEASE_RUBRIC.md`, `docs/heartbeat.md`, `docs/SESSION_LOG.md`, `logs/2026-04-28-session.md`, `src/war_room/cache_io.py`, `tests/test_cache_io.py`
+- Current branch: `codex/issue-6-readmodel-contracts`
+- Last validated: 2026-04-28 local / 2026-04-29 UTC via `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-evidence-board-contract` (`285 passed`; offline preflight passed for 4 fixture scenarios)
+- Current focus: `#6` Evidence Board read-model contract slice: the board now uses a typed `v2alpha1` payload adapter before notebook-friendly rendering.
+- Hot files: `README.md`, `CLAUDE.md`, `docs/BUILD_CHECKLIST.md`, `docs/HANDOFF.md`, `docs/ROADMAP.md`, `docs/V2_ISSUE_MAP.md`, `docs/V2_RELEASE_RUBRIC.md`, `docs/heartbeat.md`, `docs/SESSION_LOG.md`, `logs/2026-04-28-session.md`, `src/war_room/models.py`, `src/war_room/evidence_board.py`, `src/war_room/__init__.py`, `tests/test_evidence_board.py`
 - Blockers: No hard blocker is documented in-repo; main risks are uneven fixture coverage, notebook-first operator UX, and the current venv not being editable-installed by default.
 - Do not touch this sprint: repo rename, broad product rewrites, placeholder V2 directories as if they were live runtime, dependency churn without approval.
 - Related repos: None documented in-repo; treat this repo as the working source of truth.
 - Latest session log: `logs/2026-04-28-session.md` plus `docs/SESSION_LOG.md`
-- Next best task: Review and merge the `#6` cache-envelope PR, then continue replacing the remaining loose dict seams only where the next slice has clear runtime payoff.
+- Next best task: Review and merge the `#6` Evidence Board read-model PR, then continue with the next small read-model contract seam only where it has clear workflow/runtime payoff.
 - Owner: Not explicitly named in-repo; maintained for the Merlin Law Group demo effort.
