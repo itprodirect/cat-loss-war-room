@@ -1494,3 +1494,21 @@ Status: Complete
   - this keeps the memory stack clean before the next foundation slice starts.
 - Verification:
   - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate final-docs-closeout` -> passed, `277 passed`; offline preflight passed for 4 committed fixture scenarios.
+
+## Session 84 - Export Readability Guard
+Date: 2026-04-28 local / 2026-04-29 UTC
+Status: Complete
+
+- Added a focused guard for the rendered Milton memo so embarrassing demo-output regressions fail in tests instead of surfacing in a walkthrough.
+- What changed:
+  - `tests/test_export.py` now renders the Milton fixture path through the runtime modules and asserts the memo keeps required demo sections and disclaimers.
+  - The same export test now rejects obvious mojibake prefixes, `CONTINUE TO SITE`, weather navigation text, Casetext boilerplate, generic weather pages, and filler carrier rows.
+  - `tests/test_export.py` also checks contiguous markdown table blocks for stable pipe counts, catching table-cell escaping regressions.
+  - `src/war_room/weather_module.py` now normalizes cached/live weather payloads before memo and workflow consumers see them, dropping stale navigation-heavy observations and generic low-value weather sources from older cache samples.
+  - Active status docs now reflect the 279-test baseline.
+- Why:
+  - the prior runtime was cleaner than the old notebook-era output, but the top-level Milton weather cache still leaked stale navigation text into the rendered memo.
+  - this keeps the default demo memo credible without broad fixture rewrites, new dependencies, or changes to the notebook surface.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_export.py tests/test_weather.py tests/test_offline_demo_pack.py -q` -> `62 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate export-readability-guard` -> passed, `279 passed`; offline preflight passed for 4 committed fixture scenarios; Milton weather sources reduced to 9 after cached weather normalization.
