@@ -7,7 +7,7 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 289 tests are passing on the supported verify path.
+- 291 tests are passing on the supported verify path.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job, and the `exa-py` compatibility matrix.
 - CI now also emits and validates a release-scorecard artifact from the calibrated `#27` workflow.
 - The supported test path is editable install plus `pytest -q`, or `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not supported.
@@ -18,13 +18,14 @@ This is the short version. Clean, practical, no drama.
 - The Evidence Board read model now has a typed `v2alpha1` contract and payload adapter, reducing one more loose dict seam in the workflow layer.
 - The Issue Workspace read model now has the same typed `v2alpha1` contract path for issue cards, authorities, citation outcomes, claims, and review events.
 - The Memo Composer read model now has the same typed `v2alpha1` contract path for section cards, claim support links, review events, and export eligibility.
+- The Export History read model now has the same typed `v2alpha1` contract path for export artifact rows, delivery state, disclaimer state, and audit references.
 - A deeper V2 foundation layer is tracked in issues `#22` through `#27`.
 - Issue [#4](https://github.com/itprodirect/cat-loss-war-room/issues/4) is complete and closed.
 - Issue [#5](https://github.com/itprodirect/cat-loss-war-room/issues/5) is complete and closed.
 - Issue [#22](https://github.com/itprodirect/cat-loss-war-room/issues/22) is complete and closed.
 - Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) are complete and closed as written source-of-truth specs.
 - Issue [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) is still open, but the local and CI release-evidence path now includes explicit demo-ready threshold calibration, run-scoped artifacts, verify manifests, and a stable latest pointer in `docs/V2_RELEASE_RUBRIC.md`.
-- Issue [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) is in progress (slices 1-11 landed locally; schema-versioned runtime cache envelopes and typed Evidence Board / Issue Workspace / Memo Composer read-model contracts are now added).
+- Issue [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) is in progress (slices 1-12 landed locally; schema-versioned runtime cache envelopes and typed Evidence Board / Issue Workspace / Memo Composer / Export History read-model contracts are now added).
 - Placeholder directories under `apps/`, `packages/`, and `workers/` are planned V2 boundaries only. The active runtime remains the notebook plus `src/war_room/`.
 
 ## Delivery layers

@@ -1589,3 +1589,22 @@ Status: Complete
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_memo_composer.py tests/test_preflight.py -q` -> `10 passed`
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_issue_workspace.py tests/test_export_history.py -q` -> `25 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-memo-composer-contract` -> passed, `289 passed`; offline preflight passed for 4 committed fixture scenarios.
+
+## Session 89 - Issue 6 Export History Read Model Contract
+Date: 2026-04-29
+Status: Complete
+
+- Continued `#6` by replacing the Export History's local dataclass read model with a typed `v2alpha1` Pydantic contract.
+- What changed:
+  - `src/war_room/models.py` now defines `ExportHistoryEntry` and `ExportHistoryReadModel`.
+  - `adapt_export_history()` and `export_history_to_payload()` now validate and serialize the export-history contract.
+  - `src/war_room/export_history.py` now builds the typed model and validates dict-shaped payloads before rendering.
+  - `tests/test_export_history.py` now covers schema-versioned payload round-trip and rejection of unexpected nested fields.
+  - Active status docs now reflect the 291-test baseline and `#6` slice 12.
+- Why:
+  - the V2 evidence schema requires a stable Export History read model for artifact list, delivery state, disclaimer state, review-required state, and audit-bundle pointers.
+  - this keeps the notebook renderer behavior stable while closing the last obvious workflow-layer local dataclass seam.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_export_history.py tests/test_preflight.py -q` -> `10 passed`
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_issue_workspace.py tests/test_memo_composer.py -q` -> `27 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-export-history-contract` -> passed, `291 passed`; offline preflight passed for 4 committed fixture scenarios.

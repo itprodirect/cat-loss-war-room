@@ -2,12 +2,22 @@
 
 from __future__ import annotations
 
+import pytest
+from pydantic import ValidationError
+
 from war_room.export_history import (
     build_export_history,
     build_export_history_from_parts,
     format_export_history,
 )
-from war_room.models import CaseIntake, QuerySpec, run_audit_snapshot_from_parts
+from war_room.models import (
+    CaseIntake,
+    ExportHistoryReadModel,
+    QuerySpec,
+    adapt_export_history,
+    export_history_to_payload,
+    run_audit_snapshot_from_parts,
+)
 
 
 def _sample_parts():
@@ -144,6 +154,38 @@ def test_build_export_history_from_parts_honors_written_uri_override():
 
     assert history.entries[0].delivery_state == "written"
     assert history.entries[0].artifact_uri == "output/demo.md"
+
+
+def test_export_history_payload_round_trips_with_schema_version():
+    history = build_export_history_from_parts(
+        *_sample_parts(),
+        run_status="completed",
+        export_written=True,
+        artifact_uri="output/demo.md",
+    )
+
+    payload = export_history_to_payload(history)
+    restored = adapt_export_history(payload)
+    rendered = format_export_history(payload)
+
+    assert isinstance(history, ExportHistoryReadModel)
+    assert payload["schema_version"] == "v2alpha1"
+    assert restored.entries[0].artifact_id == history.entries[0].artifact_id
+    assert "EXPORT HISTORY" in rendered
+
+
+def test_export_history_contract_rejects_unexpected_nested_fields():
+    history = build_export_history_from_parts(
+        *_sample_parts(),
+        run_status="completed",
+        export_written=True,
+        artifact_uri="output/demo.md",
+    )
+    payload = export_history_to_payload(history)
+    payload["entries"][0]["unexpected"] = "loose dict drift"
+
+    with pytest.raises(ValidationError):
+        adapt_export_history(payload)
 
 
 def test_format_export_history_surfaces_artifact_and_audit_pointer():

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -11,37 +10,15 @@ from war_room.models import (
     CaseLawPack,
     CarrierDocPack,
     CitationVerifyPack,
+    ExportHistoryEntry,
+    ExportHistoryReadModel,
     QuerySpec,
     RunAuditSnapshot,
     WeatherBrief,
+    adapt_export_history,
     adapt_run_audit_snapshot,
     run_audit_snapshot_from_parts,
 )
-
-
-@dataclass(frozen=True)
-class ExportHistoryEntry:
-    """Single export-history row for the current run."""
-
-    artifact_id: str
-    artifact_type: str
-    title: str
-    artifact_uri: str
-    created_at: str
-    disclaimer_present: bool
-    review_required: bool
-    run_status: str
-    delivery_state: str
-    audit_snapshot_ref: str
-
-
-@dataclass(frozen=True)
-class ExportHistoryReadModel:
-    """Export-history read model for notebook-era flows."""
-
-    run_id: str
-    entries: list[ExportHistoryEntry] = field(default_factory=list)
-    review_required_export_count: int = 0
 
 
 def build_export_history(
@@ -104,9 +81,10 @@ def build_export_history_from_parts(
     )
 
 
-def format_export_history(history: ExportHistoryReadModel) -> str:
+def format_export_history(history: Mapping[str, Any] | ExportHistoryReadModel) -> str:
     """Render the export-history read model as a notebook-friendly text block."""
 
+    history = adapt_export_history(history)
     lines = [
         "=" * 60,
         "EXPORT HISTORY",
