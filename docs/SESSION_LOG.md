@@ -1628,3 +1628,23 @@ Status: Complete
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_workflow_summary.py tests/test_preflight.py -q` -> `11 passed`
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_issue_workspace.py tests/test_memo_composer.py tests/test_export_history.py -q` -> `32 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate issue-6-final-contract-docs` -> passed, `293 passed`; offline preflight passed for 4 committed fixture scenarios.
+
+## Session 91 - Evidence Board HTML UI Slice
+Date: 2026-04-30
+Status: Complete
+
+- Started the notebook UI/UX polish lane with the Evidence Board, because it is the most attorney-facing review surface before memo prose.
+- What changed:
+  - `src/war_room/evidence_board.py` now exposes `render_evidence_board_html()` over the existing typed `EvidenceBoardReadModel`.
+  - The HTML view renders cluster-first cards with review-required status, source balance, source-tier chips, linked claims, review events, provenance counts, and evidence previews.
+  - HTML output escapes model content and suppresses non-http source links before rendering anchors.
+  - `notebooks/01_case_war_room.ipynb` now displays the styled Evidence Board in Cell 6 while preserving the existing text formatter as a fallback.
+  - `src/war_room/__init__.py` exports the new renderer.
+  - `tests/test_evidence_board.py` now covers HTML review cues and escaping behavior.
+- Why:
+  - the workflow contracts were already solid, but the notebook demo still made the primary evidence-review surface feel like console output.
+  - this gives the current V0 notebook a materially better review UI without treating `apps/` as an active runtime or adding dependencies.
+- Verification:
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_evidence_board.py -q` -> `7 passed`
+  - `$env:PYTHONPATH='src'; python -m pytest tests/test_scenarios.py::test_notebook_uses_helper_driven_scenario_prep_and_has_no_stale_hardcoded_intake -q` -> `1 passed`
+  - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate evidence-board-html-ui` -> passed, `294 passed`; offline preflight passed for 4 committed fixture scenarios.

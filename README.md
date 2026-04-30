@@ -114,7 +114,7 @@ Only the Milton benchmark currently has committed offline cache fixtures, so cac
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline summary on top of the canonical contracts, `293` tests are passing under the supported bootstrap path, the supported `--verify` flow now writes a linked run-scoped release-evidence bundle, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, styled evidence-board review view, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline summary on top of the canonical contracts, `294` tests are passing under the supported bootstrap path, the supported `--verify` flow now writes a linked run-scoped release-evidence bundle, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
 - Offline fixture smoke validation across committed scenarios

@@ -9,6 +9,7 @@ from war_room.evidence_board import (
     build_evidence_board,
     build_evidence_board_from_parts,
     format_evidence_board,
+    render_evidence_board_html,
 )
 from war_room.models import (
     CaseIntake,
@@ -201,6 +202,24 @@ def test_format_evidence_board_surfaces_review_required_clusters():
     assert "[review_required]" in rendered
     assert "Claims:" in rendered
     assert "Review events:" in rendered
+
+
+def test_render_evidence_board_html_surfaces_review_cues_and_escapes_content():
+    board = build_evidence_board_from_parts(*_sample_parts())
+    payload = evidence_board_to_payload(board)
+    payload["cluster_cards"][0]["label"] = "<script>alert(1)</script>"
+    payload["cluster_cards"][0]["evidence_previews"][0]["title"] = "A < B"
+    payload["cluster_cards"][0]["evidence_previews"][0]["url"] = "javascript:alert(1)"
+
+    rendered = render_evidence_board_html(payload)
+
+    assert 'class="wr-evidence-board"' in rendered
+    assert "Cluster-first evidence review" in rendered
+    assert "Review required" in rendered
+    assert "Source Balance" in rendered
+    assert "&lt;script&gt;alert(1)&lt;/script&gt;" in rendered
+    assert "A &lt; B" in rendered
+    assert "javascript:alert" not in rendered
 
 
 def test_build_evidence_board_keeps_verified_citation_cluster_ready_when_only_peer_citations_are_uncertain():

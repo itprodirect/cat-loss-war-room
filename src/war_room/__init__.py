@@ -9,6 +9,7 @@ from war_room.evidence_board import (
     build_evidence_board,
     build_evidence_board_from_parts,
     format_evidence_board,
+    render_evidence_board_html,
 )
 from war_room.export_history import (
     ExportHistoryEntry,
@@ -290,6 +291,7 @@ __all__ = [
     "format_research_plan_preview",
     "format_run_timeline",
     "format_evidence_board",
+    "render_evidence_board_html",
     "format_export_history",
     "format_issue_workspace",
     "format_memo_composer",

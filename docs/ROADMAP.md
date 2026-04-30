@@ -7,7 +7,7 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 293 tests are passing on the supported verify path.
+- 294 tests are passing on the supported verify path.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job, and the `exa-py` compatibility matrix.
 - CI now also emits and validates a release-scorecard artifact from the calibrated `#27` workflow.
 - The supported test path is editable install plus `pytest -q`, or `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not supported.
@@ -16,6 +16,7 @@ This is the short version. Clean, practical, no drama.
 - The Milton rendered memo now has a focused readability guard for mojibake, scraped navigation text, generic weather pages, Casetext boilerplate, and markdown table alignment.
 - Runtime cache writes now carry a `v2alpha1` schema-versioned envelope while legacy raw fixture caches remain readable.
 - The Evidence Board read model now has a typed `v2alpha1` contract and payload adapter, reducing one more loose dict seam in the workflow layer.
+- The notebook Evidence Board now renders a styled HTML review view over that typed contract without adding dependencies or treating `apps/` as runtime.
 - The Issue Workspace read model now has the same typed `v2alpha1` contract path for issue cards, authorities, citation outcomes, claims, and review events.
 - The Memo Composer read model now has the same typed `v2alpha1` contract path for section cards, claim support links, review events, and export eligibility.
 - The Export History read model now has the same typed `v2alpha1` contract path for export artifact rows, delivery state, disclaimer state, and audit references.

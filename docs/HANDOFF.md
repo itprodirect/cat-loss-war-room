@@ -15,13 +15,13 @@ Given a case intake, it assembles:
 
 This is research acceleration, not legal advice.
 
-## 2) Current status (as of April 28, 2026)
+## 2) Current status (as of April 30, 2026)
 
 | Item | Status |
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 293 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 294 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke gate + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -64,6 +64,7 @@ This is research acceleration, not legal advice.
 - The Memo Composer read model now also lives behind a typed `v2alpha1` Pydantic contract with a payload adapter, so section readiness, claim support links, review events, and export eligibility validate before rendering.
 - The Export History read model now also lives behind a typed `v2alpha1` Pydantic contract with a payload adapter, so artifact delivery state, disclaimer state, review-required state, and audit references validate before rendering.
 - The Run Timeline read model now has a typed `v2alpha1` envelope over canonical `Run` and `RunStage` records, with payload validation for cross-run stage drift before rendering.
+- The notebook Evidence Board now has a styled HTML review surface over the existing typed read model, while the plain text formatter remains available as a fallback.
 
 ## 4) Quick run
 ```bash
