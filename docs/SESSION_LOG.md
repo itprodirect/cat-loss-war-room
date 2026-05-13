@@ -1774,8 +1774,9 @@ Status: Complete
   - Added `src/war_room/dependency_hygiene.py`, a stdlib-only checker for exact `requirements.txt` pins, disallowed editable/local/direct-URL requirements, duplicate/conflicting entries, `requirements.txt` / `pyproject.toml` drift, unsupported dependency files, and documented dependency policy drift.
   - Added `dependency-hygiene-check` to `src/war_room/quality_gates.py` so local and CI runs emit the same JSON, Markdown, and log artifact shape as the other `#9` lanes.
   - Added a dedicated CI `Dependency Hygiene` job that runs `python -m war_room.quality_gates run --gate dependency-hygiene-check -- python -m war_room.dependency_hygiene --check`, summarizes results, and uploads gate artifacts.
-  - Added focused temp-repo tests for clean dependency files plus unpinned requirements, unsupported sources, duplicate/conflicting entries, pyproject drift, unsupported dependency files, and documentation drift.
-  - Synced status docs to the 322-test baseline and documented that `#9` is ready for closeout review after this slice lands.
+  - Addressed PR review by moving that CI gate before dependency installation and running it with `PYTHONPATH=src`, so the dependency scanner checks manifests before installing from them.
+  - Added focused temp-repo tests for clean dependency files plus unpinned requirements, unsupported sources, duplicate/conflicting entries, pyproject drift, unsupported dependency files, documentation drift, nested `pyproject.toml`, and nested `requirements.txt`.
+  - Synced status docs to the 324-test baseline and documented that `#9` is ready for closeout review after this slice lands.
 - Why:
   - issue `#9` asks for dependency, secret, and security scanning where it materially protects the repo and for CI reports that categorize failure sources.
   - this slice protects the dependency manifest boundary without live vulnerability scanning, dependency changes, notebook edits, production security controls, or live network calls.
@@ -1783,13 +1784,8 @@ Status: Complete
   - no new formal decision-log entry was added; this follows the existing `#9` quality-gate direction.
   - live vulnerability scanning was intentionally not added because it would require network access and belongs outside this offline/no-new-dependency slice.
 - Verification:
-  - `python -m pytest tests/test_dependency_hygiene.py tests/test_quality_gates.py -q` -> `13 passed in 1.04s`.
+  - `python -m pytest tests/test_dependency_hygiene.py tests/test_quality_gates.py -q` -> `15 passed in 1.43s`.
+  - `python -m pytest -q` -> `324 passed in 11.55s`.
+  - `PYTHONPATH=src python -m war_room.quality_gates run --gate dependency-hygiene-check --output-dir runs/quality_gates/local -- python -m war_room.dependency_hygiene --check` -> passed; wrote `runs/quality_gates/local/dependency-hygiene-check.json`.
   - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
-  - `python -m pytest tests/test_quality_gates.py tests/test_security_hygiene.py tests/test_offline_e2e.py -q` -> `16 passed in 7.28s`.
-  - `python -m pytest -q` -> `322 passed in 9.35s`.
-  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
-  - `python -m war_room.security_hygiene --check` -> passed; `6/6` checks passed.
-  - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed.
-  - `python -m war_room.quality_gates run --gate dependency-hygiene-check --output-dir runs/quality_gates/local -- python -m war_room.dependency_hygiene --check` -> passed; wrote `runs/quality_gates/local/dependency-hygiene-check.json`.
-  - `python -m war_room.quality_gates summarize --output-dir runs/quality_gates/local --summary-path runs/quality_gates/local/summary.md --fail-on-failed` -> passed; `5/5` quality gates passed.
-  - `python -m war_room --verify --release-candidate issue-9-dependency-hygiene-gate` -> passed; embedded `pytest -q` reported `322 passed in 10.13s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-dependency-hygiene-gate_20260513t060742z.json`.
+  - `python -m war_room --verify --release-candidate issue-9-dependency-hygiene-gate` -> passed; embedded `pytest -q` reported `324 passed in 7.89s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-dependency-hygiene-gate_20260513t061847z.json`.

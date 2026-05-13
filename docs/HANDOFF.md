@@ -21,7 +21,7 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 322 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 324 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + offline e2e gate + offline security and dependency hygiene gates + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install and categorized quality-gate artifacts |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |

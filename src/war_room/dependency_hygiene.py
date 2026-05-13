@@ -373,13 +373,7 @@ def _check_unsupported_dependency_files(
     findings: list[DependencyHygieneFinding] = []
     for tracked_file in tracked:
         normalized_path = tracked_file.path.lower()
-        name = Path(normalized_path).name
-        is_extra_requirements_file = (
-            name.startswith("requirements")
-            and normalized_path not in SUPPORTED_DEPENDENCY_FILES
-            and Path(name).suffix in {".in", ".txt", ".lock"}
-        )
-        if name not in UNSUPPORTED_DEPENDENCY_FILENAMES and not is_extra_requirements_file:
+        if not _is_unsupported_dependency_manifest(normalized_path):
             continue
         findings.append(
             DependencyHygieneFinding(
@@ -396,6 +390,21 @@ def _check_unsupported_dependency_files(
         findings=findings,
         passed_summary="no unsupported dependency manifests or lockfiles are committed",
     )
+
+
+def _is_unsupported_dependency_manifest(normalized_path: str) -> bool:
+    if normalized_path in SUPPORTED_DEPENDENCY_FILES:
+        return False
+    name = Path(normalized_path).name
+    if name == PYPROJECT_PATH:
+        return True
+    if name == REQUIREMENTS_PATH:
+        return True
+    is_extra_requirements_file = (
+        name.startswith("requirements")
+        and Path(name).suffix in {".in", ".txt", ".lock"}
+    )
+    return name in UNSUPPORTED_DEPENDENCY_FILENAMES or is_extra_requirements_file
 
 
 def _check_documented_dependency_policy(repo_root: Path) -> DependencyHygieneCheck:

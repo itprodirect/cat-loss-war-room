@@ -107,6 +107,30 @@ def test_dependency_hygiene_flags_unsupported_dependency_file_and_doc_drift(tmp_
     assert any(finding.path == "README.md" for finding in doc_findings)
 
 
+def test_dependency_hygiene_flags_nested_pyproject_manifest(tmp_path: Path):
+    tracked_files = _write_compliant_repo(tmp_path)
+    _write(tmp_path / "packages" / "demo" / "pyproject.toml", _pyproject_dependencies(["pytest==8.3.4"]))
+    tracked_files.append("packages/demo/pyproject.toml")
+
+    report = run_dependency_hygiene(tmp_path, tracked_files=tracked_files)
+
+    assert not report.passed
+    findings = _check(report, "unsupported-dependency-files").findings
+    assert [finding.path for finding in findings] == ["packages/demo/pyproject.toml"]
+
+
+def test_dependency_hygiene_flags_nested_requirements_manifest(tmp_path: Path):
+    tracked_files = _write_compliant_repo(tmp_path)
+    _write(tmp_path / "apps" / "demo" / "requirements.txt", "pytest==8.3.4\n")
+    tracked_files.append("apps/demo/requirements.txt")
+
+    report = run_dependency_hygiene(tmp_path, tracked_files=tracked_files)
+
+    assert not report.passed
+    findings = _check(report, "unsupported-dependency-files").findings
+    assert [finding.path for finding in findings] == ["apps/demo/requirements.txt"]
+
+
 def _write_compliant_repo(root: Path) -> list[str]:
     _write(root / "requirements.txt", "\n".join(DEPENDENCIES) + "\n")
     _write(root / "pyproject.toml", _pyproject_dependencies(DEPENDENCIES))

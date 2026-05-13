@@ -7,7 +7,7 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 322 tests are passing on the supported verify path.
+- 324 tests are passing on the supported verify path.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job with golden snapshot validation, an offline e2e demo gate, offline security and dependency hygiene gates, and the `exa-py` compatibility matrix.
 - CI now also emits categorized quality-gate artifacts for unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene failures.
 - CI emits and validates a release-scorecard artifact from the calibrated `#27` workflow.

@@ -128,7 +128,7 @@ Only the Milton benchmark in the curated notebook scenario registry currently ma
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, styled evidence-board review view, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline summary on top of the canonical contracts, `322` tests are passing under the supported bootstrap path, the supported `--verify` flow now writes a linked run-scoped release-evidence bundle, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, styled evidence-board review view, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline summary on top of the canonical contracts, `324` tests are passing under the supported bootstrap path, the supported `--verify` flow now writes a linked run-scoped release-evidence bundle, and CI now enforces:
 - Fresh environment install + full test run with categorized unit-test gate artifacts
 - Editable package bootstrap validation
 - Offline fixture smoke validation plus the committed golden fixture snapshot check across committed scenarios, with separate offline-fixture and golden-snapshot gate artifacts
