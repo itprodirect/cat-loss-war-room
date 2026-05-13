@@ -15,7 +15,7 @@ This repo is the current execution surface for attorney-demo research accelerati
 
 ## Current milestone
 
-Preserve the stable V0 notebook demo while finishing the active foundation tranche: broader `#27` CI/pilot operationalization plus the remaining work in `#7`, `#8`, and `#9` after the final `#6` contract closeout is reviewed.
+Preserve the stable V0 notebook demo while finishing the active foundation tranche: broader `#27` CI/pilot operationalization plus the remaining work in `#7`, `#8`, and `#9` after the final `#6` closeout-audit PR lands.
 
 ## Non-goals
 
@@ -61,7 +61,7 @@ Preserve the stable V0 notebook demo while finishing the active foundation tranc
 ## Next 3 tasks
 
 1. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
-2. Review and close the final `#6` contract pass, then finish the remaining `#7` foundation seams so the notebook-era runtime keeps one clear contract path.
+2. Close issue `#6` after the closeout-audit PR lands, then finish the remaining `#7` foundation seams so the notebook-era runtime keeps one clear contract path.
 3. Expand `#8` and `#9` with broader fixture coverage and CI quality gates that match the supported offline-demo lane.
 
 ## Ownership

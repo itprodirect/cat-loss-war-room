@@ -82,9 +82,9 @@ Prioritize in this order:
 - `fix/` - bug fixes
 
 ## Current phase
-v0-demo shipped, issues #22, #23, and #24 are complete and closed, and active V2 execution work is now concentrated in broader #27 CI/pilot operationalization plus the remaining #6 to #9 foundation slices. Cells 0-7 remain stable and CI runs package-installed tests.
+v0-demo shipped, issues #22, #23, #24, and #6 are complete or ready to close, and active V2 execution work is now concentrated in broader #27 CI/pilot operationalization plus the remaining #7 to #9 foundation slices. Cells 0-7 remain stable and CI runs package-installed tests.
 
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
 Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
-Next priority: review the final #6 contract closeout PR, then move to the next small #9 or #8 foundation slice before downstream implementation in #10 onward.
+Next priority: close issue #6 after the closeout-audit PR lands, then move to the next small #9 or #8 foundation slice before downstream implementation in #10 onward.
