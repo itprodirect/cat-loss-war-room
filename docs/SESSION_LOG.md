@@ -1840,3 +1840,23 @@ Status: Complete
   - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed and artifacts were written under `runs/offline_e2e/`.
   - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
   - `python -m war_room --verify --release-candidate issue-7-retrieval-contract-hardening` -> passed; embedded `pytest -q` reported `331 passed in 8.75s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-7-retrieval-contract-hardening_20260513t070332z.json`.
+
+## Session 100 - Issue 7 Closure Sanity Audit
+Date: 2026-05-13
+Status: Complete
+
+- Completed a short post-merge closure sanity audit for issue `#7` after PR `#56`.
+- Audit conclusion:
+  - issue `#7` is closed on GitHub with state reason `completed`, but closure is not accurate yet.
+  - PR `#56` landed the fifth retrieval-contract slice, but a post-merge P2 review note and local probe show that provider responses of `None` still flow through the empty-results path instead of the malformed-response path.
+- What changed:
+  - Added `docs/ISSUE_7_CLOSURE_SANITY_AUDIT.md` with the closure decision, evidence reviewed, remaining gap, and recommended disposition.
+  - Synced README, handoff, roadmap, issue-map, repo-brief, heartbeat, and CLAUDE status language so `#7` is described as needing a narrow reopen/follow-up rather than an unqualified close.
+- Recommendation:
+  - Reopen `#7`, or create a narrow follow-up issue titled `Reject None retrieval provider responses as malformed contract failures`.
+- Decisions not added:
+  - No runtime code, dependency, notebook, fixture, issue `#8`, issue `#10`, issue `#12`, or issue `#14` work was started.
+- Validation:
+  - `python -m pytest tests/test_retrieval_contracts.py tests/test_exa_client.py tests/test_exa_adapter_contract.py tests/test_citation_verify.py -q` -> `40 passed in 8.99s`.
+  - `python -m pytest -q` -> `331 passed in 22.97s`.
+  - `python -m war_room --verify --release-candidate issue-7-closure-sanity-audit` -> passed; embedded `pytest -q` reported `331 passed in 13.33s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-7-closure-sanity-audit_20260513t194018z.json`.
