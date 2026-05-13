@@ -21,8 +21,8 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 298 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
-| CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install |
+| Tests | 306 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install and categorized quality-gate artifacts |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
 | Typed domain contracts (#6) | Complete with closeout audit (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Run Timeline, Evidence Board, Issue Workspace, Memo Composer, and Export History read-model contracts; see `docs/ISSUE_6_CLOSEOUT_AUDIT.md`) |
@@ -54,6 +54,7 @@ This is research acceleration, not legal advice.
 - The offline fixture lane now spans four committed public/redacted scenario directories across Florida, Texas, and Louisiana.
 - CI now includes an explicit offline fixture smoke job, and the local release scorecard records fixture coverage from the committed scenario set.
 - The offline fixture lane now also has a deterministic golden snapshot command, `python -m war_room.fixture_snapshots --check`, backed by `tests/golden/offline_fixture_snapshots.json` and quality assertions for source mix, case counts, citation summaries, memo structure, workflow/export posture, and scenario coverage metadata.
+- CI gates now emit categorized quality-gate JSON, Markdown, and log artifacts via `python -m war_room.quality_gates`, separating unit, offline fixture, golden snapshot, Exa compatibility, and release-scorecard failures.
 - The repository now has a deterministic offline demo preflight command at `python -m war_room --preflight`.
 - The repository now also has a one-command local verification wrapper at `python -m war_room --verify`.
 - The supported verify flow now emits a linked release-evidence bundle: run-scoped preflight artifacts, run-scoped scorecards, verify manifests, a stable `runs/verify/latest.json` pointer, and an integrity test that reloads the linked artifact set.
@@ -102,7 +103,7 @@ Core implementation lives in `src/war_room/`.
 - #27 broader CI and pilot operationalization of the release scorecard
 - #7 retrieval provider abstraction and contracts (provider seam, notebook retrieval-state, and citation-verify slices landed)
 - #8 multi-jurisdiction fixtures and snapshots (first golden snapshot gate landed; broader breadth still open)
-- #9 expanded CI quality gates
+- #9 expanded CI quality gates (first failure-categorization artifact slice landed; broader e2e/security gates still open)
 
 ### Next
 - #10 API orchestrator

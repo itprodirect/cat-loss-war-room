@@ -7,9 +7,10 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 298 tests are passing on the supported verify path.
+- 306 tests are passing on the supported verify path.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job with golden snapshot validation, and the `exa-py` compatibility matrix.
-- CI now also emits and validates a release-scorecard artifact from the calibrated `#27` workflow.
+- CI now also emits categorized quality-gate artifacts for unit, offline fixture, golden snapshot, Exa compatibility, and release-scorecard failures.
+- CI emits and validates a release-scorecard artifact from the calibrated `#27` workflow.
 - The supported test path is editable install plus `pytest -q`, or `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not supported.
 - The offline demo path now has a deterministic preflight command: `python -m war_room --preflight`.
 - The notebook and preflight surfaces now expose a first workflow layer with research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline review state.
@@ -80,7 +81,7 @@ Goal: finish the remaining definition/foundation work so V2 implementation start
 - [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) Broaden CI and pilot operationalization of the calibrated release scorecard
 - [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) Retrieval provider abstraction + contract tests (provider seam + notebook retrieval-state + citation-verify + deterministic timing slices landed)
 - [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (first golden snapshot gate landed; broader breadth still open)
-- [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) Expand CI quality gates
+- [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) Expand CI quality gates (first failure-categorization artifact slice landed; broader e2e/security gates still open)
 
 ## Next (30-60 days)
 

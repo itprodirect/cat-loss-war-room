@@ -32,14 +32,34 @@ jobs:
           pip install -r requirements.txt
           pip install -e . --no-deps --no-build-isolation
 
-      - name: Run Tests
+      - name: Unit Test Gate - pytest
         id: run_tests
         shell: bash
+        continue-on-error: true
         run: |
           set -euo pipefail
-          pytest -q | tee pytest.log
-          verification_summary="$(tail -n 1 pytest.log)"
-          echo "verification_summary=$verification_summary" >> "$GITHUB_OUTPUT"
+          python -m war_room.quality_gates run \
+            --gate unit-tests \
+            --output-dir runs/quality_gates \
+            --github-output-key verification_summary \
+            -- python -m pytest -q
+
+      - name: Summarize Unit Test Gate
+        if: always()
+        shell: bash
+        run: |
+          python -m war_room.quality_gates summarize \
+            --output-dir runs/quality_gates \
+            --summary-path runs/quality_gates/summary.md \
+            --fail-on-failed
+
+      - name: Upload Unit Test Gate Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gates-unit-${{ github.run_id }}
+          path: runs/quality_gates/
+          if-no-files-found: error
 
   fixture-smoke:
     name: Offline Fixture Smoke
@@ -60,10 +80,49 @@ jobs:
           pip install -r requirements.txt
           pip install -e . --no-deps --no-build-isolation
 
-      - name: Run Offline Fixture Validation
+      - name: Offline Fixture Gate - committed fixture tests
+        shell: bash
+        continue-on-error: true
         run: |
-          pytest -q tests/test_offline_demo_pack.py tests/test_intake_validation.py tests/test_fixture_snapshots.py
-          python -m war_room.fixture_snapshots --check
+          python -m war_room.quality_gates run \
+            --gate offline-fixture-tests \
+            --output-dir runs/quality_gates \
+            -- python -m pytest -q tests/test_offline_demo_pack.py tests/test_intake_validation.py
+
+      - name: Golden Snapshot Gate - snapshot tests
+        shell: bash
+        continue-on-error: true
+        run: |
+          python -m war_room.quality_gates run \
+            --gate golden-snapshot-tests \
+            --output-dir runs/quality_gates \
+            -- python -m pytest -q tests/test_fixture_snapshots.py
+
+      - name: Golden Snapshot Gate - committed snapshot diff
+        shell: bash
+        continue-on-error: true
+        run: |
+          python -m war_room.quality_gates run \
+            --gate golden-snapshot-check \
+            --output-dir runs/quality_gates \
+            -- python -m war_room.fixture_snapshots --check
+
+      - name: Summarize Fixture Quality Gates
+        if: always()
+        shell: bash
+        run: |
+          python -m war_room.quality_gates summarize \
+            --output-dir runs/quality_gates \
+            --summary-path runs/quality_gates/summary.md \
+            --fail-on-failed
+
+      - name: Upload Fixture Quality Gate Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gates-fixtures-${{ github.run_id }}
+          path: runs/quality_gates/
+          if-no-files-found: error
 
   release-scorecard:
     name: Release Scorecard Artifact
@@ -87,48 +146,54 @@ jobs:
           pip install -r requirements.txt
           pip install -e . --no-deps --no-build-isolation
 
-      - name: Generate Release Scorecard Artifact
+      - name: Release Scorecard Gate - generate artifact
         shell: bash
+        continue-on-error: true
         env:
           VERIFICATION_SUMMARY: ${{ needs.test.outputs.verification_summary }}
           CANDIDATE: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          python -m war_room.release_scorecard \
-            --candidate "$CANDIDATE" \
-            --verification-summary "$VERIFICATION_SUMMARY"
+          python -m war_room.quality_gates run \
+            --gate release-scorecard-generate \
+            --output-dir runs/quality_gates \
+            -- python -m war_room.release_scorecard \
+              --candidate "$CANDIDATE" \
+              --verification-summary "$VERIFICATION_SUMMARY"
 
-      - name: Validate Release Scorecard Artifact
+      - name: Release Scorecard Gate - validate artifact
         shell: bash
+        continue-on-error: true
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import json
-          from pathlib import Path
+          python -m war_room.quality_gates run \
+            --gate release-scorecard-validate \
+            --output-dir runs/quality_gates \
+            -- python -m war_room.release_scorecard \
+              --validate-latest \
+              --output-dir runs/release_scorecards
 
-          artifact_paths = sorted(Path("runs/release_scorecards").glob("*.json"))
-          if not artifact_paths:
-              raise SystemExit("No release-scorecard JSON artifact found.")
-
-          payload = json.loads(artifact_paths[-1].read_text(encoding="utf-8"))
-          thresholds = payload.get("calibration_thresholds") or []
-          if not thresholds:
-              raise SystemExit("Release scorecard artifact is missing calibration thresholds.")
-          if not all(item.get("passed") for item in thresholds):
-              raise SystemExit("Release scorecard calibration thresholds did not all pass.")
-
-          gates = {gate.get("name"): gate.get("passed") for gate in payload.get("must_pass_gates", [])}
-          required_gate = "Committed fixture coverage meets demo-ready threshold"
-          if not gates.get(required_gate, False):
-              raise SystemExit(f"Release scorecard gate failed: {required_gate}")
-
-          if payload.get("decision") != "Ship":
-              raise SystemExit(f"Unexpected release decision: {payload.get('decision')!r}")
-          PY
+      - name: Summarize Release Scorecard Gates
+        if: always()
+        shell: bash
+        run: |
+          python -m war_room.quality_gates summarize \
+            --output-dir runs/quality_gates \
+            --summary-path runs/quality_gates/summary.md \
+            --fail-on-failed
 
       - name: Upload Release Scorecard Artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: release-scorecard-${{ github.run_id }}
           path: runs/release_scorecards/
+          if-no-files-found: error
+
+      - name: Upload Release Scorecard Gate Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gates-release-scorecard-${{ github.run_id }}
+          path: runs/quality_gates/
           if-no-files-found: error
