@@ -1909,3 +1909,28 @@ Status: Complete
   - `python -m war_room --verify --release-candidate issue-8-fixture-breadth` -> passed; embedded `pytest -q` reported `334 passed in 12.66s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-8-fixture-breadth_20260513t200758z.json`.
 - Remaining issue status:
   - issue `#8` should remain open because the committed fixture directory count is still four and broader multi-jurisdiction fixture breadth/seeding work remains.
+
+## Session 103 - Issue 8 Fixture Seeding Process
+Date: 2026-05-13
+Status: Complete
+
+- Completed the next focused `#8` process slice by documenting how future curated offline scenarios should be seeded and promoted.
+- What changed:
+  - Added `docs/FIXTURE_SEEDING.md` with definitions for curated registry scenarios, committed fixture lanes, offline-demo-ready scenarios, and live-eval/intake-only scenarios.
+  - Documented required evidence before `offline_demo_ready` promotion, including reviewed public/redacted facts, complete four-module fixture bundles, source/citation quality, disclaimer posture, snapshot review, and validation commands.
+  - Added a lightweight scenario validation guard requiring `offline_demo_ready` scenarios to define `fixture_case_key`.
+  - Added scenario tests proving offline-ready registry scenarios have complete committed fixture bundles and that unsafe promotion without a fixture key fails.
+  - Synced status docs to the 336-test baseline and linked the fixture-seeding process from current `#8` status.
+- Why:
+  - issue `#8` still needs broader fixture breadth, but future additions need a repeatable, reviewable path that prevents intake-only or live-only scenarios from being treated as cache-only demos.
+- Decisions not added:
+  - no invented fixture payloads, live Exa calls, dependencies, notebooks, golden snapshot changes, or issue `#10` orchestration work were added.
+  - no new formal decision-log entry was added; this is a process and guardrail slice under the existing `#8` fixture/snapshot direction.
+- Validation:
+  - `python -m pytest tests/test_fixture_snapshots.py tests/test_offline_demo_pack.py tests/test_intake_validation.py tests/test_scenarios.py -q` -> `64 passed in 6.15s`.
+  - `python -m pytest -q` -> `336 passed in 16.48s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-13_offline-e2e_20260513t203143z.json`.
+  - `python -m war_room --verify --release-candidate issue-8-fixture-seeding-process` -> passed; embedded `pytest -q` reported `336 passed in 17.61s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-8-fixture-seeding-process_20260513t203151z.json`.
+- Remaining issue status:
+  - issue `#8` should remain open because this slice defines and guards the process but does not add a new committed fixture lane.

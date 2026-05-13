@@ -280,6 +280,11 @@ def validate_scenario(
     except ValidationError as exc:
         raise ScenarioValidationError(f"Invalid scenario payload{location}: {exc}") from exc
 
+    if scenario.offline_demo_ready and not scenario.fixture_case_key:
+        raise ScenarioValidationError(
+            f"Invalid scenario payload{location}: offline_demo_ready scenarios must define fixture_case_key."
+        )
+
     try:
         validate_case_intake_payload(scenario.intake_payload())
     except IntakeValidationError as exc:

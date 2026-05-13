@@ -56,13 +56,13 @@ Preserve the stable V0 notebook demo while finishing the active foundation tranc
 ## Known risks
 
 - The primary UX is still notebook-first, which is less approachable for non-technical users.
-- Offline readiness is uneven: committed fixtures exist and now have a golden snapshot gate, and two curated registry scenarios are fixture-backed, but the broader scenario registry is not fully fixture-backed.
+- Offline readiness is uneven: committed fixtures exist and now have a golden snapshot gate, two curated registry scenarios are fixture-backed, and a fixture-seeding process exists, but the broader scenario registry is not fully fixture-backed.
 - Case-law precision and citation confidence still need ongoing hardening in edge cases.
 - Status can drift quickly because roadmap, handoff, and session history are dense and frequently updated.
 
 ## Next 3 tasks
 
-1. Continue `#8` with the next safe curated offline fixture scenario, or document the live-retrieval-backed seeding path for scenarios that cannot be promoted from existing committed fixtures.
+1. Continue `#8` by using `docs/FIXTURE_SEEDING.md` to add the next safe curated offline fixture scenario or prepare an intake-only candidate for a reviewed seeding pass.
 2. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
 3. Keep the notebook-era demo stable while preparing the next downstream product slice in `#10` after `#8` and `#27` are sufficiently grounded.
 

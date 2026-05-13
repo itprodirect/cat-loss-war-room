@@ -19,6 +19,7 @@ from war_room.scenarios import (
 
 ROOT = Path(__file__).resolve().parent.parent
 NOTEBOOK_PATH = ROOT / "notebooks" / "01_case_war_room.ipynb"
+REQUIRED_FIXTURE_FILES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
 
 
 def test_list_scenarios_returns_curated_registry_order():
@@ -68,6 +69,32 @@ def test_validate_scenario_rejects_unknown_metadata_fields():
 
     with pytest.raises(ScenarioValidationError, match="Invalid scenario payload"):
         validate_scenario(payload)
+
+
+def test_validate_scenario_requires_fixture_key_for_offline_ready_status():
+    payload = load_scenario("ian_lee_citizens_ho3", repo_root=ROOT).model_dump()
+    payload["offline_demo_ready"] = True
+    payload["fixture_case_key"] = None
+
+    with pytest.raises(ScenarioValidationError, match="offline_demo_ready scenarios must define fixture_case_key"):
+        validate_scenario(payload)
+
+
+def test_offline_ready_scenarios_have_committed_fixture_bundles():
+    scenarios = list_scenarios(repo_root=ROOT)
+
+    offline_ready = [scenario for scenario in scenarios if scenario.offline_demo_ready]
+
+    assert {
+        "ida_orleans_lloyds_ho3",
+        "milton_pinellas_citizens_ho3",
+    }.issubset({scenario.slug for scenario in offline_ready})
+    for scenario in offline_ready:
+        assert scenario.fixture_case_key
+        fixture_dir = ROOT / "cache_samples" / scenario.fixture_case_key
+        assert fixture_dir.exists()
+        for filename in REQUIRED_FIXTURE_FILES:
+            assert (fixture_dir / filename).exists()
 
 
 def test_load_scenario_for_fixture_case_returns_registry_backed_benchmark():
