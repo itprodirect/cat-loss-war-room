@@ -15,7 +15,7 @@ This repo is the current execution surface for attorney-demo research accelerati
 
 ## Current milestone
 
-Preserve the stable V0 notebook demo while finishing the active foundation tranche: broader `#27` CI/pilot operationalization, the narrow `#7` closure gap documented in `docs/ISSUE_7_CLOSURE_SANITY_AUDIT.md`, and remaining `#8` fixture breadth.
+Preserve the stable V0 notebook demo while finishing the active foundation tranche: broader `#27` CI/pilot operationalization and remaining `#8` fixture breadth.
 
 ## Non-goals
 
@@ -64,7 +64,7 @@ Preserve the stable V0 notebook demo while finishing the active foundation tranc
 
 1. Expand `#8` with the next safe curated offline fixture scenario or document the next live-retrieval-backed seeding path.
 2. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
-3. Reopen `#7` or create a narrow follow-up for the remaining `None` provider-response contract gap.
+3. Review and merge the `#7` `None` provider-response contract follow-up if it is still open.
 
 ## Ownership
 

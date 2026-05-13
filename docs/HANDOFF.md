@@ -21,12 +21,12 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 331 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 334 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + offline e2e gate + offline security and dependency hygiene gates + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install and categorized quality-gate artifacts |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
 | Typed domain contracts (#6) | Complete with closeout audit (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Run Timeline, Evidence Board, Issue Workspace, Memo Composer, and Export History read-model contracts; see `docs/ISSUE_6_CLOSEOUT_AUDIT.md`) |
-| Retrieval contracts (#7) | Five slices landed, but closure is not clean yet: `docs/ISSUE_7_CLOSURE_SANITY_AUDIT.md` found a remaining `None` provider-response contract gap and recommends reopening `#7` or creating a narrow follow-up |
+| Retrieval contracts (#7) | Complete: provider seam, notebook retrieval-state emission, citation-verify tracking, deterministic timing, provider failure-mode normalization, and `None` provider-response malformed-contract handling are landed; the PR #57 audit gap is resolved in `docs/ISSUE_7_CLOSURE_SANITY_AUDIT.md` |
 | Scenario fixtures (#8) | Four committed scenario directories cover Florida, Texas, and Louisiana; the first deterministic golden snapshot gate now checks output structure, source mix, case counts, citation summaries, and coverage metadata; broader fixture breadth remains open |
 | CI quality gates (#9) | Complete with closeout audit in `docs/ISSUE_9_CLOSEOUT_AUDIT.md`: categorized quality-gate artifacts, offline fixture and golden snapshot checks, offline e2e validation, security hygiene, dependency hygiene, Exa compatibility diagnostics, and release-scorecard validation are all wired |
 | Product foundation (`#22`) | Complete and closed: packaging/bootstrap lane implemented |
@@ -105,7 +105,6 @@ Core implementation lives in `src/war_room/`.
 
 ### Now
 - #27 broader CI and pilot operationalization of the release scorecard
-- #7 retrieval provider abstraction and contracts (five slices landed; closure sanity audit found one narrow provider-response gap)
 - #8 multi-jurisdiction fixtures and snapshots (first golden snapshot gate landed; broader breadth still open)
 
 ### Next
