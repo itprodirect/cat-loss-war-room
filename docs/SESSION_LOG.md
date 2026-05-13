@@ -1813,3 +1813,30 @@ Status: Complete
   - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed and artifacts were written under `runs/offline_e2e/`.
   - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
   - `python -m war_room --verify --release-candidate issue-9-closeout-review` -> passed; embedded `pytest -q` reported `324 passed in 8.81s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-closeout-review_20260513t064805z.json`.
+
+## Session 99 - Issue 7 Retrieval Failure-Mode Contracts
+Date: 2026-05-13
+Status: Complete
+
+- Completed the next focused `#7` slice by hardening retrieval provider contract tests and normalized failure behavior.
+- What changed:
+  - `src/war_room/retrieval.py` now normalizes provider search/content rows at the project retrieval seam, rejects non-list provider responses with a project `RetrievalContractError`, and records partial/missing-field result sets as degraded retrieval tasks with review-required warning events instead of letting consumers crash on provider-shaped data.
+  - Retrieval failure messages now include normalized `error_kind`, exception class, retryability, and attempt-count metadata for timeout, malformed response, budget exhaustion, and generic provider errors.
+  - `src/war_room/exa_client.py` now raises `ExaResponseError` when Exa search responses are missing an iterable `results` payload, so adapter response drift is explicit and normalized by the retrieval seam.
+  - `tests/test_retrieval_contracts.py` now covers timeout metadata, malformed provider responses, partial malformed rows, missing fields, empty results, content normalization, and provider mismatch behavior without live calls.
+  - `tests/test_exa_client.py` now covers malformed Exa search responses and confirms they count against the search budget.
+  - Status docs now reflect the 331-test baseline and the fifth landed `#7` slice.
+- Why:
+  - issue `#7` requires retrieval consumers to depend on project interfaces rather than provider SDK types, and specifically calls for deterministic failure-mode tests for timeouts, partial responses, malformed objects, and normalized error handling.
+- Decision not added:
+  - no new dependencies, notebooks, broad orchestration work, or evidence-normalization work were added.
+  - this is a focused `#7` slice rather than a full closeout; a separate closeout review should confirm whether issue `#7` can now be closed.
+- Verification:
+  - `python -m pytest tests/test_retrieval_contracts.py tests/test_exa_client.py tests/test_exa_adapter_contract.py tests/test_citation_verify.py -q` -> `40 passed in 4.50s`.
+  - `python -m pytest tests/test_weather.py tests/test_carrier.py tests/test_caselaw.py tests/test_workflow_summary.py -q` -> `42 passed in 0.35s`.
+  - `python -m pytest -q` -> `331 passed in 8.41s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.security_hygiene --check` -> passed; `6/6` checks passed.
+  - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed and artifacts were written under `runs/offline_e2e/`.
+  - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
+  - `python -m war_room --verify --release-candidate issue-7-retrieval-contract-hardening` -> passed; embedded `pytest -q` reported `331 passed in 8.75s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-7-retrieval-contract-hardening_20260513t070332z.json`.

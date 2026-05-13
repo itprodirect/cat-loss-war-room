@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from war_room.exa_client import BudgetExhausted, ExaClient, _build_contents_options
+from war_room.exa_client import BudgetExhausted, ExaClient, ExaResponseError, _build_contents_options
 
 
 def _mock_result(url="https://example.com", title="Test", text="body"):
@@ -83,6 +83,20 @@ def test_retry_on_failure(MockExa):
     results = client.search("test")
     assert len(results) == 1
     assert instance.search.call_count == 3
+
+
+@patch("war_room.exa_client.Exa")
+def test_search_malformed_response_raises_normalized_error_and_counts_budget(MockExa):
+    instance = MockExa.return_value
+    instance.search.return_value = object()
+
+    client = ExaClient(api_key="test-key")
+
+    with pytest.raises(ExaResponseError, match="missing results"):
+        client.search("test")
+
+    assert client.search_count == 1
+    assert client.budget_remaining == client.max_search_calls - 1
 
 
 @patch("war_room.exa_client.Exa")
