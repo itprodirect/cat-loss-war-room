@@ -4,15 +4,17 @@
     "LA",
     "TX"
   ],
-  "offline_ready_registry_fixture_count": 2,
+  "offline_ready_registry_fixture_count": 3,
   "offline_ready_registry_fixture_slugs": [
     "ida_orleans_lloyds_ho3",
-    "milton_pinellas_citizens_ho3"
+    "milton_pinellas_citizens_ho3",
+    "texas_hail_tarrant_allstate_hob"
   ],
-  "registry_backed_fixture_count": 2,
+  "registry_backed_fixture_count": 3,
   "registry_backed_fixture_slugs": [
     "ida_orleans_lloyds_ho3",
-    "milton_pinellas_citizens_ho3"
+    "milton_pinellas_citizens_ho3",
+    "texas_hail_tarrant_allstate_hob"
   ],
   "scenario_count": 4,
   "scenarios": [
@@ -163,7 +165,7 @@
       "evidence_review_required_cluster_count": 2,
       "export_delivery_state": "not_written",
       "export_eligibility": "review_required_export",
-      "intake_ref": "eval/intakes/tx_hail_allstate_tarrant.json",
+      "intake_ref": "scenario:texas_hail_tarrant_allstate_hob",
       "issue_workspace_issue_count": 5,
       "memo_composer_section_count": 12,
       "memo_sections": [
@@ -185,8 +187,8 @@
         "citation_verify.json"
       ],
       "policy_type": "HO-B Homeowners",
-      "registry_offline_ready": false,
-      "registry_slug": null,
+      "registry_offline_ready": true,
+      "registry_slug": "texas_hail_tarrant_allstate_hob",
       "review_required_issue_count": 4,
       "review_required_memo_section_count": 1,
       "source_badge_counts": {

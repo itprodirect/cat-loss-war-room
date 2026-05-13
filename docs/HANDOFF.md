@@ -27,7 +27,7 @@ This is research acceleration, not legal advice.
 | Intake schema alignment (`#5`) | Complete and closed |
 | Typed domain contracts (#6) | Complete with closeout audit (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Run Timeline, Evidence Board, Issue Workspace, Memo Composer, and Export History read-model contracts; see `docs/ISSUE_6_CLOSEOUT_AUDIT.md`) |
 | Retrieval contracts (#7) | Complete: provider seam, notebook retrieval-state emission, citation-verify tracking, deterministic timing, provider failure-mode normalization, and `None` provider-response malformed-contract handling are landed; the PR #57 audit gap is resolved in `docs/ISSUE_7_CLOSURE_SANITY_AUDIT.md` |
-| Scenario fixtures (#8) | Four committed scenario directories cover Florida, Texas, and Louisiana; Milton and Ida now map from the curated registry to offline-ready committed fixture lanes; the first deterministic golden snapshot gate checks output structure, source mix, case counts, citation summaries, and coverage metadata; `docs/FIXTURE_SEEDING.md` now defines the safe promotion path; broader fixture breadth remains open |
+| Scenario fixtures (#8) | Four committed scenario directories cover Florida, Texas, and Louisiana; Milton, Ida, and Texas hail/Tarrant/Allstate HO-B now map from the curated registry to offline-ready committed fixture lanes; the first deterministic golden snapshot gate checks output structure, source mix, case counts, citation summaries, and coverage metadata; `docs/FIXTURE_SEEDING.md` defines the safe promotion path; broader fixture breadth remains open |
 | CI quality gates (#9) | Complete with closeout audit in `docs/ISSUE_9_CLOSEOUT_AUDIT.md`: categorized quality-gate artifacts, offline fixture and golden snapshot checks, offline e2e validation, security hygiene, dependency hygiene, Exa compatibility diagnostics, and release-scorecard validation are all wired |
 | Product foundation (`#22`) | Complete and closed: packaging/bootstrap lane implemented |
 | Workflow IA spec (`#23`) | Complete and closed as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
@@ -53,7 +53,7 @@ This is research acceleration, not legal advice.
 - V2 planning was expanded with a deeper rebuild blueprint plus new GitHub issues `#22` through `#27` covering product foundation, UX IA, provenance schema, AI guardrails, human review, and release scorecards.
 - A first-pass release rubric now exists in `docs/V2_RELEASE_RUBRIC.md` so release-readiness language is no longer purely roadmap text.
 - The offline fixture lane now spans four committed public/redacted scenario directories across Florida, Texas, and Louisiana.
-- The curated scenario registry now has two offline-ready fixture-backed benchmarks: Milton/Pinellas/Citizens and Ida/Orleans/Lloyd's.
+- The curated scenario registry now has three offline-ready fixture-backed benchmarks: Milton/Pinellas/Citizens, Ida/Orleans/Lloyd's, and Texas hail/Tarrant/Allstate HO-B.
 - The fixture-seeding process now lives in `docs/FIXTURE_SEEDING.md`, and scenario tests block marking registry scenarios offline-ready without a fixture key and complete committed fixture bundle.
 - CI now includes an explicit offline fixture smoke job, and the local release scorecard records fixture coverage from the committed scenario set.
 - The offline fixture lane now also has a deterministic golden snapshot command, `python -m war_room.fixture_snapshots --check`, backed by `tests/golden/offline_fixture_snapshots.json` and quality assertions for source mix, case counts, citation summaries, memo structure, workflow/export posture, and scenario coverage metadata.
@@ -100,14 +100,14 @@ Core implementation lives in `src/war_room/`.
 
 - Notebook UX is useful for demos but not ideal for non-technical users.
 - Case law relevance and authority summarization still need stricter filtering/ranking in edge cases.
-- Four public/redacted fact patterns are pre-seeded in cache samples, with two now registry-backed for cache-only notebook use; broader scenario coverage and thresholds are still needed.
+- Four public/redacted fact patterns are pre-seeded in cache samples, with three now registry-backed for cache-only notebook use; broader scenario coverage and thresholds are still needed.
 - Export output quality is materially cleaner than earlier notebook-era baselines, but it is not yet polished for repeated client-facing use across broader fixture coverage.
 
 ## 7) Roadmap summary
 
 ### Now
 - #27 broader CI and pilot operationalization of the release scorecard
-- #8 multi-jurisdiction fixtures and snapshots (first golden snapshot gate, second registry-backed offline scenario, and fixture-seeding checklist/guard landed; broader breadth still open)
+- #8 multi-jurisdiction fixtures and snapshots (first golden snapshot gate, Texas hail registry promotion, fixture-seeding checklist/guard, and next-candidate audit landed; broader breadth still open)
 
 ### Next
 - #10 API orchestrator

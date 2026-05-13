@@ -1,0 +1,40 @@
+{
+  "schema_version": "scenario.v1",
+  "slug": "texas_hail_tarrant_allstate_hob",
+  "title": "Texas Hailstorm (Tarrant Allstate HO-B benchmark)",
+  "benchmark_focus": "Texas hail benchmark for hail causation, matching, and actual-cash-value versus replacement-cost disputes.",
+  "fixture_case_key": "tx_hail_allstate_tarrant",
+  "offline_demo_ready": true,
+  "event_name": "Texas Hailstorm",
+  "event_date": "2023-05-04",
+  "state": "TX",
+  "county": "Tarrant",
+  "carrier": "Allstate Texas Lloyds",
+  "policy_type": "HO-B Homeowners",
+  "posture": [
+    "denial",
+    "underpayment"
+  ],
+  "key_facts": [
+    "Golf-ball-size hail was reported in Tarrant County on the reported date of loss.",
+    "Roof slope bruising and soft-metal damage were documented shortly after the storm.",
+    "The carrier estimate scoped only spot repairs despite full-slope damage indicators."
+  ],
+  "coverage_issues": [
+    "hail causation",
+    "matching",
+    "actual cash value vs replacement cost"
+  ],
+  "tags": [
+    "texas",
+    "hail",
+    "tarrant",
+    "allstate",
+    "offline-ready",
+    "hob"
+  ],
+  "notes": [
+    "Promotes the existing committed tx_hail_allstate_tarrant fixture lane into the curated scenario registry without adding invented source data.",
+    "Use this scenario as the first Texas hail homeowners benchmark before promoting the narrower DP-3 matching fixture lane."
+  ]
+}
