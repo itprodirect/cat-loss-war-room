@@ -55,14 +55,15 @@ def test_collect_fixture_coverage_ignores_incomplete_scenarios(tmp_path: Path):
 def test_collect_scenario_registry_coverage_reads_curated_registry():
     summary = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
 
-    assert summary.scenario_count == 6
-    assert summary.offline_ready_count == 2
-    assert summary.fixture_ready_count == 2
+    assert summary.scenario_count == 7
+    assert summary.offline_ready_count == 3
+    assert summary.fixture_ready_count == 3
     assert summary.default_scenario_id == "milton_pinellas_citizens_ho3"
-    assert summary.states == ["FL", "LA"]
+    assert summary.states == ["FL", "LA", "TX"]
     assert [scenario.slug for scenario in summary.scenarios] == [
         "milton_pinellas_citizens_ho3",
         "ida_orleans_lloyds_ho3",
+        "texas_hail_tarrant_allstate_hob",
         "ian_lee_citizens_ho3",
         "irma_monroe_citizens_ho3",
         "michael_bay_default_ho3",
@@ -72,8 +73,10 @@ def test_collect_scenario_registry_coverage_reads_curated_registry():
     assert summary.scenarios[0].has_committed_fixture_bundle is True
     assert summary.scenarios[1].offline_demo_ready is True
     assert summary.scenarios[1].has_committed_fixture_bundle is True
-    assert all(not scenario.offline_demo_ready for scenario in summary.scenarios[2:])
-    assert all(not scenario.has_committed_fixture_bundle for scenario in summary.scenarios[2:])
+    assert summary.scenarios[2].offline_demo_ready is True
+    assert summary.scenarios[2].has_committed_fixture_bundle is True
+    assert all(not scenario.offline_demo_ready for scenario in summary.scenarios[3:])
+    assert all(not scenario.has_committed_fixture_bundle for scenario in summary.scenarios[3:])
 
 
 def test_default_verification_command_matches_supported_path():
@@ -117,9 +120,9 @@ def test_build_demo_release_scorecard_uses_fixture_calibration():
     assert scorecard.fixture_coverage is not None
     assert scorecard.fixture_coverage.scenario_count == len(_expected_scenario_keys())
     assert scorecard.scenario_registry is not None
-    assert scorecard.scenario_registry.scenario_count == 6
-    assert scorecard.scenario_registry.offline_ready_count == 2
-    assert scorecard.scenario_registry.fixture_ready_count == 2
+    assert scorecard.scenario_registry.scenario_count == 7
+    assert scorecard.scenario_registry.offline_ready_count == 3
+    assert scorecard.scenario_registry.fixture_ready_count == 3
     assert any("Scenario registry:" in entry for entry in scorecard.evidence_bundle)
 
     markdown = render_release_scorecard_markdown(scorecard)
@@ -133,6 +136,7 @@ def test_build_demo_release_scorecard_uses_fixture_calibration():
     assert "## Threshold Calibration" in markdown
     assert "ida_lloyds_orleans" in markdown
     assert "milton_pinellas_citizens_ho3" in markdown
+    assert "texas_hail_tarrant_allstate_hob" in markdown
 
 
 def test_write_release_scorecard_artifacts_writes_json_and_markdown(tmp_path: Path):
