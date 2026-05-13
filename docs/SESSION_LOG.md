@@ -1960,3 +1960,24 @@ Status: Complete
   - `python -m war_room --verify --release-candidate issue-8-next-scenario-audit` -> passed; embedded `pytest -q` reported `336 passed in 16.70s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-8-next-scenario-audit_20260513t204614z.json`.
 - Remaining issue status:
   - issue `#8` should remain open because broader fixture breadth, the Texas DP-3 promotion, and manual fixture seeding for live-only Florida scenarios remain incomplete.
+
+## Session 105 - Issue 8 DP-3 Fixture Promotion
+Date: 2026-05-13
+Status: Complete
+
+- Completed the next narrow `#8` fixture-breadth slice by promoting `tx_hail_allstate_tarrant_dp3` into the curated registry after checking it against `docs/FIXTURE_SEEDING.md`.
+- Promotion conclusion:
+  - `tx_hail_allstate_tarrant_dp3` satisfies the checklist because it has a validated intake, complete four-module committed fixture bundle, official weather support, carrier evidence tied to Texas/Allstate/DP-3, two case-law issue buckets, three citation checks, one verified citation, and passing offline preflight/e2e posture with disclaimers and review-required export state intact.
+- What changed:
+  - Added `scenarios/texas_hail_tarrant_allstate_dp3.json` as an offline-ready registry scenario backed by the existing committed `cache_samples/tx_hail_allstate_tarrant_dp3` fixture lane.
+  - Updated `scenarios/index.json`, scenario/preflight/notebook-runtime/release-scorecard/snapshot tests, and `tests/golden/offline_fixture_snapshots.json` so all four committed fixture lanes are now registry-backed and offline-ready.
+  - Synced active status docs and the prior next-candidate audit to remove stale language that treated the DP-3 lane as only a future promotion.
+- Decisions not added:
+  - no invented fixture payloads, live retrieval, dependencies, notebooks, or issue `#10` orchestration work were added.
+  - issue `#8` remains open because broader fixture breadth and manual fixture seeding for live-only Florida registry scenarios remain incomplete.
+- Validation:
+  - `python -m pytest tests/test_scenarios.py tests/test_fixture_snapshots.py tests/test_offline_demo_pack.py -q` -> `52 passed in 2.35s`.
+  - `python -m pytest -q` -> `336 passed in 7.61s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-13_offline-e2e_20260513t205728z.json`.
+  - `python -m war_room --verify --release-candidate issue-8-dp3-fixture-promotion` -> passed; embedded `pytest -q` reported `336 passed in 9.27s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-8-dp3-fixture-promotion_20260513t205736z.json`.

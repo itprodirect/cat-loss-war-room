@@ -38,6 +38,10 @@ def test_demo_preflight_smoke_covers_committed_scenarios():
     scenario_keys = [scenario.case_key for scenario in report.scenarios]
     assert scenario_keys == _expected_scenario_keys()
     assert report.scenarios[scenario_keys.index("milton_citizens_pinellas")].intake_path == "scenario:milton_pinellas_citizens_ho3"
+    assert (
+        report.scenarios[scenario_keys.index("tx_hail_allstate_tarrant_dp3")].intake_path
+        == "scenario:texas_hail_tarrant_allstate_dp3"
+    )
 
     for scenario in report.scenarios:
         assert scenario.availability.status == "offline-ready"
@@ -60,8 +64,7 @@ def test_demo_preflight_smoke_covers_committed_scenarios():
         assert "memo includes expected major sections" in check_names
         assert scenario.memo_length > 0
         assert len(scenario.memo_sections) == 10
-    assert any("Registry scenario" in scenario.availability.detail for scenario in report.scenarios)
-    assert any("No registry scenario maps" in scenario.availability.detail for scenario in report.scenarios)
+    assert all("Registry scenario" in scenario.availability.detail for scenario in report.scenarios)
 
 
 def test_demo_preflight_rendering_includes_summary():

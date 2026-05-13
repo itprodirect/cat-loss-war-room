@@ -34,11 +34,13 @@ def test_offline_fixture_snapshot_quality_assertions_cover_current_scenarios():
     assert snapshot["registry_backed_fixture_slugs"] == [
         "ida_orleans_lloyds_ho3",
         "milton_pinellas_citizens_ho3",
+        "texas_hail_tarrant_allstate_dp3",
         "texas_hail_tarrant_allstate_hob",
     ]
     assert snapshot["offline_ready_registry_fixture_slugs"] == [
         "ida_orleans_lloyds_ho3",
         "milton_pinellas_citizens_ho3",
+        "texas_hail_tarrant_allstate_dp3",
         "texas_hail_tarrant_allstate_hob",
     ]
 

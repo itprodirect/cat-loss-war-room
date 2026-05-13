@@ -15,12 +15,14 @@ It is ready to promote from an existing committed fixture lane because it alread
 
 This PR promotes it as `texas_hail_tarrant_allstate_hob`, the first Texas hail homeowners benchmark in the curated registry.
 
+Follow-up on 2026-05-13: `tx_hail_allstate_tarrant_dp3` also satisfied the fixture-seeding checklist and was promoted as `texas_hail_tarrant_allstate_dp3`.
+
 ## Candidate Classification
 
 | Candidate | Classification | Audit Result |
 |---|---|---|
 | `tx_hail_allstate_tarrant` | Ready to promote from existing committed fixture lane | Promoted in this PR as `texas_hail_tarrant_allstate_hob`. It broadens the registry beyond hurricane and HO-3 fact patterns while using already committed reviewed fixture data. |
-| `tx_hail_allstate_tarrant_dp3` | Ready to promote from existing committed fixture lane | Suitable follow-up candidate. It uses the same Tarrant hail event but focuses on the narrower DP-3 matching/scope dispute, so it should follow the broader HO-B benchmark. |
+| `tx_hail_allstate_tarrant_dp3` | Ready to promote from existing committed fixture lane | Promoted in the follow-up slice as `texas_hail_tarrant_allstate_dp3`. It uses the same Tarrant hail event but focuses on the narrower DP-3 matching/scope dispute. |
 | `ian_lee_citizens_ho3` | Needs manual fixture seeding | Curated registry scenario exists, but no committed fixture lane exists yet. Keep live-only until reviewed weather/carrier/caselaw/citation fixtures are seeded. |
 | `irma_monroe_citizens_ho3` | Needs manual fixture seeding | Curated registry scenario exists, but no committed fixture lane exists yet. Good future legal-depth candidate after reviewed fixture seeding. |
 | `michael_bay_default_ho3` | Needs manual fixture seeding | Curated registry scenario exists, but no committed fixture lane exists yet. Good future wind/scope candidate after reviewed fixture seeding. |
