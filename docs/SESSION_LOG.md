@@ -1737,3 +1737,30 @@ Status: Complete
   - `python -m war_room.quality_gates run --gate security-hygiene-check --output-dir runs/quality_gates/local -- python -m war_room.security_hygiene --check` -> passed; wrote `runs/quality_gates/local/security-hygiene-check.json`.
   - `python -m war_room.quality_gates summarize --output-dir runs/quality_gates/local --summary-path runs/quality_gates/local/summary.md --fail-on-failed` -> passed; `3/3` quality gates passed.
   - `python -m war_room --verify --release-candidate issue-9-security-hygiene-gate` -> passed; embedded `pytest -q` reported `312 passed in 17.52s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-security-hygiene-gate_20260513t052904z.json`.
+
+## Session 96 - Issue 9 Offline E2E Quality Gate
+Date: 2026-05-13
+Status: Complete
+
+- Completed the next focused `#9` slice by adding an offline-safe integration/e2e quality gate through the existing categorized quality-gates wrapper.
+- What changed:
+  - Added `src/war_room/offline_e2e.py`, a stdlib-only CLI that runs the committed offline demo preflight, validates fixture coverage, workflow stages, memo/review surfaces, export posture, and linked preflight artifacts, then writes JSON and Markdown reports under `runs/offline_e2e/`.
+  - Added `e2e-offline-demo` to `src/war_room/quality_gates.py` so local and CI runs emit the same categorized JSON, Markdown, and log artifact shape as the other `#9` lanes.
+  - Added a dedicated CI `Offline E2E` job that runs the new gate through `python -m war_room.quality_gates`, summarizes quality-gate status, and uploads both quality-gate and offline-e2e artifacts.
+  - Added focused tests for e2e artifact structure, CLI behavior, synthetic failure reporting, and the new gate category.
+  - Synced status docs to the 316-test baseline and the new offline e2e gate.
+- Why:
+  - issue `#9` asks for smoke integration/e2e coverage that proves the deterministic offline demo path can move from committed fixtures through preflight-style execution into structured artifacts.
+  - this slice raises CI signal above unit tests without live network calls, dependency changes, notebook edits, API/UI work, or broad runtime rewrites.
+- Decision not added:
+  - no new formal decision-log entry was added; this is an implementation slice of the existing `#9` quality-gate direction.
+  - this does not fully close `#9`; broader CI hardening and any remaining acceptance criteria should be evaluated after this gate lands.
+- Verification:
+  - `python -m pytest tests/test_quality_gates.py tests/test_security_hygiene.py tests/test_release_scorecard.py -q` -> `24 passed in 5.36s`.
+  - `python -m pytest -q` -> `316 passed in 9.45s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.security_hygiene --check` -> passed; `6/6` checks passed.
+  - `python -m war_room.quality_gates run --gate e2e-offline-demo --output-dir runs/quality_gates/local -- python -m war_room.offline_e2e --check` -> passed; wrote `runs/quality_gates/local/e2e-offline-demo.json`.
+  - `python -m war_room.quality_gates summarize --output-dir runs/quality_gates/local --summary-path runs/quality_gates/local/summary.md --fail-on-failed` -> passed; `4/4` quality gates passed.
+  - `python -m war_room --verify --release-candidate issue-9-offline-e2e-gate` -> passed; embedded `pytest -q` reported `316 passed in 15.29s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-offline-e2e-gate_20260513t055236z.json`.
+  - `python -m pytest tests/test_offline_e2e.py tests/test_quality_gates.py -q` -> `10 passed in 2.19s` after final test-file style cleanup.

@@ -72,6 +72,24 @@ def test_security_hygiene_gate_is_categorized(tmp_path: Path):
     assert result.summary == "Security hygiene check passed: 6/6 checks passed"
 
 
+def test_offline_e2e_gate_is_categorized(tmp_path: Path):
+    result = run_quality_gate(
+        gate_id="e2e-offline-demo",
+        command=[
+            sys.executable,
+            "-c",
+            "print('Offline e2e passed: 4/4 scenarios passed; artifacts: runs/offline_e2e/test.json')",
+        ],
+        output_dir=tmp_path,
+        repo_root=ROOT,
+    )
+
+    assert result.status == "passed"
+    assert result.category == "e2e_offline"
+    assert result.name == "Offline E2E Demo Gate"
+    assert "Offline e2e passed" in result.summary
+
+
 def test_write_quality_gate_summary_groups_passed_and_failed_results(tmp_path: Path):
     run_quality_gate(
         gate_id="offline-fixture-tests",

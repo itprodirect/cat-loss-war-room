@@ -7,9 +7,9 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 312 tests are passing on the supported verify path.
-- CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job with golden snapshot validation, an offline security hygiene gate, and the `exa-py` compatibility matrix.
-- CI now also emits categorized quality-gate artifacts for unit, offline fixture, golden snapshot, Exa compatibility, release-scorecard, and security-hygiene failures.
+- 316 tests are passing on the supported verify path.
+- CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job with golden snapshot validation, an offline e2e demo gate, an offline security hygiene gate, and the `exa-py` compatibility matrix.
+- CI now also emits categorized quality-gate artifacts for unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, and security-hygiene failures.
 - CI emits and validates a release-scorecard artifact from the calibrated `#27` workflow.
 - The supported test path is editable install plus `pytest -q`, or `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not supported.
 - The offline demo path now has a deterministic preflight command: `python -m war_room --preflight`.
@@ -81,7 +81,7 @@ Goal: finish the remaining definition/foundation work so V2 implementation start
 - [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) Broaden CI and pilot operationalization of the calibrated release scorecard
 - [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) Retrieval provider abstraction + contract tests (provider seam + notebook retrieval-state + citation-verify + deterministic timing slices landed)
 - [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (first golden snapshot gate landed; broader breadth still open)
-- [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) Expand CI quality gates (failure-categorization artifacts and an offline security hygiene gate landed; broader integration/e2e gates still open)
+- [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) Expand CI quality gates (failure-categorization artifacts, offline security hygiene, and a first offline e2e gate landed; broader integration/e2e breadth still open)
 
 ## Next (30-60 days)
 

@@ -169,6 +169,59 @@ jobs:
           path: runs/quality_gates/
           if-no-files-found: error
 
+  offline-e2e:
+    name: Offline E2E
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "setuptools>=69"
+          pip install -r requirements.txt
+          pip install -e . --no-deps --no-build-isolation
+
+      - name: Offline E2E Gate - demo workflow artifacts
+        shell: bash
+        continue-on-error: true
+        run: |
+          python -m war_room.quality_gates run \
+            --gate e2e-offline-demo \
+            --output-dir runs/quality_gates \
+            -- python -m war_room.offline_e2e --check
+
+      - name: Summarize Offline E2E Gate
+        if: always()
+        shell: bash
+        run: |
+          python -m war_room.quality_gates summarize \
+            --output-dir runs/quality_gates \
+            --summary-path runs/quality_gates/summary.md \
+            --fail-on-failed
+
+      - name: Upload Offline E2E Gate Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gates-e2e-offline-${{ github.run_id }}
+          path: runs/quality_gates/
+          if-no-files-found: error
+
+      - name: Upload Offline E2E Demo Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-e2e-demo-${{ github.run_id }}
+          path: runs/offline_e2e/
+          if-no-files-found: error
+
   release-scorecard:
     name: Release Scorecard Artifact
     runs-on: ubuntu-latest
