@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime as dt
 import re
 from dataclasses import dataclass, field
-from typing import Any, Protocol
+from typing import Any, Mapping, Protocol
 
 from war_room.models import CaseIntake, QuerySpec, RetrievalTask, RunEvent
 
@@ -34,6 +34,10 @@ class RetrievalProvider(Protocol):
         max_chars: int = 6000,
     ) -> list[dict[str, Any]]:
         """Fetch full contents for URLs and return normalized hits."""
+
+
+class RetrievalContractError(ValueError):
+    """Raised when a provider returns a shape outside the project contract."""
 
 
 @dataclass(slots=True)
@@ -67,6 +71,19 @@ class RetrievalExecutionResult:
     warning: str | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class RetrievalHitDiagnostics:
+    """Provider-result normalization metadata for one retrieval call."""
+
+    hits: list[dict[str, Any]]
+    dropped_malformed_count: int = 0
+    missing_url_count: int = 0
+
+    @property
+    def has_warnings(self) -> bool:
+        return self.dropped_malformed_count > 0 or self.missing_url_count > 0
+
+
 def query_spec_to_retrieval_task(
     query_spec: QuerySpec,
     *,
@@ -94,8 +111,17 @@ def execute_retrieval_search(
 ) -> list[dict[str, Any]]:
     """Execute a retrieval task through a provider after contract validation."""
 
+    return _execute_retrieval_search_with_diagnostics(provider, request).hits
+
+
+def _execute_retrieval_search_with_diagnostics(
+    provider: RetrievalProvider,
+    request: RetrievalSearchRequest,
+) -> RetrievalHitDiagnostics:
+    """Execute search and normalize provider rows to the project contract."""
+
     _validate_provider_match(provider, request.task)
-    return provider.search(
+    raw_hits = provider.search(
         request.task.query_text,
         k=request.k,
         recency_days=request.recency_days,
@@ -103,6 +129,7 @@ def execute_retrieval_search(
         exclude_domains=request.exclude_domains or None,
         max_chars=request.max_chars,
     )
+    return _normalize_provider_hits(raw_hits)
 
 
 def execute_retrieval_task(
@@ -136,13 +163,11 @@ def execute_retrieval_task(
     ]
 
     try:
-        hits = execute_retrieval_search(provider, request)
+        diagnostics = _execute_retrieval_search_with_diagnostics(provider, request)
+        hits = diagnostics.hits
     except Exception as exc:
         completed_at = now or dt.datetime.now(dt.UTC)
-        warning = (
-            f"{provider.provider_name} retrieval failed for '{request.task.query_text}': "
-            f"{type(exc).__name__}."
-        )
+        failure = _normalize_retrieval_failure(provider, request, exc, attempt_count=attempt_count)
         failed_task = running_task.model_copy(
             update={
                 "completed_at": completed_at,
@@ -157,7 +182,7 @@ def execute_retrieval_task(
                 stage_id=request.task.stage_id,
                 event_type="retrieval_failed",
                 severity="error",
-                message=warning,
+                message=failure,
                 created_at=completed_at,
             )
         )
@@ -165,12 +190,32 @@ def execute_retrieval_task(
             task=failed_task,
             hits=[],
             run_events=run_events,
-            warning=warning,
+            warning=failure,
         )
 
     completed_at = now or dt.datetime.now(dt.UTC)
     raw_artifact_refs = _artifact_refs_from_hits(hits)
-    if hits:
+    if hits and diagnostics.has_warnings:
+        warning = _normalization_warning(provider, request, diagnostics)
+        final_task = running_task.model_copy(
+            update={
+                "completed_at": completed_at,
+                "review_required": True,
+                "status": "degraded",
+                "raw_artifact_refs": raw_artifact_refs,
+            }
+        )
+        final_event = RunEvent(
+            run_event_id=f"{request.task.retrieval_task_id}:attempt-{attempt_count}:degraded",
+            run_id=request.task.run_id,
+            stage_id=request.task.stage_id,
+            event_type="retrieval_degraded",
+            severity="warning",
+            message=warning,
+            created_at=completed_at,
+            artifact_refs=raw_artifact_refs,
+        )
+    elif hits:
         final_task = running_task.model_copy(
             update={
                 "completed_at": completed_at,
@@ -190,7 +235,11 @@ def execute_retrieval_task(
         )
         warning = None
     else:
-        warning = f"{provider.provider_name} returned no results for '{request.task.query_text}'."
+        warning = (
+            _normalization_warning(provider, request, diagnostics)
+            if diagnostics.has_warnings
+            else f"{provider.provider_name} returned no results for '{request.task.query_text}'."
+        )
         final_task = running_task.model_copy(
             update={
                 "completed_at": completed_at,
@@ -200,10 +249,14 @@ def execute_retrieval_task(
             }
         )
         final_event = RunEvent(
-            run_event_id=f"{request.task.retrieval_task_id}:attempt-{attempt_count}:empty",
+            run_event_id=(
+                f"{request.task.retrieval_task_id}:attempt-{attempt_count}:degraded"
+                if diagnostics.has_warnings
+                else f"{request.task.retrieval_task_id}:attempt-{attempt_count}:empty"
+            ),
             run_id=request.task.run_id,
             stage_id=request.task.stage_id,
-            event_type="retrieval_empty",
+            event_type="retrieval_degraded" if diagnostics.has_warnings else "retrieval_empty",
             severity="warning",
             message=warning,
             created_at=completed_at,
@@ -226,7 +279,8 @@ def fetch_retrieval_contents(
 
     if request.task is not None:
         _validate_provider_match(provider, request.task)
-    return provider.get_contents(request.urls, max_chars=request.max_chars)
+    raw_hits = provider.get_contents(request.urls, max_chars=request.max_chars)
+    return _normalize_provider_hits(raw_hits).hits
 
 
 def notebook_run_id_from_intake(intake: CaseIntake) -> str:
@@ -248,6 +302,99 @@ def _validate_provider_match(provider: RetrievalProvider, task: RetrievalTask) -
             f"RetrievalTask provider '{task.provider}' does not match "
             f"adapter '{provider.provider_name}'."
         )
+
+
+def _normalize_provider_hits(raw_hits: Any) -> RetrievalHitDiagnostics:
+    if raw_hits is None:
+        return RetrievalHitDiagnostics(hits=[])
+    if not isinstance(raw_hits, list):
+        raise RetrievalContractError(
+            "retrieval provider returned a malformed response: expected list[dict]"
+        )
+
+    hits: list[dict[str, Any]] = []
+    dropped_malformed_count = 0
+    missing_url_count = 0
+    for raw_hit in raw_hits:
+        if not isinstance(raw_hit, Mapping):
+            dropped_malformed_count += 1
+            continue
+        hit = _normalize_provider_hit(raw_hit)
+        if not hit["url"]:
+            missing_url_count += 1
+        hits.append(hit)
+    return RetrievalHitDiagnostics(
+        hits=hits,
+        dropped_malformed_count=dropped_malformed_count,
+        missing_url_count=missing_url_count,
+    )
+
+
+def _normalize_provider_hit(raw_hit: Mapping[str, Any]) -> dict[str, Any]:
+    text = _string_value(raw_hit.get("text"))
+    snippet = _string_value(raw_hit.get("snippet")) or text[:500]
+    normalized = dict(raw_hit)
+    normalized.update(
+        {
+            "title": _string_value(raw_hit.get("title")),
+            "url": _string_value(raw_hit.get("url")),
+            "published_date": _string_value(raw_hit.get("published_date")),
+            "snippet": snippet,
+            "text": text,
+            "score": raw_hit.get("score"),
+        }
+    )
+    return normalized
+
+
+def _normalize_retrieval_failure(
+    provider: RetrievalProvider,
+    request: RetrievalSearchRequest,
+    exc: Exception,
+    *,
+    attempt_count: int,
+) -> str:
+    error_kind, retryable = _classify_retrieval_error(exc)
+    return (
+        f"{provider.provider_name} retrieval failed for '{request.task.query_text}': "
+        f"error_kind={error_kind}; exception={type(exc).__name__}; "
+        f"retryable={str(retryable).lower()}; attempts={attempt_count}."
+    )
+
+
+def _classify_retrieval_error(exc: Exception) -> tuple[str, bool]:
+    name = type(exc).__name__.lower()
+    message = str(exc).lower()
+    if isinstance(exc, TimeoutError) or "timeout" in name or "timed out" in message:
+        return "timeout", True
+    if isinstance(exc, RetrievalContractError) or "responseerror" in name or "malformed response" in message:
+        return "malformed_response", False
+    if "budgetexhausted" in name or "budget exhausted" in message:
+        return "budget_exhausted", False
+    return "provider_error", True
+
+
+def _normalization_warning(
+    provider: RetrievalProvider,
+    request: RetrievalSearchRequest,
+    diagnostics: RetrievalHitDiagnostics,
+) -> str:
+    details = []
+    if diagnostics.dropped_malformed_count:
+        details.append(f"dropped_malformed={diagnostics.dropped_malformed_count}")
+    if diagnostics.missing_url_count:
+        details.append(f"missing_url={diagnostics.missing_url_count}")
+    suffix = "; ".join(details)
+    return (
+        f"{provider.provider_name} returned partial or incomplete retrieval results "
+        f"for '{request.task.query_text}': {suffix}."
+    )
+
+
+def _string_value(value: Any) -> str:
+    if value is None:
+        return ""
+    return str(value).strip()
 
 
 def _slug_token(value: str) -> str:

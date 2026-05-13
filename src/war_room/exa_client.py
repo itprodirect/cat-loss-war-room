@@ -21,6 +21,10 @@ class BudgetExhausted(Exception):
     """Raised when the search budget is exhausted."""
 
 
+class ExaResponseError(RuntimeError):
+    """Raised when exa-py returns a response outside the adapter contract."""
+
+
 class ExaClient:
     """Thin wrapper around exa-py with retry + budget guard."""
 
@@ -73,7 +77,7 @@ class ExaClient:
 
         response = self._search_with_retry(query, kwargs)
         self.search_count += 1
-        return [self._normalize_result(r) for r in response.results]
+        return [self._normalize_result(r) for r in _response_results(response, operation="search")]
 
     def get_contents(
         self,
@@ -89,7 +93,7 @@ class ExaClient:
                 urls,
                 text={"max_characters": max_chars},
             )
-            return [self._normalize_result(r) for r in response.results]
+            return [self._normalize_result(r) for r in _response_results(response, operation="contents")]
         except Exception:
             return []
 
@@ -135,6 +139,15 @@ def _build_contents_options(max_chars: int) -> dict[str, Any]:
         return ContentsOptions(text={"max_characters": max_chars})
     except Exception:
         return {"text": {"max_characters": max_chars}}
+
+
+def _response_results(response: Any, *, operation: str) -> list[Any]:
+    results = getattr(response, "results", None)
+    if results is None:
+        raise ExaResponseError(f"Exa {operation} response missing results.")
+    if isinstance(results, (str, bytes)) or not hasattr(results, "__iter__"):
+        raise ExaResponseError(f"Exa {operation} response results must be iterable.")
+    return list(results)
 
 
 def _load_api_key_from_settings() -> str:

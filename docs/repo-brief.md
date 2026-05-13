@@ -64,7 +64,7 @@ Preserve the stable V0 notebook demo while finishing the active foundation tranc
 
 1. Expand `#8` with the next safe curated offline fixture scenario or document the next live-retrieval-backed seeding path.
 2. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
-3. Continue `#7` retrieval-contract hardening before downstream product implementation.
+3. Put `#7` through closeout review if no further retrieval-contract gaps are found.
 
 ## Ownership
 
