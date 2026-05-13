@@ -115,12 +115,14 @@ def test_scenario_availability_summary_distinguishes_offline_ready_and_live_only
 def test_scenario_catalog_availability_reports_current_notebook_statuses():
     summaries = scenario_catalog_availability(ROOT, live_retrieval_enabled=False)
 
-    assert len(summaries) == 7
+    assert len(summaries) == 8
     assert summaries[0].status == "offline-ready"
     assert summaries[1].status == "offline-ready"
     assert summaries[1].scenario_id == "ida_orleans_lloyds_ho3"
     assert summaries[2].status == "offline-ready"
     assert summaries[2].scenario_id == "texas_hail_tarrant_allstate_hob"
+    assert summaries[3].status == "offline-ready"
+    assert summaries[3].scenario_id == "texas_hail_tarrant_allstate_dp3"
     assert {summary.status for summary in summaries} == {"offline-ready", "live-only"}
 
 
@@ -168,7 +170,7 @@ def test_prepare_notebook_scenario_returns_full_contract_and_warning(monkeypatch
     assert namespace["CASE_KEY"] == "ian_lee_citizens_ho3"
     assert namespace["SETTINGS"] == expected_context.settings
     assert namespace["SCENARIO_AVAILABILITY"].status == "live-only"
-    assert len(namespace["SCENARIO_AVAILABILITY_SUMMARIES"]) == 7
+    assert len(namespace["SCENARIO_AVAILABILITY_SUMMARIES"]) == 8
 
 
 def test_prepare_notebook_scenario_uses_existing_context_without_bootstrap(monkeypatch):
