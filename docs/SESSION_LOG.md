@@ -1662,3 +1662,26 @@ Status: Complete
 - Verification:
   - `python -m pytest -q` -> `294 passed in 5.97s`
   - `python -m war_room --verify --release-candidate issue-6-closeout-audit` -> passed; embedded `pytest -q` reported `294 passed in 5.98s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-6-closeout-audit_20260513t042737z.json`.
+
+## Session 93 - Issue 8 Offline Fixture Golden Snapshots
+Date: 2026-05-13
+Status: Complete
+
+- Completed the next reviewable `#8` slice by adding a deterministic golden snapshot framework for the existing committed offline fixture scenarios instead of broadening runtime behavior.
+- What changed:
+  - Added `src/war_room/fixture_snapshots.py` with `--check` and `--write` CLI paths for committed offline fixture snapshots.
+  - Added `tests/golden/offline_fixture_snapshots.json` as the first golden fixture snapshot for the four committed FL/TX/LA scenario directories.
+  - Added `tests/test_fixture_snapshots.py` with quality assertions for scenario coverage metadata, source mix, case count, citation summary consistency, memo section structure, workflow state, evidence/issue counts, and export posture.
+  - Extended the CI fixture-smoke job to run the snapshot tests and `python -m war_room.fixture_snapshots --check`.
+  - Synced status docs to the 298-test baseline and the new `#8` snapshot gate.
+- Why:
+  - issue `#8` needs reviewable fixture/output drift before broader fixture seeding will make `#9` CI gates meaningful.
+  - existing committed scenarios already cover Florida, Texas, and Louisiana, so this slice tightens deterministic assertions around known-good offline fixtures without live retrieval, dependency churn, notebook edits, or generated runtime artifact changes.
+- Decision not added:
+  - no new formal decision-log entry was added; this is an implementation slice of the existing `#8` fixture/snapshot direction.
+  - no new scenario fixture was added in this PR because adding a credible new offline scenario safely would require either live retrieval or a separate curated fixture-seeding pass. The existing four-scenario set is the right foundation for the first golden snapshot gate.
+- Verification:
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m pytest tests/test_fixture_snapshots.py tests/test_offline_demo_pack.py tests/test_intake_validation.py -q` -> `53 passed in 2.77s`.
+  - `python -m pytest -q` -> `298 passed in 7.38s`.
+  - `python -m war_room --verify --release-candidate issue-8-fixture-snapshots` -> passed; embedded `pytest -q` reported `298 passed in 7.16s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-8-fixture-snapshots_20260513t044322z.json`.

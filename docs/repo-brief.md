@@ -15,7 +15,7 @@ This repo is the current execution surface for attorney-demo research accelerati
 
 ## Current milestone
 
-Preserve the stable V0 notebook demo while finishing the active foundation tranche: broader `#27` CI/pilot operationalization plus the remaining work in `#7`, `#8`, and `#9` after the final `#6` closeout-audit PR lands.
+Preserve the stable V0 notebook demo while finishing the active foundation tranche: broader `#27` CI/pilot operationalization plus the remaining work in `#7`, `#8`, and `#9`.
 
 ## Non-goals
 
@@ -42,6 +42,7 @@ Preserve the stable V0 notebook demo while finishing the active foundation tranc
 - Markdown research memo exports with disclaimers and audit linkage.
 - Preflight and verification results for demo readiness.
 - Run-scoped preflight, scorecard, and verify-manifest artifacts for the supported local release-evidence path.
+- Golden offline fixture snapshots for reviewable scenario/output drift checks.
 
 ## Quality bar
 
@@ -54,15 +55,15 @@ Preserve the stable V0 notebook demo while finishing the active foundation tranc
 ## Known risks
 
 - The primary UX is still notebook-first, which is less approachable for non-technical users.
-- Offline readiness is uneven: committed fixtures exist, but the broader scenario registry is not fully fixture-backed.
+- Offline readiness is uneven: committed fixtures exist and now have a golden snapshot gate, but the broader scenario registry is not fully fixture-backed.
 - Case-law precision and citation confidence still need ongoing hardening in edge cases.
 - Status can drift quickly because roadmap, handoff, and session history are dense and frequently updated.
 
 ## Next 3 tasks
 
-1. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
-2. Close issue `#6` after the closeout-audit PR lands, then finish the remaining `#7` foundation seams so the notebook-era runtime keeps one clear contract path.
-3. Expand `#8` and `#9` with broader fixture coverage and CI quality gates that match the supported offline-demo lane.
+1. Expand `#8` with the next safe curated offline fixture scenario or document the next live-retrieval-backed seeding path.
+2. Convert the new `#8` snapshot assertions into more granular `#9` CI failure categorization where useful.
+3. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
 
 ## Ownership
 

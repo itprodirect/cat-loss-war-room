@@ -1,0 +1,263 @@
+{
+  "fixture_states": [
+    "FL",
+    "LA",
+    "TX"
+  ],
+  "offline_ready_registry_fixture_count": 1,
+  "offline_ready_registry_fixture_slugs": [
+    "milton_pinellas_citizens_ho3"
+  ],
+  "registry_backed_fixture_count": 1,
+  "registry_backed_fixture_slugs": [
+    "milton_pinellas_citizens_ho3"
+  ],
+  "scenario_count": 4,
+  "scenarios": [
+    {
+      "carrier": "Certain Underwriters at Lloyd's, London",
+      "carrier_document_count": 3,
+      "carrier_source_count": 3,
+      "case_key": "ida_lloyds_orleans",
+      "caselaw_case_count": 3,
+      "caselaw_issue_count": 2,
+      "caselaw_source_count": 4,
+      "citation_badge_counts": {
+        "verified": 1,
+        "warning": 2
+      },
+      "citation_summary": {
+        "not_found": 0,
+        "total": 3,
+        "uncertain": 2,
+        "verified": 1
+      },
+      "county": "Orleans",
+      "coverage_issue_count": 3,
+      "event_name": "Hurricane Ida",
+      "evidence_cluster_count": 9,
+      "evidence_review_required_cluster_count": 2,
+      "export_delivery_state": "not_written",
+      "export_eligibility": "review_required_export",
+      "intake_ref": "eval/intakes/ida_lloyds_orleans.json",
+      "issue_workspace_issue_count": 5,
+      "memo_composer_section_count": 12,
+      "memo_sections": [
+        "## Trust Snapshot",
+        "## Case Intake",
+        "## Weather Corroboration",
+        "## Carrier Document Pack",
+        "## Case Law",
+        "## Appendix: Query Plan",
+        "## Appendix: Evidence Clusters",
+        "## Appendix: Evidence Index",
+        "## Appendix: All Sources",
+        "## Methodology & Limitations"
+      ],
+      "module_files": [
+        "weather.json",
+        "carrier.json",
+        "caselaw.json",
+        "citation_verify.json"
+      ],
+      "policy_type": "HO-3 Dwelling",
+      "registry_offline_ready": false,
+      "registry_slug": null,
+      "review_required_issue_count": 5,
+      "review_required_memo_section_count": 1,
+      "source_badge_counts": {
+        "official": 6,
+        "professional": 6,
+        "unvetted": 4
+      },
+      "state": "LA",
+      "weather_source_count": 3,
+      "workflow_review_required": true,
+      "workflow_status": "completed"
+    },
+    {
+      "carrier": "Citizens Property Insurance",
+      "carrier_document_count": 9,
+      "carrier_source_count": 12,
+      "case_key": "milton_citizens_pinellas",
+      "caselaw_case_count": 6,
+      "caselaw_issue_count": 3,
+      "caselaw_source_count": 13,
+      "citation_badge_counts": {
+        "verified": 1,
+        "warning": 5
+      },
+      "citation_summary": {
+        "not_found": 0,
+        "total": 6,
+        "uncertain": 5,
+        "verified": 1
+      },
+      "county": "Pinellas",
+      "coverage_issue_count": 3,
+      "event_name": "Hurricane Milton",
+      "evidence_cluster_count": 17,
+      "evidence_review_required_cluster_count": 5,
+      "export_delivery_state": "not_written",
+      "export_eligibility": "review_required_export",
+      "intake_ref": "scenario:milton_pinellas_citizens_ho3",
+      "issue_workspace_issue_count": 5,
+      "memo_composer_section_count": 12,
+      "memo_sections": [
+        "## Trust Snapshot",
+        "## Case Intake",
+        "## Weather Corroboration",
+        "## Carrier Document Pack",
+        "## Case Law",
+        "## Appendix: Query Plan",
+        "## Appendix: Evidence Clusters",
+        "## Appendix: Evidence Index",
+        "## Appendix: All Sources",
+        "## Methodology & Limitations"
+      ],
+      "module_files": [
+        "weather.json",
+        "carrier.json",
+        "caselaw.json",
+        "citation_verify.json"
+      ],
+      "policy_type": "HO-3 Dwelling",
+      "registry_offline_ready": true,
+      "registry_slug": "milton_pinellas_citizens_ho3",
+      "review_required_issue_count": 5,
+      "review_required_memo_section_count": 1,
+      "source_badge_counts": {
+        "official": 12,
+        "professional": 20,
+        "unvetted": 14
+      },
+      "state": "FL",
+      "weather_source_count": 6,
+      "workflow_review_required": true,
+      "workflow_status": "completed"
+    },
+    {
+      "carrier": "Allstate Texas Lloyds",
+      "carrier_document_count": 3,
+      "carrier_source_count": 3,
+      "case_key": "tx_hail_allstate_tarrant",
+      "caselaw_case_count": 3,
+      "caselaw_issue_count": 2,
+      "caselaw_source_count": 4,
+      "citation_badge_counts": {
+        "verified": 1,
+        "warning": 2
+      },
+      "citation_summary": {
+        "not_found": 0,
+        "total": 3,
+        "uncertain": 2,
+        "verified": 1
+      },
+      "county": "Tarrant",
+      "coverage_issue_count": 3,
+      "event_name": "Texas Hailstorm",
+      "evidence_cluster_count": 9,
+      "evidence_review_required_cluster_count": 2,
+      "export_delivery_state": "not_written",
+      "export_eligibility": "review_required_export",
+      "intake_ref": "eval/intakes/tx_hail_allstate_tarrant.json",
+      "issue_workspace_issue_count": 5,
+      "memo_composer_section_count": 12,
+      "memo_sections": [
+        "## Trust Snapshot",
+        "## Case Intake",
+        "## Weather Corroboration",
+        "## Carrier Document Pack",
+        "## Case Law",
+        "## Appendix: Query Plan",
+        "## Appendix: Evidence Clusters",
+        "## Appendix: Evidence Index",
+        "## Appendix: All Sources",
+        "## Methodology & Limitations"
+      ],
+      "module_files": [
+        "weather.json",
+        "carrier.json",
+        "caselaw.json",
+        "citation_verify.json"
+      ],
+      "policy_type": "HO-B Homeowners",
+      "registry_offline_ready": false,
+      "registry_slug": null,
+      "review_required_issue_count": 4,
+      "review_required_memo_section_count": 1,
+      "source_badge_counts": {
+        "official": 6,
+        "professional": 6,
+        "unvetted": 4
+      },
+      "state": "TX",
+      "weather_source_count": 3,
+      "workflow_review_required": true,
+      "workflow_status": "completed"
+    },
+    {
+      "carrier": "Allstate Texas Lloyds",
+      "carrier_document_count": 3,
+      "carrier_source_count": 3,
+      "case_key": "tx_hail_allstate_tarrant_dp3",
+      "caselaw_case_count": 3,
+      "caselaw_issue_count": 2,
+      "caselaw_source_count": 4,
+      "citation_badge_counts": {
+        "verified": 1,
+        "warning": 2
+      },
+      "citation_summary": {
+        "not_found": 0,
+        "total": 3,
+        "uncertain": 2,
+        "verified": 1
+      },
+      "county": "Tarrant",
+      "coverage_issue_count": 3,
+      "event_name": "Texas Hailstorm Matching Dispute",
+      "evidence_cluster_count": 9,
+      "evidence_review_required_cluster_count": 2,
+      "export_delivery_state": "not_written",
+      "export_eligibility": "review_required_export",
+      "intake_ref": "eval/intakes/tx_hail_allstate_tarrant_dp3.json",
+      "issue_workspace_issue_count": 5,
+      "memo_composer_section_count": 12,
+      "memo_sections": [
+        "## Trust Snapshot",
+        "## Case Intake",
+        "## Weather Corroboration",
+        "## Carrier Document Pack",
+        "## Case Law",
+        "## Appendix: Query Plan",
+        "## Appendix: Evidence Clusters",
+        "## Appendix: Evidence Index",
+        "## Appendix: All Sources",
+        "## Methodology & Limitations"
+      ],
+      "module_files": [
+        "weather.json",
+        "carrier.json",
+        "caselaw.json",
+        "citation_verify.json"
+      ],
+      "policy_type": "DP-3 Dwelling",
+      "registry_offline_ready": false,
+      "registry_slug": null,
+      "review_required_issue_count": 4,
+      "review_required_memo_section_count": 1,
+      "source_badge_counts": {
+        "official": 6,
+        "professional": 6,
+        "unvetted": 4
+      },
+      "state": "TX",
+      "weather_source_count": 3,
+      "workflow_review_required": true,
+      "workflow_status": "completed"
+    }
+  ],
+  "schema_version": "offline-fixture-snapshots.v1"
+}

@@ -22,6 +22,7 @@ Copy-Item .env.example .env
 python -m war_room
 python -m war_room --preflight
 python -m war_room --verify
+python -m war_room.fixture_snapshots --check
 pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```
@@ -37,6 +38,7 @@ cp .env.example .env
 python -m war_room
 python -m war_room --preflight
 python -m war_room --verify
+python -m war_room.fixture_snapshots --check
 pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```
@@ -44,6 +46,8 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 `EXA_API_KEY` is optional for the offline demo path because committed fixtures in `cache_samples/` let the notebook run from cache.
 
 `python -m war_room --verify` runs the supported local verification path: offline demo preflight plus `pytest -q`.
+
+`python -m war_room.fixture_snapshots --check` compares committed offline fixture coverage and output-structure metrics against the golden snapshot in `tests/golden/offline_fixture_snapshots.json`.
 
 `pytest -q` is still the underlying supported test command after editable install. If you skip package install for ad hoc local inspection, use `PYTHONPATH=src` instead of a raw-checkout test run.
 
@@ -110,20 +114,20 @@ The curated benchmark scenario registry now lives under [`scenarios/`](scenarios
 - To switch scenarios, change `SCENARIO_ID` in `notebooks/01_case_war_room.ipynb`.
 - Use `SCENARIO_OVERRIDES` in the notebook for one-off local intake tweaks without editing the canonical scenario files.
 
-Only the Milton benchmark currently has committed offline cache fixtures, so cache-only demos should stay on the default scenario unless live retrieval is enabled.
+Only the Milton benchmark in the curated notebook scenario registry currently maps to committed offline cache fixtures. The broader offline preflight lane also covers three eval-intake fixture scenarios; cache-only notebook demos should stay on the default notebook scenario unless live retrieval is enabled.
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, styled evidence-board review view, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline summary on top of the canonical contracts, `294` tests are passing under the supported bootstrap path, the supported `--verify` flow now writes a linked run-scoped release-evidence bundle, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, styled evidence-board review view, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline summary on top of the canonical contracts, `298` tests are passing under the supported bootstrap path, the supported `--verify` flow now writes a linked run-scoped release-evidence bundle, and CI now enforces:
 - Fresh environment install + full test run
 - Editable package bootstrap validation
-- Offline fixture smoke validation across committed scenarios
+- Offline fixture smoke validation plus the committed golden fixture snapshot check across committed scenarios
 - `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`)
 - Release-scorecard artifact emission plus ship-threshold validation from the calibrated `#27` workflow
 
 **Specified, not built yet:** `docs/V2_WORKFLOW_IA.md`, `docs/V2_EVIDENCE_SCHEMA.md`, and `docs/V2_RELEASE_RUBRIC.md` are the written source-of-truth specs for the current V2 planning layer, while `apps/`, `workers/`, and `packages/` remain placeholder boundaries for later implementation.
 
-Issues `#4`, `#5`, `#22`, `#23`, and `#24` are complete and closed. The written source-of-truth specs for `#23` and `#24` live in `docs/V2_WORKFLOW_IA.md` and `docs/V2_EVIDENCE_SCHEMA.md`, while downstream implementation remains tracked in later issues. Issue `#27` now has a calibrated demo-ready scorecard, CI artifact emission plus validation, and a linked local verify-evidence workflow in `docs/V2_RELEASE_RUBRIC.md`, and remains open for broader CI/pilot operationalization. Issue `#6` is complete and ready to close with a closeout audit in `docs/ISSUE_6_CLOSEOUT_AUDIT.md`, including schema-versioned runtime cache envelopes with legacy raw-cache loading plus typed Run Timeline, Evidence Board, Issue Workspace, Memo Composer, and Export History read-model contracts. Issue `#7` has four slices landed: the provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing.
+Issues `#4`, `#5`, `#22`, `#23`, and `#24` are complete and closed. The written source-of-truth specs for `#23` and `#24` live in `docs/V2_WORKFLOW_IA.md` and `docs/V2_EVIDENCE_SCHEMA.md`, while downstream implementation remains tracked in later issues. Issue `#27` now has a calibrated demo-ready scorecard, CI artifact emission plus validation, and a linked local verify-evidence workflow in `docs/V2_RELEASE_RUBRIC.md`, and remains open for broader CI/pilot operationalization. Issue `#6` is complete with a closeout audit in `docs/ISSUE_6_CLOSEOUT_AUDIT.md`, including schema-versioned runtime cache envelopes with legacy raw-cache loading plus typed Run Timeline, Evidence Board, Issue Workspace, Memo Composer, and Export History read-model contracts. Issue `#7` has four slices landed: the provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing. Issue `#8` now has its first deterministic golden snapshot gate for committed offline scenarios, with broader fixture breadth still open.
 
 ## Roadmap (Simple)
 
