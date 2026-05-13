@@ -21,8 +21,8 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 316 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
-| CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + offline e2e gate + offline security hygiene gate + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install and categorized quality-gate artifacts |
+| Tests | 322 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + offline e2e gate + offline security and dependency hygiene gates + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install and categorized quality-gate artifacts |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
 | Typed domain contracts (#6) | Complete with closeout audit (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Run Timeline, Evidence Board, Issue Workspace, Memo Composer, and Export History read-model contracts; see `docs/ISSUE_6_CLOSEOUT_AUDIT.md`) |
@@ -54,8 +54,9 @@ This is research acceleration, not legal advice.
 - The offline fixture lane now spans four committed public/redacted scenario directories across Florida, Texas, and Louisiana.
 - CI now includes an explicit offline fixture smoke job, and the local release scorecard records fixture coverage from the committed scenario set.
 - The offline fixture lane now also has a deterministic golden snapshot command, `python -m war_room.fixture_snapshots --check`, backed by `tests/golden/offline_fixture_snapshots.json` and quality assertions for source mix, case counts, citation summaries, memo structure, workflow/export posture, and scenario coverage metadata.
-- CI gates now emit categorized quality-gate JSON, Markdown, and log artifacts via `python -m war_room.quality_gates`, separating unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, and security-hygiene failures.
+- CI gates now emit categorized quality-gate JSON, Markdown, and log artifacts via `python -m war_room.quality_gates`, separating unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene failures.
 - The security hygiene gate runs offline and checks tracked env files, obvious secret patterns, `.env.example` expectations, runtime artifact commits, and documented secrets policy drift.
+- The dependency hygiene gate runs offline and checks exact dependency pins, disallowed editable/local/direct-URL requirements, duplicate/conflicting entries, `requirements.txt` / `pyproject.toml` drift, unsupported dependency files, and documented dependency policy drift.
 - The offline e2e gate runs `python -m war_room.offline_e2e --check`, validates the committed fixture workflow through preflight, and writes linked preflight/e2e artifacts under `runs/offline_e2e/`.
 - The repository now has a deterministic offline demo preflight command at `python -m war_room --preflight`.
 - The repository now also has a one-command local verification wrapper at `python -m war_room --verify`.
@@ -105,7 +106,7 @@ Core implementation lives in `src/war_room/`.
 - #27 broader CI and pilot operationalization of the release scorecard
 - #7 retrieval provider abstraction and contracts (provider seam, notebook retrieval-state, and citation-verify slices landed)
 - #8 multi-jurisdiction fixtures and snapshots (first golden snapshot gate landed; broader breadth still open)
-- #9 expanded CI quality gates (failure-categorization artifacts, offline security hygiene, and first offline e2e gate landed; broader integration/e2e breadth still open)
+- #9 expanded CI quality gates (failure-categorization artifacts, offline security and dependency hygiene, and first offline e2e gate landed; ready for closeout review after the dependency-hygiene slice lands)
 
 ### Next
 - #10 API orchestrator

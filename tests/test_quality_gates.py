@@ -90,6 +90,20 @@ def test_offline_e2e_gate_is_categorized(tmp_path: Path):
     assert "Offline e2e passed" in result.summary
 
 
+def test_dependency_hygiene_gate_is_categorized(tmp_path: Path):
+    result = run_quality_gate(
+        gate_id="dependency-hygiene-check",
+        command=[sys.executable, "-c", "print('Dependency hygiene check passed: 6/6 checks passed')"],
+        output_dir=tmp_path,
+        repo_root=ROOT,
+    )
+
+    assert result.status == "passed"
+    assert result.category == "dependency_hygiene"
+    assert result.name == "Dependency Hygiene Gate"
+    assert result.summary == "Dependency hygiene check passed: 6/6 checks passed"
+
+
 def test_write_quality_gate_summary_groups_passed_and_failed_results(tmp_path: Path):
     run_quality_gate(
         gate_id="offline-fixture-tests",

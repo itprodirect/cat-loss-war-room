@@ -105,6 +105,12 @@ GATE_DEFINITIONS: dict[str, QualityGateDefinition] = {
         category="security_hygiene",
         description="Offline repository hygiene scan for secrets, env policy, and unsafe runtime artifacts.",
     ),
+    "dependency-hygiene-check": QualityGateDefinition(
+        gate_id="dependency-hygiene-check",
+        name="Dependency Hygiene Gate",
+        category="dependency_hygiene",
+        description="Offline dependency manifest hygiene scan for pinning and dependency-file drift.",
+    ),
 }
 
 
