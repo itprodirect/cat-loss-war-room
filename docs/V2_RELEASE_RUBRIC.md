@@ -296,7 +296,7 @@ Target release level: `Demo-ready`
 
 | Dimension | Score | Verdict | Why |
 |---|---:|---|---|
-| Reliability | 3 | Strong | `312` tests pass on the supported verify path, CI covers fresh-env plus `exa-py` compatibility plus offline fixture smoke/golden snapshot validation, offline security hygiene, and release-scorecard artifact validation, and the committed four-scenario FL/TX/LA lane still meets the calibrated demo-ready thresholds. |
+| Reliability | 3 | Strong | `316` tests pass on the supported verify path, CI covers fresh-env plus `exa-py` compatibility plus offline fixture smoke/golden snapshot validation, offline e2e demo validation, offline security hygiene, and release-scorecard artifact validation, and the committed four-scenario FL/TX/LA lane still meets the calibrated demo-ready thresholds. |
 | Evidence Quality | 2 | Acceptable | The committed four-scenario fixture set still satisfies explicit demo-ready thresholds for scenario count, state coverage, issue breadth, citation coverage, module completeness, source mix, output structure, and citation-summary consistency. Broader scenario breadth and richer normalization still remain open under `#8`, `#12`, and `#13`. |
 | Trust and Provenance | 2 | Acceptable | Disclaimers, source tiers, citation checks, evidence clusters, and claim/review trace links exist, but they are still notebook-era rather than full product workflow state. |
 | Workflow Usability | 1 | Weak | The product is still notebook-first and generally engineer-driven for setup and operation, but the notebook/preflight path now exposes a first workflow layer with research-plan preview, cluster-first evidence-board summary, issue-workspace summary, memo-composer readiness, export-history posture, and explicit run-stage review states. |
@@ -384,7 +384,7 @@ What this does now:
 - evaluates explicit demo-ready fixture thresholds inside the artifact
 - can be paired with `python -m war_room.fixture_snapshots --check` for the committed golden fixture snapshot and stricter `#8` quality assertions
 - runs in CI, validates the ship thresholds, and uploads the same artifact from the release-scorecard job
-- wraps CI gates with `python -m war_room.quality_gates` so unit, offline fixture, golden snapshot, Exa compatibility, release-scorecard, and security-hygiene failures produce categorized JSON, Markdown, and log artifacts
+- wraps CI gates with `python -m war_room.quality_gates` so unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, and security-hygiene failures produce categorized JSON, Markdown, and log artifacts
 - creates a concrete artifact that later `#9` CI work can extend beyond the current demo-ready gate
 
 Manual and CI-specific scorecard generation still remains available with:
@@ -392,7 +392,7 @@ Manual and CI-specific scorecard generation still remains available with:
 ```bash
 python -m war_room.release_scorecard \
   --candidate local-demo \
-  --verification-summary "312 passed"
+  --verification-summary "316 passed"
 ```
 
 What it does not do yet:

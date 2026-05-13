@@ -63,6 +63,12 @@ GATE_DEFINITIONS: dict[str, QualityGateDefinition] = {
         category="offline_fixture",
         description="Offline fixture smoke and intake validation tests.",
     ),
+    "e2e-offline-demo": QualityGateDefinition(
+        gate_id="e2e-offline-demo",
+        name="Offline E2E Demo Gate",
+        category="e2e_offline",
+        description="End-to-end offline demo preflight and artifact validation.",
+    ),
     "golden-snapshot-tests": QualityGateDefinition(
         gate_id="golden-snapshot-tests",
         name="Golden Snapshot Test Gate",
