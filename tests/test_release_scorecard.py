@@ -1,5 +1,6 @@
 """Tests for release scorecard artifact generation."""
 
+from dataclasses import asdict
 from pathlib import Path
 
 from war_room.bootstrap import bootstrap_runtime
@@ -11,6 +12,8 @@ from war_room.release_scorecard import (
     collect_scenario_registry_coverage,
     render_release_scorecard_markdown,
     summarize_preflight_report,
+    validate_latest_release_scorecard_artifact,
+    validate_release_scorecard_payload,
     write_release_scorecard_artifacts,
 )
 from war_room.scenarios import ScenarioAvailabilitySummary
@@ -166,6 +169,58 @@ def test_write_release_scorecard_artifacts_writes_json_and_markdown(tmp_path: Pa
     assert '"fixture_coverage"' in payload
     assert '"scenario_registry"' in payload
     assert '"calibration_thresholds"' in payload
+
+
+def test_validate_release_scorecard_payload_accepts_demo_ready_artifact():
+    summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+    scorecard = build_demo_release_scorecard(
+        run_id="20260418T120000Z",
+        candidate="codex/local",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+
+    assert validate_release_scorecard_payload(asdict(scorecard)) == []
+
+
+def test_validate_release_scorecard_payload_reports_actionable_failures():
+    payload = {
+        "calibration_thresholds": [
+            {"name": "Fixture scenario count", "passed": False},
+        ],
+        "must_pass_gates": [
+            {"name": "Committed fixture coverage meets demo-ready threshold", "passed": False},
+        ],
+        "decision": "No ship",
+    }
+
+    failures = validate_release_scorecard_payload(payload)
+
+    assert "Fixture scenario count" in failures[0]
+    assert "Committed fixture coverage meets demo-ready threshold" in failures[1]
+    assert "No ship" in failures[2]
+
+
+def test_validate_latest_release_scorecard_artifact_reads_newest_json(tmp_path: Path):
+    summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+    scorecard = build_demo_release_scorecard(
+        run_id="20260418T120000Z",
+        candidate="codex/local",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+    json_path, _markdown_path = write_release_scorecard_artifacts(scorecard, output_dir=tmp_path)
+
+    artifact_path, failures = validate_latest_release_scorecard_artifact(tmp_path)
+
+    assert artifact_path == json_path
+    assert failures == []
 
 
 def test_build_demo_release_scorecard_marks_failed_verification_gate():

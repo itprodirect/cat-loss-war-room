@@ -17,9 +17,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        exa_spec:
-          - "exa-py==2.0.2"
-          - "exa-py<2"
+        include:
+          - exa_spec: "exa-py==2.0.2"
+            exa_label: "exa-py-2-0-2"
+          - exa_spec: "exa-py<2"
+            exa_label: "exa-py-lt-2"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,5 +39,29 @@ jobs:
           pip install "${{ matrix.exa_spec }}"
           pip install -e . --no-deps --no-build-isolation
 
-      - name: Run Test Suite
-        run: pytest -q
+      - name: Exa Compatibility Gate - full test suite
+        shell: bash
+        continue-on-error: true
+        run: |
+          python -m war_room.quality_gates run \
+            --gate exa-compat-tests \
+            --label "${{ matrix.exa_spec }}" \
+            --output-dir runs/quality_gates \
+            -- python -m pytest -q
+
+      - name: Summarize Exa Compatibility Gate
+        if: always()
+        shell: bash
+        run: |
+          python -m war_room.quality_gates summarize \
+            --output-dir runs/quality_gates \
+            --summary-path runs/quality_gates/summary.md \
+            --fail-on-failed
+
+      - name: Upload Exa Compatibility Gate Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gates-exa-${{ matrix.exa_label }}-${{ github.run_id }}
+          path: runs/quality_gates/
+          if-no-files-found: error

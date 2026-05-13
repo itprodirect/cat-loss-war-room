@@ -599,14 +599,53 @@ def write_release_scorecard_artifacts(
     return json_path, markdown_path
 
 
+def validate_release_scorecard_payload(payload: dict) -> list[str]:
+    """Return validation failures for a release-scorecard payload."""
+
+    failures: list[str] = []
+    thresholds = payload.get("calibration_thresholds") or []
+    if not thresholds:
+        failures.append("Release scorecard artifact is missing calibration thresholds.")
+    else:
+        failed_thresholds = [
+            str(item.get("name") or "unnamed threshold")
+            for item in thresholds
+            if not item.get("passed")
+        ]
+        if failed_thresholds:
+            failures.append(
+                "Release scorecard calibration thresholds failed: "
+                + ", ".join(failed_thresholds)
+            )
+
+    gates = {gate.get("name"): gate.get("passed") for gate in payload.get("must_pass_gates", [])}
+    required_gate = "Committed fixture coverage meets demo-ready threshold"
+    if not gates.get(required_gate, False):
+        failures.append(f"Release scorecard gate failed: {required_gate}")
+
+    if payload.get("decision") != "Ship":
+        failures.append(f"Unexpected release decision: {payload.get('decision')!r}")
+    return failures
+
+
+def validate_latest_release_scorecard_artifact(artifact_dir: Path) -> tuple[Path | None, list[str]]:
+    """Validate the newest release-scorecard JSON artifact in a directory."""
+
+    artifact_paths = sorted(artifact_dir.glob("*.json"))
+    if not artifact_paths:
+        return None, ["No release-scorecard JSON artifact found."]
+    artifact_path = artifact_paths[-1]
+    payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+    return artifact_path, validate_release_scorecard_payload(payload)
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse CLI arguments for scorecard generation."""
 
     parser = argparse.ArgumentParser(description="Write a demo-ready release scorecard artifact")
-    parser.add_argument("--candidate", required=True, help="Candidate label or branch name")
+    parser.add_argument("--candidate", help="Candidate label or branch name")
     parser.add_argument(
         "--verification-summary",
-        required=True,
         help='Short verification result, for example "178 passed"',
     )
     parser.add_argument(
@@ -636,6 +675,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--output-dir",
         help="Optional output directory. Defaults to <runs_dir>/release_scorecards.",
     )
+    parser.add_argument(
+        "--validate-latest",
+        action="store_true",
+        help="Validate the newest release-scorecard JSON artifact in the output directory.",
+    )
     return parser.parse_args(argv)
 
 
@@ -645,6 +689,21 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     context = bootstrap_runtime(start_path=Path(__file__))
     output_dir = Path(args.output_dir) if args.output_dir else context.settings.runs_dir / "release_scorecards"
+    if args.validate_latest:
+        artifact_path, failures = validate_latest_release_scorecard_artifact(output_dir)
+        if failures:
+            print("Release scorecard validation failed:")
+            if artifact_path:
+                print(f"- Artifact: {artifact_path}")
+            for failure in failures:
+                print(f"- {failure}")
+            return 1
+        print(f"Release scorecard validation passed: {artifact_path}")
+        return 0
+
+    if not args.candidate or not args.verification_summary:
+        raise SystemExit("--candidate and --verification-summary are required unless --validate-latest is used.")
+
     fixture_coverage = collect_fixture_coverage(context.settings.cache_samples_dir)
     scenario_registry = collect_scenario_registry_coverage(context.repo_root, context.settings.cache_samples_dir)
     scorecard = build_demo_release_scorecard(

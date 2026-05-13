@@ -1685,3 +1685,30 @@ Status: Complete
   - `python -m pytest tests/test_fixture_snapshots.py tests/test_offline_demo_pack.py tests/test_intake_validation.py -q` -> `53 passed in 2.77s`.
   - `python -m pytest -q` -> `298 passed in 7.38s`.
   - `python -m war_room --verify --release-candidate issue-8-fixture-snapshots` -> passed; embedded `pytest -q` reported `298 passed in 7.16s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-8-fixture-snapshots_20260513t044322z.json`.
+
+## Session 94 - Issue 9 CI Failure Categorization
+Date: 2026-05-13
+Status: Complete
+
+- Completed the next focused `#9` slice by adding categorized CI quality-gate artifacts around the existing deterministic lanes.
+- What changed:
+  - Added `src/war_room/quality_gates.py`, a small wrapper that runs existing commands, preserves their exit codes, and writes per-gate JSON, Markdown, and log artifacts under `runs/quality_gates/`.
+  - Split CI steps so unit tests, offline fixture tests, golden snapshot tests, direct golden snapshot diff checks, Exa compatibility tests, release-scorecard generation, and release-scorecard validation have distinct gate names and artifact files.
+  - Added always-run CI summary/upload steps so failed gates still leave a diagnostic artifact.
+  - Moved release-scorecard artifact validation into `src/war_room/release_scorecard.py` with a reusable `--validate-latest` CLI path.
+  - Added focused tests for quality-gate artifacts and release-scorecard validation behavior.
+  - Synced status docs to the 306-test baseline and the first `#9` failure-categorization slice.
+- Why:
+  - issue `#9` explicitly needs CI reports that distinguish unit, fixture-quality, Exa compatibility, and release-artifact failures.
+  - this keeps the existing offline-safe commands as the source of truth and only adds a diagnostic/artifact layer around them.
+- Decision not added:
+  - no new formal decision-log entry was added; this is an implementation slice of the existing `#9` CI quality-gate direction.
+  - this does not add e2e or security scans yet, so it does not fully close `#9`.
+- Verification:
+  - `python -m pytest tests/test_quality_gates.py tests/test_release_scorecard.py -q` -> `17 passed in 7.22s`.
+  - `python -m pytest -q` -> `306 passed in 11.89s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.quality_gates run --gate golden-snapshot-check --output-dir runs/quality_gates/local -- python -m war_room.fixture_snapshots --check` -> passed; wrote `runs/quality_gates/local/golden-snapshot-check.json`.
+  - `python -m war_room.quality_gates run --gate release-scorecard-validate --output-dir runs/quality_gates/local -- python -m war_room.release_scorecard --validate-latest --output-dir runs/release_scorecards` -> passed; wrote `runs/quality_gates/local/release-scorecard-validate.json`.
+  - `python -m war_room.quality_gates summarize --output-dir runs/quality_gates/local --summary-path runs/quality_gates/local/summary.md --fail-on-failed` -> passed; `2/2` quality gates passed.
+  - `python -m war_room --verify --release-candidate issue-9-ci-failure-categorization` -> passed; embedded `pytest -q` reported `306 passed in 13.43s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-ci-failure-categorization_20260513t050202z.json`.
