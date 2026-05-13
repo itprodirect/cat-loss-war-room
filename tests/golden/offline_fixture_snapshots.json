@@ -4,12 +4,14 @@
     "LA",
     "TX"
   ],
-  "offline_ready_registry_fixture_count": 1,
+  "offline_ready_registry_fixture_count": 2,
   "offline_ready_registry_fixture_slugs": [
+    "ida_orleans_lloyds_ho3",
     "milton_pinellas_citizens_ho3"
   ],
-  "registry_backed_fixture_count": 1,
+  "registry_backed_fixture_count": 2,
   "registry_backed_fixture_slugs": [
+    "ida_orleans_lloyds_ho3",
     "milton_pinellas_citizens_ho3"
   ],
   "scenario_count": 4,
@@ -39,7 +41,7 @@
       "evidence_review_required_cluster_count": 2,
       "export_delivery_state": "not_written",
       "export_eligibility": "review_required_export",
-      "intake_ref": "eval/intakes/ida_lloyds_orleans.json",
+      "intake_ref": "scenario:ida_orleans_lloyds_ho3",
       "issue_workspace_issue_count": 5,
       "memo_composer_section_count": 12,
       "memo_sections": [
@@ -61,8 +63,8 @@
         "citation_verify.json"
       ],
       "policy_type": "HO-3 Dwelling",
-      "registry_offline_ready": false,
-      "registry_slug": null,
+      "registry_offline_ready": true,
+      "registry_slug": "ida_orleans_lloyds_ho3",
       "review_required_issue_count": 5,
       "review_required_memo_section_count": 1,
       "source_badge_counts": {

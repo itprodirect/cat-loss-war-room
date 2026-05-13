@@ -26,6 +26,7 @@ def test_list_scenarios_returns_curated_registry_order():
 
     assert [scenario.slug for scenario in scenarios] == [
         "milton_pinellas_citizens_ho3",
+        "ida_orleans_lloyds_ho3",
         "ian_lee_citizens_ho3",
         "irma_monroe_citizens_ho3",
         "michael_bay_default_ho3",
@@ -76,11 +77,17 @@ def test_load_scenario_for_fixture_case_returns_registry_backed_benchmark():
     assert scenario.slug == "milton_pinellas_citizens_ho3"
     assert scenario.offline_demo_ready is True
 
+    ida_scenario = load_scenario_for_fixture_case("ida_lloyds_orleans", repo_root=ROOT)
+
+    assert ida_scenario is not None
+    assert ida_scenario.slug == "ida_orleans_lloyds_ho3"
+    assert ida_scenario.offline_demo_ready is True
+
 
 def test_all_committed_scenario_files_are_valid():
     scenario_paths = sorted(path for path in scenarios_dir(ROOT).glob("*.json") if path.name != "index.json")
 
-    assert len(scenario_paths) == 5
+    assert len(scenario_paths) == 6
 
     for path in scenario_paths:
         payload = json.loads(path.read_text(encoding="utf-8"))

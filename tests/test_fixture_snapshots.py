@@ -31,8 +31,14 @@ def test_offline_fixture_snapshot_quality_assertions_cover_current_scenarios():
     assert snapshot["schema_version"] == "offline-fixture-snapshots.v1"
     assert snapshot["scenario_count"] == 4
     assert set(snapshot["fixture_states"]) == set(EXPECTED_FIXTURE_STATES)
-    assert snapshot["registry_backed_fixture_slugs"] == ["milton_pinellas_citizens_ho3"]
-    assert snapshot["offline_ready_registry_fixture_slugs"] == ["milton_pinellas_citizens_ho3"]
+    assert snapshot["registry_backed_fixture_slugs"] == [
+        "ida_orleans_lloyds_ho3",
+        "milton_pinellas_citizens_ho3",
+    ]
+    assert snapshot["offline_ready_registry_fixture_slugs"] == [
+        "ida_orleans_lloyds_ho3",
+        "milton_pinellas_citizens_ho3",
+    ]
 
     for scenario in snapshot["scenarios"]:
         assert scenario["weather_source_count"] >= 3

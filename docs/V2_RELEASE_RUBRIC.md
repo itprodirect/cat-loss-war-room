@@ -288,6 +288,8 @@ python -m war_room.fixture_snapshots --check
 
 That `#8` gate compares `tests/golden/offline_fixture_snapshots.json` against the current offline preflight and committed fixture payloads. It checks scenario coverage metadata, source mix, case count, citation summary consistency, memo section structure, workflow state, evidence/issue read-model counts, and export posture, and now feeds the completed `#9` categorized CI gate stack.
 
+The curated scenario registry now has two offline-ready fixture-backed benchmarks, Milton/Pinellas/Citizens and Ida/Orleans/Lloyd's. The Texas fixture lanes remain committed eval-intake-backed scenarios until a later safe seeding pass can promote them or add additional verified fixture data.
+
 ## 8) Current Baseline Snapshot (May 13, 2026)
 
 This is the current scorecard entry using the rubric above.
@@ -296,8 +298,8 @@ Target release level: `Demo-ready`
 
 | Dimension | Score | Verdict | Why |
 |---|---:|---|---|
-| Reliability | 3 | Strong | `324` tests pass on the supported verify path, CI covers fresh-env plus `exa-py` compatibility plus offline fixture smoke/golden snapshot validation, offline e2e demo validation, offline security and dependency hygiene, and release-scorecard artifact validation, and the committed four-scenario FL/TX/LA lane still meets the calibrated demo-ready thresholds. |
-| Evidence Quality | 2 | Acceptable | The committed four-scenario fixture set still satisfies explicit demo-ready thresholds for scenario count, state coverage, issue breadth, citation coverage, module completeness, source mix, output structure, and citation-summary consistency. Broader scenario breadth and richer normalization still remain open under `#8`, `#12`, and `#13`. |
+| Reliability | 3 | Strong | `334` tests pass on the supported verify path, CI covers fresh-env plus `exa-py` compatibility plus offline fixture smoke/golden snapshot validation, offline e2e demo validation, offline security and dependency hygiene, and release-scorecard artifact validation, and the committed four-scenario FL/TX/LA lane still meets the calibrated demo-ready thresholds. |
+| Evidence Quality | 2 | Acceptable | The committed four-scenario fixture set still satisfies explicit demo-ready thresholds for scenario count, state coverage, issue breadth, citation coverage, module completeness, source mix, output structure, and citation-summary consistency, with two fixture lanes now represented as offline-ready curated registry scenarios. Broader scenario breadth and richer normalization still remain open under `#8`, `#12`, and `#13`. |
 | Trust and Provenance | 2 | Acceptable | Disclaimers, source tiers, citation checks, evidence clusters, and claim/review trace links exist, but they are still notebook-era rather than full product workflow state. |
 | Workflow Usability | 1 | Weak | The product is still notebook-first and generally engineer-driven for setup and operation, but the notebook/preflight path now exposes a first workflow layer with research-plan preview, cluster-first evidence-board summary, issue-workspace summary, memo-composer readiness, export-history posture, and explicit run-stage review states. |
 | Review and Export Quality | 2 | Acceptable | Memo/export trust signals are stronger and audit structures exist, but export quality is still not polished for repeated client-facing use. |
@@ -392,7 +394,7 @@ Manual and CI-specific scorecard generation still remains available with:
 ```bash
 python -m war_room.release_scorecard \
   --candidate local-demo \
-  --verification-summary "324 passed"
+  --verification-summary "334 passed"
 ```
 
 What it does not do yet:
