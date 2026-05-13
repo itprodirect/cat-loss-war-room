@@ -17,13 +17,27 @@ from war_room.retrieval import (
 )
 
 
+_UNSET = object()
+
+
 class _FakeProvider:
     provider_name = "exa"
 
-    def __init__(self, *, results: object | None = None, error: Exception | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        results: object = _UNSET,
+        content_results: object = _UNSET,
+        error: Exception | None = None,
+    ) -> None:
         self.search_calls: list[tuple[str, dict[str, object]]] = []
         self.content_calls: list[tuple[list[str], dict[str, object]]] = []
-        self._results = results if results is not None else [{"title": "Result", "url": "https://example.com/result"}]
+        self._results = (
+            results
+            if results is not _UNSET
+            else [{"title": "Result", "url": "https://example.com/result"}]
+        )
+        self._content_results = content_results
         self._error = error
 
     def search(self, query: str, **kwargs: object) -> object:
@@ -36,6 +50,10 @@ class _FakeProvider:
 
     def get_contents(self, urls: list[str], **kwargs: object) -> object:
         self.content_calls.append((urls, kwargs))
+        if self._content_results is not _UNSET:
+            if isinstance(self._content_results, list):
+                return list(self._content_results)
+            return self._content_results
         return [{"title": "Content", "url": urls[0] if urls else ""}]
 
 
@@ -120,6 +138,24 @@ def test_execute_retrieval_search_normalizes_partial_provider_rows():
     assert results[1]["title"] == "Missing URL result"
     assert results[1]["url"] == ""
     assert results[1]["snippet"] == ""
+
+
+def test_execute_retrieval_search_rejects_none_provider_response():
+    provider = _FakeProvider(results=None)
+    task = RetrievalTask(
+        retrieval_task_id="task-weather-1",
+        run_id="run-milton",
+        stage_id="run-milton:weather",
+        provider="exa",
+        query_text="milton pinellas weather.gov",
+    )
+
+    try:
+        execute_retrieval_search(provider, RetrievalSearchRequest(task=task))
+    except RetrievalContractError as exc:
+        assert "expected list[dict]" in str(exc)
+    else:
+        raise AssertionError("Expected None search response to raise RetrievalContractError.")
 
 
 def test_execute_retrieval_task_records_completed_attempt_state():
@@ -282,6 +318,31 @@ def test_execute_retrieval_task_rejects_malformed_provider_response():
     assert result.run_events[-1].event_type == "retrieval_failed"
 
 
+def test_execute_retrieval_task_rejects_none_provider_response_as_malformed_failure():
+    provider = _FakeProvider(results=None)
+    task = RetrievalTask(
+        retrieval_task_id="task-weather-1",
+        run_id="run-milton",
+        stage_id="run-milton:weather",
+        provider="exa",
+        query_text="milton pinellas weather.gov",
+    )
+
+    completed_at = dt.datetime(2026, 3, 8, 13, 5, tzinfo=dt.UTC)
+    result = execute_retrieval_task(provider, RetrievalSearchRequest(task=task), now=completed_at)
+
+    assert result.task.status == "failed"
+    assert result.task.review_required is True
+    assert result.task.completed_at == completed_at
+    assert result.warning is not None
+    assert "error_kind=malformed_response" in result.warning
+    assert "exception=RetrievalContractError" in result.warning
+    assert "retryable=false" in result.warning
+    assert "attempts=1" in result.warning
+    assert result.run_events[-1].event_type == "retrieval_failed"
+    assert result.run_events[-1].message == result.warning
+
+
 def test_execute_retrieval_search_rejects_provider_mismatch():
     provider = _FakeProvider()
     task = RetrievalTask(
@@ -355,6 +416,27 @@ def test_fetch_retrieval_contents_normalizes_rows_and_rejects_malformed_response
         assert "expected list[dict]" in str(exc)
     else:
         raise AssertionError("Expected malformed content response to raise RetrievalContractError.")
+
+
+def test_fetch_retrieval_contents_rejects_none_provider_response():
+    provider = _FakeProvider(content_results=None)
+    task = RetrievalTask(
+        retrieval_task_id="task-weather-1",
+        run_id="run-milton",
+        stage_id="run-milton:weather",
+        provider="exa",
+        query_text="milton pinellas weather.gov",
+    )
+
+    try:
+        fetch_retrieval_contents(
+            provider,
+            RetrievalContentsRequest(task=task, urls=["https://example.com/a"]),
+        )
+    except RetrievalContractError as exc:
+        assert "expected list[dict]" in str(exc)
+    else:
+        raise AssertionError("Expected None content response to raise RetrievalContractError.")
 
 
 def test_notebook_run_id_from_intake_is_deterministic():

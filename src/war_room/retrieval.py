@@ -306,7 +306,9 @@ def _validate_provider_match(provider: RetrievalProvider, task: RetrievalTask) -
 
 def _normalize_provider_hits(raw_hits: Any) -> RetrievalHitDiagnostics:
     if raw_hits is None:
-        return RetrievalHitDiagnostics(hits=[])
+        raise RetrievalContractError(
+            "retrieval provider returned a malformed response: expected list[dict]"
+        )
     if not isinstance(raw_hits, list):
         raise RetrievalContractError(
             "retrieval provider returned a malformed response: expected list[dict]"
