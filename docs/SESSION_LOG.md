@@ -1648,3 +1648,17 @@ Status: Complete
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_evidence_board.py -q` -> `7 passed`
   - `$env:PYTHONPATH='src'; python -m pytest tests/test_scenarios.py::test_notebook_uses_helper_driven_scenario_prep_and_has_no_stale_hardcoded_intake -q` -> `1 passed`
   - `$env:PYTHONPATH='src'; python -m war_room --verify --release-candidate evidence-board-html-ui` -> passed, `294 passed`; offline preflight passed for 4 committed fixture scenarios.
+
+## Session 92 - Issue 6 Closeout Audit
+Date: 2026-05-13
+Status: Complete
+
+- Completed the final closeout audit for issue `#6` without changing runtime code, notebooks, dependencies, or live-retrieval behavior.
+- What changed:
+  - Added `docs/ISSUE_6_CLOSEOUT_AUDIT.md` with a prompt-to-artifact checklist mapping the `#6` typed-contract and cache-hardening requirements to code, tests, validation, and explicit out-of-scope compatibility surfaces.
+  - Updated `README.md`, `CLAUDE.md`, `docs/HANDOFF.md`, `docs/ROADMAP.md`, `docs/V2_ISSUE_MAP.md`, `docs/BUILD_CHECKLIST.md`, `docs/repo-brief.md`, and `docs/heartbeat.md` so `#6` is no longer described as pending implementation.
+- Why:
+  - the runtime slices were already landed and merged, but issue `#6` still needed an auditable closeout artifact that proves cache compatibility is versioned and test-covered, remaining dict seams are either typed or explicitly transitional, and the issue is ready to close after this PR lands.
+- Verification:
+  - `python -m pytest -q` -> `294 passed in 5.97s`
+  - `python -m war_room --verify --release-candidate issue-6-closeout-audit` -> passed; embedded `pytest -q` reported `294 passed in 5.98s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-6-closeout-audit_20260513t042737z.json`.
