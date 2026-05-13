@@ -169,6 +169,46 @@ jobs:
           path: runs/quality_gates/
           if-no-files-found: error
 
+  dependency-hygiene:
+    name: Dependency Hygiene
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dependency Hygiene Gate - dependency manifest scan
+        shell: bash
+        continue-on-error: true
+        run: |
+          python -m war_room.quality_gates run \
+            --gate dependency-hygiene-check \
+            --output-dir runs/quality_gates \
+            -- python -m war_room.dependency_hygiene --check
+
+      - name: Summarize Dependency Hygiene Gate
+        if: always()
+        shell: bash
+        run: |
+          python -m war_room.quality_gates summarize \
+            --output-dir runs/quality_gates \
+            --summary-path runs/quality_gates/summary.md \
+            --fail-on-failed
+
+      - name: Upload Dependency Hygiene Gate Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gates-dependency-${{ github.run_id }}
+          path: runs/quality_gates/
+          if-no-files-found: error
+
   offline-e2e:
     name: Offline E2E
     runs-on: ubuntu-latest

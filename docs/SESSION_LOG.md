@@ -1764,3 +1764,30 @@ Status: Complete
   - `python -m war_room.quality_gates summarize --output-dir runs/quality_gates/local --summary-path runs/quality_gates/local/summary.md --fail-on-failed` -> passed; `4/4` quality gates passed.
   - `python -m war_room --verify --release-candidate issue-9-offline-e2e-gate` -> passed; embedded `pytest -q` reported `316 passed in 15.29s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-offline-e2e-gate_20260513t055236z.json`.
   - `python -m pytest tests/test_offline_e2e.py tests/test_quality_gates.py -q` -> `10 passed in 2.19s` after final test-file style cleanup.
+
+## Session 97 - Issue 9 Dependency Hygiene Quality Gate
+Date: 2026-05-13
+Status: Complete
+
+- Completed one final focused `#9` quality-gate slice by adding an offline-safe dependency hygiene gate through the existing categorized quality-gates wrapper.
+- What changed:
+  - Added `src/war_room/dependency_hygiene.py`, a stdlib-only checker for exact `requirements.txt` pins, disallowed editable/local/direct-URL requirements, duplicate/conflicting entries, `requirements.txt` / `pyproject.toml` drift, unsupported dependency files, and documented dependency policy drift.
+  - Added `dependency-hygiene-check` to `src/war_room/quality_gates.py` so local and CI runs emit the same JSON, Markdown, and log artifact shape as the other `#9` lanes.
+  - Added a dedicated CI `Dependency Hygiene` job that runs `python -m war_room.quality_gates run --gate dependency-hygiene-check -- python -m war_room.dependency_hygiene --check`, summarizes results, and uploads gate artifacts.
+  - Addressed PR review by moving that CI gate before dependency installation and running it with `PYTHONPATH=src`, so the dependency scanner checks manifests before installing from them.
+  - Made the package initializer lazy and removed bootstrap/settings imports from `quality_gates` and `dependency_hygiene`, so `python -m war_room.quality_gates` can start without installed third-party packages.
+  - Added focused temp-repo tests for clean dependency files plus unpinned requirements, unsupported sources, duplicate/conflicting entries, pyproject drift, unsupported dependency files, documentation drift, nested `pyproject.toml`, and nested `requirements.txt`.
+  - Synced status docs to the 324-test baseline and documented that `#9` is ready for closeout review after this slice lands.
+- Why:
+  - issue `#9` asks for dependency, secret, and security scanning where it materially protects the repo and for CI reports that categorize failure sources.
+  - this slice protects the dependency manifest boundary without live vulnerability scanning, dependency changes, notebook edits, production security controls, or live network calls.
+- Decision not added:
+  - no new formal decision-log entry was added; this follows the existing `#9` quality-gate direction.
+  - live vulnerability scanning was intentionally not added because it would require network access and belongs outside this offline/no-new-dependency slice.
+- Verification:
+  - `PYTHONPATH=src python -S -m war_room.quality_gates run --gate dependency-hygiene-check --output-dir runs/quality_gates/local-no-site -- python -S -m war_room.dependency_hygiene --check` -> passed, confirming the gate path works without site packages.
+  - `python -m pytest tests/test_dependency_hygiene.py tests/test_quality_gates.py -q` -> `15 passed in 0.78s`.
+  - `python -m pytest -q` -> `324 passed in 7.23s`.
+  - `PYTHONPATH=src python -m war_room.quality_gates run --gate dependency-hygiene-check --output-dir runs/quality_gates/local -- python -m war_room.dependency_hygiene --check` -> passed; wrote `runs/quality_gates/local/dependency-hygiene-check.json`.
+  - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
+  - `python -m war_room --verify --release-candidate issue-9-dependency-hygiene-gate` -> passed; embedded `pytest -q` reported `324 passed in 11.65s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-dependency-hygiene-gate_20260513t062318z.json`.
