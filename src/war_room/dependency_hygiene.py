@@ -12,8 +12,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Sequence
 
-from war_room.bootstrap import discover_repo_root
-
 SCHEMA_VERSION = "dependency-hygiene.v1"
 
 REQUIREMENTS_PATH = "requirements.txt"
@@ -110,7 +108,7 @@ def run_dependency_hygiene(
 ) -> DependencyHygieneReport:
     """Run deterministic dependency hygiene checks."""
 
-    resolved_root = (repo_root or discover_repo_root()).resolve()
+    resolved_root = (repo_root or _discover_repo_root()).resolve()
     tracked = _resolve_tracked_files(resolved_root, tracked_files=tracked_files)
     requirements_entries = _read_requirements_entries(resolved_root / REQUIREMENTS_PATH)
     pyproject_entries, pyproject_findings = _read_pyproject_dependency_entries(resolved_root / PYPROJECT_PATH)
@@ -684,6 +682,14 @@ def _normalize_relative_path(path: str | Path) -> str:
     if candidate.is_absolute():
         return candidate.resolve().as_posix()
     return raw[2:] if raw.startswith("./") else raw
+
+
+def _discover_repo_root(start_path: Path | None = None) -> Path:
+    start = (start_path or Path.cwd()).resolve()
+    for candidate in (start, *start.parents):
+        if (candidate / "pyproject.toml").exists():
+            return candidate
+    raise RuntimeError(f"Could not discover repository root from {start}")
 
 
 def _is_within_repo(repo_root: Path, path: Path) -> bool:

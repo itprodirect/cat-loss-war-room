@@ -1775,6 +1775,7 @@ Status: Complete
   - Added `dependency-hygiene-check` to `src/war_room/quality_gates.py` so local and CI runs emit the same JSON, Markdown, and log artifact shape as the other `#9` lanes.
   - Added a dedicated CI `Dependency Hygiene` job that runs `python -m war_room.quality_gates run --gate dependency-hygiene-check -- python -m war_room.dependency_hygiene --check`, summarizes results, and uploads gate artifacts.
   - Addressed PR review by moving that CI gate before dependency installation and running it with `PYTHONPATH=src`, so the dependency scanner checks manifests before installing from them.
+  - Made the package initializer lazy and removed bootstrap/settings imports from `quality_gates` and `dependency_hygiene`, so `python -m war_room.quality_gates` can start without installed third-party packages.
   - Added focused temp-repo tests for clean dependency files plus unpinned requirements, unsupported sources, duplicate/conflicting entries, pyproject drift, unsupported dependency files, documentation drift, nested `pyproject.toml`, and nested `requirements.txt`.
   - Synced status docs to the 324-test baseline and documented that `#9` is ready for closeout review after this slice lands.
 - Why:
@@ -1784,8 +1785,9 @@ Status: Complete
   - no new formal decision-log entry was added; this follows the existing `#9` quality-gate direction.
   - live vulnerability scanning was intentionally not added because it would require network access and belongs outside this offline/no-new-dependency slice.
 - Verification:
-  - `python -m pytest tests/test_dependency_hygiene.py tests/test_quality_gates.py -q` -> `15 passed in 1.43s`.
-  - `python -m pytest -q` -> `324 passed in 11.55s`.
+  - `PYTHONPATH=src python -S -m war_room.quality_gates run --gate dependency-hygiene-check --output-dir runs/quality_gates/local-no-site -- python -S -m war_room.dependency_hygiene --check` -> passed, confirming the gate path works without site packages.
+  - `python -m pytest tests/test_dependency_hygiene.py tests/test_quality_gates.py -q` -> `15 passed in 0.78s`.
+  - `python -m pytest -q` -> `324 passed in 7.23s`.
   - `PYTHONPATH=src python -m war_room.quality_gates run --gate dependency-hygiene-check --output-dir runs/quality_gates/local -- python -m war_room.dependency_hygiene --check` -> passed; wrote `runs/quality_gates/local/dependency-hygiene-check.json`.
   - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
-  - `python -m war_room --verify --release-candidate issue-9-dependency-hygiene-gate` -> passed; embedded `pytest -q` reported `324 passed in 7.89s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-dependency-hygiene-gate_20260513t061847z.json`.
+  - `python -m war_room --verify --release-candidate issue-9-dependency-hygiene-gate` -> passed; embedded `pytest -q` reported `324 passed in 11.65s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-dependency-hygiene-gate_20260513t062318z.json`.

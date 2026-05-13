@@ -12,8 +12,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Sequence
 
-from war_room.bootstrap import discover_repo_root
-
 SCHEMA_VERSION = "ci-quality-gate.v1"
 DEFAULT_OUTPUT_DIR = Path("runs/quality_gates")
 
@@ -131,7 +129,7 @@ def run_quality_gate(
         raise ValueError("Quality gate command cannot be empty.")
 
     definition = GATE_DEFINITIONS[gate_id]
-    resolved_repo_root = repo_root or discover_repo_root()
+    resolved_repo_root = repo_root or _discover_repo_root()
     resolved_output_dir = (resolved_repo_root / output_dir).resolve() if not output_dir.is_absolute() else output_dir
     resolved_output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -298,7 +296,7 @@ def main(argv: list[str] | None = None) -> int:
     summarize_parser.add_argument("--fail-on-failed", action="store_true")
 
     args = parser.parse_args(argv)
-    repo_root = discover_repo_root()
+    repo_root = _discover_repo_root()
     output_dir = _resolve_path(repo_root, Path(args.output_dir))
 
     if args.command_name == "run":
@@ -394,6 +392,14 @@ def _append_github_output(key: str, value: str) -> None:
 
 def _resolve_path(repo_root: Path, path: Path) -> Path:
     return path if path.is_absolute() else (repo_root / path).resolve()
+
+
+def _discover_repo_root(start_path: Path | None = None) -> Path:
+    start = (start_path or Path.cwd()).resolve()
+    for candidate in (start, *start.parents):
+        if (candidate / "pyproject.toml").exists():
+            return candidate
+    raise RuntimeError(f"Could not discover repository root from {start}")
 
 
 def _strip_remainder_separator(values: Sequence[str]) -> list[str]:
