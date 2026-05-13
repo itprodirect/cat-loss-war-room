@@ -30,13 +30,14 @@ This is the short version. Clean, practical, no drama.
 - Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) are complete and closed as written source-of-truth specs.
 - Issue [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) is still open, but the local and CI release-evidence path now includes explicit demo-ready threshold calibration, run-scoped artifacts, verify manifests, and a stable latest pointer in `docs/V2_RELEASE_RUBRIC.md`.
 - Issue [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) is complete. The closeout audit in [ISSUE_6_CLOSEOUT_AUDIT.md](ISSUE_6_CLOSEOUT_AUDIT.md) maps the contract/cache requirements to code, tests, scope boundaries, and validation evidence.
+- Issue [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) is complete. The closeout audit in [ISSUE_9_CLOSEOUT_AUDIT.md](ISSUE_9_CLOSEOUT_AUDIT.md) maps the expanded CI quality-gate requirements to workflow jobs, gate categories, tests, artifact evidence, and offline validation.
 - Placeholder directories under `apps/`, `packages/`, and `workers/` are planned V2 boundaries only. The active runtime remains the notebook plus `src/war_room/`.
 
 ## Delivery layers
 
 - V0 implemented now: notebook-first demo, cache-backed offline lane, package bootstrap, and current memo pipeline.
 - V2 definition work completed: workflow/IA in `#23`, evidence schema in `#24`, repo/runtime boundary framing in `#22`, and a first-pass release rubric in `#27`.
-- V2 implementation work still pending: broaden CI and pilot operationalization from `#27`, complete the remaining foundation work in `#7` to `#9`, then build product surfaces in `#10` onward.
+- V2 implementation work still pending: broaden CI and pilot operationalization from `#27`, complete the remaining foundation work in `#7` and `#8`, then build product surfaces in `#10` onward.
 
 ## Active Priority Rank
 
@@ -46,29 +47,28 @@ Issue [#3](https://github.com/itprodirect/cat-loss-war-room/issues/3) remains th
 Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) are not ranked here because their written source-of-truth docs already landed and those definition issues are closed. Their downstream implementation work lives in `#10`, `#11`, and `#12`.
 
 1. [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) Broaden CI and pilot operationalization of the calibrated release rubric
-2. [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) Expand CI quality gates beyond the lanes already in place (ready for closeout review after the dependency-hygiene slice lands)
-3. [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) Retrieval provider abstraction + contract tests (four slices landed)
-4. [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (first golden snapshot gate landed; broader breadth still open)
-5. [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) API orchestrator with graceful degradation
-6. [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) Guided web intake + run-status UX
-7. [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Evidence normalization + provenance implementation
-8. [#13](https://github.com/itprodirect/cat-loss-war-room/issues/13) Caselaw quality v2
-9. [#25](https://github.com/itprodirect/cat-loss-war-room/issues/25) AI guardrails + eval harness
-10. [#26](https://github.com/itprodirect/cat-loss-war-room/issues/26) Human review workflow
-11. [#14](https://github.com/itprodirect/cat-loss-war-room/issues/14) Citation verification hardening
-12. [#15](https://github.com/itprodirect/cat-loss-war-room/issues/15) Memo workspace v2
-13. [#17](https://github.com/itprodirect/cat-loss-war-room/issues/17) Observability + cost controls
-14. [#18](https://github.com/itprodirect/cat-loss-war-room/issues/18) Security baseline
-15. [#19](https://github.com/itprodirect/cat-loss-war-room/issues/19) Attorney pilot validation
-16. [#16](https://github.com/itprodirect/cat-loss-war-room/issues/16) Firm memory v1
+2. [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) Retrieval provider abstraction + contract tests (four slices landed)
+3. [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (first golden snapshot gate landed; broader breadth still open)
+4. [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) API orchestrator with graceful degradation
+5. [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) Guided web intake + run-status UX
+6. [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Evidence normalization + provenance implementation
+7. [#13](https://github.com/itprodirect/cat-loss-war-room/issues/13) Caselaw quality v2
+8. [#25](https://github.com/itprodirect/cat-loss-war-room/issues/25) AI guardrails + eval harness
+9. [#26](https://github.com/itprodirect/cat-loss-war-room/issues/26) Human review workflow
+10. [#14](https://github.com/itprodirect/cat-loss-war-room/issues/14) Citation verification hardening
+11. [#15](https://github.com/itprodirect/cat-loss-war-room/issues/15) Memo workspace v2
+12. [#17](https://github.com/itprodirect/cat-loss-war-room/issues/17) Observability + cost controls
+13. [#18](https://github.com/itprodirect/cat-loss-war-room/issues/18) Security baseline
+14. [#19](https://github.com/itprodirect/cat-loss-war-room/issues/19) Attorney pilot validation
+15. [#16](https://github.com/itprodirect/cat-loss-war-room/issues/16) Firm memory v1
 
 ## Triage Notes
 
-- Issue `#6` is documented complete in the closeout audit. The rest of the backlog is mostly coherent.
+- Issues `#6` and `#9` are documented complete in closeout audits. The rest of the backlog is mostly coherent.
 - The main cleanup is scope clarity, not deletion:
   - `#23` and `#24` should be treated as completed definition work; downstream implementation belongs elsewhere.
   - `#6` is complete and should stay scoped to closeout follow-through rather than new runtime work.
-  - `#9` should track CI expansion beyond the gates already in place.
+  - `#9` is complete for the current CI quality-gate acceptance criteria; future security, pilot, and fixture-breadth work belongs in `#18`, `#19`, `#27`, and `#8`.
   - `#11` should explicitly implement the workflow defined in `#23`.
   - `#12` should explicitly implement against the canonical schema defined in `#24`.
 - `#27` should now focus on CI and pilot operationalization of the calibrated rubric rather than inventing the first rubric draft.
@@ -81,7 +81,6 @@ Goal: finish the remaining definition/foundation work so V2 implementation start
 - [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) Broaden CI and pilot operationalization of the calibrated release scorecard
 - [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) Retrieval provider abstraction + contract tests (provider seam + notebook retrieval-state + citation-verify + deterministic timing slices landed)
 - [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (first golden snapshot gate landed; broader breadth still open)
-- [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) Expand CI quality gates (failure-categorization artifacts, offline security and dependency hygiene, and a first offline e2e gate landed; ready for closeout review after the dependency-hygiene slice lands)
 
 ## Next (30-60 days)
 

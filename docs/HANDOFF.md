@@ -28,6 +28,7 @@ This is research acceleration, not legal advice.
 | Typed domain contracts (#6) | Complete with closeout audit (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Run Timeline, Evidence Board, Issue Workspace, Memo Composer, and Export History read-model contracts; see `docs/ISSUE_6_CLOSEOUT_AUDIT.md`) |
 | Retrieval contracts (#7) | Four slices landed: provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing |
 | Scenario fixtures (#8) | Four committed scenario directories cover Florida, Texas, and Louisiana; the first deterministic golden snapshot gate now checks output structure, source mix, case counts, citation summaries, and coverage metadata; broader fixture breadth remains open |
+| CI quality gates (#9) | Complete with closeout audit in `docs/ISSUE_9_CLOSEOUT_AUDIT.md`: categorized quality-gate artifacts, offline fixture and golden snapshot checks, offline e2e validation, security hygiene, dependency hygiene, Exa compatibility diagnostics, and release-scorecard validation are all wired |
 | Product foundation (`#22`) | Complete and closed: packaging/bootstrap lane implemented |
 | Workflow IA spec (`#23`) | Complete and closed as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
 | Evidence schema spec (`#24`) | Complete and closed as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |
@@ -106,7 +107,6 @@ Core implementation lives in `src/war_room/`.
 - #27 broader CI and pilot operationalization of the release scorecard
 - #7 retrieval provider abstraction and contracts (provider seam, notebook retrieval-state, and citation-verify slices landed)
 - #8 multi-jurisdiction fixtures and snapshots (first golden snapshot gate landed; broader breadth still open)
-- #9 expanded CI quality gates (failure-categorization artifacts, offline security and dependency hygiene, and first offline e2e gate landed; ready for closeout review after the dependency-hygiene slice lands)
 
 ### Next
 - #10 API orchestrator

@@ -1791,3 +1791,25 @@ Status: Complete
   - `PYTHONPATH=src python -m war_room.quality_gates run --gate dependency-hygiene-check --output-dir runs/quality_gates/local -- python -m war_room.dependency_hygiene --check` -> passed; wrote `runs/quality_gates/local/dependency-hygiene-check.json`.
   - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
   - `python -m war_room --verify --release-candidate issue-9-dependency-hygiene-gate` -> passed; embedded `pytest -q` reported `324 passed in 11.65s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-dependency-hygiene-gate_20260513t062318z.json`.
+
+## Session 98 - Issue 9 Closeout Audit
+Date: 2026-05-13
+Status: Complete
+
+- Completed the `#9` closeout review after the fixture snapshot, CI quality-gate categorization, security hygiene, offline e2e, and dependency hygiene slices landed.
+- What changed:
+  - Added `docs/ISSUE_9_CLOSEOUT_AUDIT.md`, mapping issue `#9` deliverables and acceptance criteria to the landed workflow jobs, quality-gate categories, tests, artifact outputs, and offline validation commands.
+  - Synced README, handoff, roadmap, issue-map, release-rubric, build-checklist, repo-brief, and heartbeat status so `#9` is documented as ready to close when this PR lands.
+- Why:
+  - issue `#9` now has smoke/e2e coverage, fixture-quality and golden snapshot gates, dependency/secret/security hygiene checks, categorized CI artifacts, and offline demo/fixture compatibility.
+  - remaining beta, pilot, production-security, product API/UI, and broader fixture-breadth work belongs to `#27`, `#19`, `#18`, `#10` to `#12`, and `#8` rather than staying hidden inside `#9`.
+- Decision not added:
+  - no runtime code, dependencies, notebooks, or generated committed artifacts were changed for this closeout.
+  - no new formal decision-log entry was added; the closeout audit is the evidence artifact for this status change.
+- Verification:
+  - `python -m pytest -q` -> `324 passed in 9.66s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.security_hygiene --check` -> passed; `6/6` checks passed.
+  - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed and artifacts were written under `runs/offline_e2e/`.
+  - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
+  - `python -m war_room --verify --release-candidate issue-9-closeout-review` -> passed; embedded `pytest -q` reported `324 passed in 8.81s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-closeout-review_20260513t064805z.json`.

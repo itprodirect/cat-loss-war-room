@@ -6,9 +6,9 @@ This document is the first-pass output of issue `#27`.
 
 It defines a v0.1 quality rubric and release scorecard for CAT-Loss War Room so future work can be judged against one shared standard instead of ad hoc opinions.
 
-This is intentionally a first pass. It should be refined as `#8` expands fixture coverage, `#9` expands CI gates, and `#19` produces pilot feedback.
+This is intentionally a first pass. It should be refined as `#8` expands fixture coverage and `#19` produces pilot feedback.
 
-Demo-ready threshold calibration is now explicit in the local scorecard workflow. CI and pilot operationalization remain open.
+Demo-ready threshold calibration is now explicit in the local scorecard workflow. Issue `#9` CI quality-gate coverage is complete for the current acceptance criteria, while broader `#27` pilot operationalization remains open.
 
 ## 1) Purpose
 
@@ -286,7 +286,7 @@ The committed fixture lane now also has a deterministic golden snapshot check:
 python -m war_room.fixture_snapshots --check
 ```
 
-That `#8` gate compares `tests/golden/offline_fixture_snapshots.json` against the current offline preflight and committed fixture payloads. It checks scenario coverage metadata, source mix, case count, citation summary consistency, memo section structure, workflow state, evidence/issue read-model counts, and export posture before future `#9` CI gates broaden.
+That `#8` gate compares `tests/golden/offline_fixture_snapshots.json` against the current offline preflight and committed fixture payloads. It checks scenario coverage metadata, source mix, case count, citation summary consistency, memo section structure, workflow state, evidence/issue read-model counts, and export posture, and now feeds the completed `#9` categorized CI gate stack.
 
 ## 8) Current Baseline Snapshot (May 13, 2026)
 
@@ -385,7 +385,7 @@ What this does now:
 - can be paired with `python -m war_room.fixture_snapshots --check` for the committed golden fixture snapshot and stricter `#8` quality assertions
 - runs in CI, validates the ship thresholds, and uploads the same artifact from the release-scorecard job
 - wraps CI gates with `python -m war_room.quality_gates` so unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene failures produce categorized JSON, Markdown, and log artifacts
-- creates a concrete artifact that later `#9` CI work can extend beyond the current demo-ready gate
+- creates concrete release evidence that future `#27`, `#19`, and pilot-readiness work can extend beyond the current demo-ready gate
 
 Manual and CI-specific scorecard generation still remains available with:
 
@@ -397,7 +397,6 @@ python -m war_room.release_scorecard \
 
 What it does not do yet:
 
-- replace broader CI-enforced evidence from `#9`
 - replace pilot benchmark inputs from `#19`
 
 ## 10) What Should Improve This Rubric Next
@@ -405,7 +404,6 @@ What it does not do yet:
 This v0.1 rubric should be revised when the following land:
 
 - `#8`: broader fixture and scenario coverage
-- `#9`: expanded CI gates and stronger repeatable evidence for release claims, beyond artifact emission
 - `#10` and `#11`: real product workflow surfaces
 - `#12` and `#13`: better evidence normalization and case-law quality
 - `#19`: pilot feedback and operator usability benchmarks
@@ -425,7 +423,7 @@ Use this rubric plus the committed golden fixture snapshot gate to define which 
 
 ### For `#9`
 
-Turn the repeatable portions of this scorecard into CI-enforced release evidence where practical.
+Issue `#9` is complete for the current CI quality-gate scope. Use `docs/ISSUE_9_CLOSEOUT_AUDIT.md` as the evidence map for the landed unit, fixture, golden snapshot, offline e2e, Exa compatibility, release-scorecard, security hygiene, and dependency hygiene gates.
 
 ### For `#10` and `#11`
 
