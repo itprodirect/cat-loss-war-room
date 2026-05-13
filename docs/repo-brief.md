@@ -43,7 +43,7 @@ Preserve the stable V0 notebook demo while finishing the active foundation tranc
 - Preflight and verification results for demo readiness.
 - Run-scoped preflight, scorecard, and verify-manifest artifacts for the supported local release-evidence path.
 - Golden offline fixture snapshots for reviewable scenario/output drift checks.
-- Categorized CI quality-gate artifacts for unit, offline fixture, golden snapshot, Exa compatibility, and release-scorecard lanes.
+- Categorized CI quality-gate artifacts for unit, offline fixture, golden snapshot, Exa compatibility, release-scorecard, and security-hygiene lanes.
 
 ## Quality bar
 
@@ -62,7 +62,7 @@ Preserve the stable V0 notebook demo while finishing the active foundation tranc
 
 ## Next 3 tasks
 
-1. Continue `#9` with the next offline-safe e2e or security gate that can run automatically without live retrieval.
+1. Continue `#9` with the next offline-safe integration or e2e gate that can run automatically without live retrieval.
 2. Expand `#8` with the next safe curated offline fixture scenario or document the next live-retrieval-backed seeding path.
 3. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
 

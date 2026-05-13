@@ -124,6 +124,51 @@ jobs:
           path: runs/quality_gates/
           if-no-files-found: error
 
+  security-hygiene:
+    name: Security Hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "setuptools>=69"
+          pip install -r requirements.txt
+          pip install -e . --no-deps --no-build-isolation
+
+      - name: Security Hygiene Gate - repo policy and artifact scan
+        shell: bash
+        continue-on-error: true
+        run: |
+          python -m war_room.quality_gates run \
+            --gate security-hygiene-check \
+            --output-dir runs/quality_gates \
+            -- python -m war_room.security_hygiene --check
+
+      - name: Summarize Security Hygiene Gate
+        if: always()
+        shell: bash
+        run: |
+          python -m war_room.quality_gates summarize \
+            --output-dir runs/quality_gates \
+            --summary-path runs/quality_gates/summary.md \
+            --fail-on-failed
+
+      - name: Upload Security Hygiene Gate Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gates-security-${{ github.run_id }}
+          path: runs/quality_gates/
+          if-no-files-found: error
+
   release-scorecard:
     name: Release Scorecard Artifact
     runs-on: ubuntu-latest

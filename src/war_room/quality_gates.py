@@ -93,6 +93,12 @@ GATE_DEFINITIONS: dict[str, QualityGateDefinition] = {
         category="release_scorecard",
         description="Release-scorecard threshold and must-pass gate validation.",
     ),
+    "security-hygiene-check": QualityGateDefinition(
+        gate_id="security-hygiene-check",
+        name="Security Hygiene Gate",
+        category="security_hygiene",
+        description="Offline repository hygiene scan for secrets, env policy, and unsafe runtime artifacts.",
+    ),
 }
 
 
