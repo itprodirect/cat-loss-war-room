@@ -61,7 +61,9 @@ jobs:
           pip install -e . --no-deps --no-build-isolation
 
       - name: Run Offline Fixture Validation
-        run: pytest -q tests/test_offline_demo_pack.py tests/test_intake_validation.py
+        run: |
+          pytest -q tests/test_offline_demo_pack.py tests/test_intake_validation.py tests/test_fixture_snapshots.py
+          python -m war_room.fixture_snapshots --check
 
   release-scorecard:
     name: Release Scorecard Artifact
