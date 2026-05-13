@@ -1712,3 +1712,28 @@ Status: Complete
   - `python -m war_room.quality_gates run --gate release-scorecard-validate --output-dir runs/quality_gates/local -- python -m war_room.release_scorecard --validate-latest --output-dir runs/release_scorecards` -> passed; wrote `runs/quality_gates/local/release-scorecard-validate.json`.
   - `python -m war_room.quality_gates summarize --output-dir runs/quality_gates/local --summary-path runs/quality_gates/local/summary.md --fail-on-failed` -> passed; `2/2` quality gates passed.
   - `python -m war_room --verify --release-candidate issue-9-ci-failure-categorization` -> passed; embedded `pytest -q` reported `306 passed in 13.43s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-ci-failure-categorization_20260513t050202z.json`.
+
+## Session 95 - Issue 9 Security Hygiene Quality Gate
+Date: 2026-05-13
+Status: Complete
+
+- Completed the next focused `#9` slice by adding an offline-safe security hygiene quality gate through the existing categorized quality-gates wrapper.
+- What changed:
+  - Added `src/war_room/security_hygiene.py`, a stdlib-only checker for tracked `.env` files, obvious API key/token patterns, `.env.example` expectations, `.gitignore` policy, runtime artifact commits, and documented secrets/cache policy drift.
+  - Added `security-hygiene-check` to `src/war_room/quality_gates.py` so local and CI runs emit the same JSON, Markdown, and log artifact shape as the other `#9` lanes.
+  - Added a dedicated CI `Security Hygiene` job that runs `python -m war_room.quality_gates run --gate security-hygiene-check -- python -m war_room.security_hygiene --check`, summarizes results, and uploads gate artifacts.
+  - Added focused tests for current-repo pass behavior, compliant synthetic repos, committed env/runtime artifact failures, synthetic secret assignment failures, env-template drift, and the new gate category.
+  - Synced status docs to the 312-test baseline and the new offline security hygiene gate.
+- Why:
+  - issue `#9` asks for security-relevant checks on PR/main builds and diagnostic artifacts that distinguish security failures from unit, fixture, Exa, and release-scorecard failures.
+  - this slice protects practical repo hygiene without live network calls, dependency changes, notebooks, production auth, PII redaction, retention enforcement, or broader `#18` security architecture.
+- Decision not added:
+  - no new formal decision-log entry was added; this is an implementation slice of the existing `#9` quality-gate direction.
+  - this does not fully close `#9`; broader integration/e2e gates remain open, and production security controls remain under `#18`.
+- Verification:
+  - `python -m pytest tests/test_quality_gates.py tests/test_release_scorecard.py -q` -> `18 passed in 8.71s`.
+  - `python -m pytest -q` -> `312 passed in 19.20s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.quality_gates run --gate security-hygiene-check --output-dir runs/quality_gates/local -- python -m war_room.security_hygiene --check` -> passed; wrote `runs/quality_gates/local/security-hygiene-check.json`.
+  - `python -m war_room.quality_gates summarize --output-dir runs/quality_gates/local --summary-path runs/quality_gates/local/summary.md --fail-on-failed` -> passed; `3/3` quality gates passed.
+  - `python -m war_room --verify --release-candidate issue-9-security-hygiene-gate` -> passed; embedded `pytest -q` reported `312 passed in 17.52s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-9-security-hygiene-gate_20260513t052904z.json`.

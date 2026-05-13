@@ -24,6 +24,7 @@ python -m war_room --preflight
 python -m war_room --verify
 python -m war_room.fixture_snapshots --check
 python -m war_room.quality_gates run --gate golden-snapshot-check -- python -m war_room.fixture_snapshots --check
+python -m war_room.quality_gates run --gate security-hygiene-check -- python -m war_room.security_hygiene --check
 pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```
@@ -41,6 +42,7 @@ python -m war_room --preflight
 python -m war_room --verify
 python -m war_room.fixture_snapshots --check
 python -m war_room.quality_gates run --gate golden-snapshot-check -- python -m war_room.fixture_snapshots --check
+python -m war_room.quality_gates run --gate security-hygiene-check -- python -m war_room.security_hygiene --check
 pytest -q
 jupyter notebook notebooks/01_case_war_room.ipynb
 ```
@@ -51,7 +53,7 @@ jupyter notebook notebooks/01_case_war_room.ipynb
 
 `python -m war_room.fixture_snapshots --check` compares committed offline fixture coverage and output-structure metrics against the golden snapshot in `tests/golden/offline_fixture_snapshots.json`.
 
-`python -m war_room.quality_gates run ...` wraps an existing check with categorized logs, JSON, and Markdown artifacts under `runs/quality_gates/`; CI uses it to distinguish unit, offline fixture, golden snapshot, Exa compatibility, and release-scorecard failures.
+`python -m war_room.quality_gates run ...` wraps an existing check with categorized logs, JSON, and Markdown artifacts under `runs/quality_gates/`; CI uses it to distinguish unit, offline fixture, golden snapshot, Exa compatibility, release-scorecard, and security-hygiene failures.
 
 `pytest -q` is still the underlying supported test command after editable install. If you skip package install for ad hoc local inspection, use `PYTHONPATH=src` instead of a raw-checkout test run.
 
@@ -122,16 +124,17 @@ Only the Milton benchmark in the curated notebook scenario registry currently ma
 
 ## Current Status
 
-**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, styled evidence-board review view, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline summary on top of the canonical contracts, `306` tests are passing under the supported bootstrap path, the supported `--verify` flow now writes a linked run-scoped release-evidence bundle, and CI now enforces:
+**Implemented now:** The notebook-first V0 demo is stable, the offline cache-backed lane works across four committed scenario directories spanning Florida, Texas, and Louisiana, the notebook and preflight path now expose a research-plan preview, styled evidence-board review view, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline summary on top of the canonical contracts, `312` tests are passing under the supported bootstrap path, the supported `--verify` flow now writes a linked run-scoped release-evidence bundle, and CI now enforces:
 - Fresh environment install + full test run with categorized unit-test gate artifacts
 - Editable package bootstrap validation
 - Offline fixture smoke validation plus the committed golden fixture snapshot check across committed scenarios, with separate offline-fixture and golden-snapshot gate artifacts
 - `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`) with categorized compatibility artifacts
 - Release-scorecard artifact emission plus ship-threshold validation from the calibrated `#27` workflow, with separate generation and validation gate artifacts
+- Offline security hygiene validation for committed env files, obvious API key patterns, `.env.example` expectations, runtime artifact commits, and documented secrets policy drift, with categorized security artifacts
 
 **Specified, not built yet:** `docs/V2_WORKFLOW_IA.md`, `docs/V2_EVIDENCE_SCHEMA.md`, and `docs/V2_RELEASE_RUBRIC.md` are the written source-of-truth specs for the current V2 planning layer, while `apps/`, `workers/`, and `packages/` remain placeholder boundaries for later implementation.
 
-Issues `#4`, `#5`, `#22`, `#23`, and `#24` are complete and closed. The written source-of-truth specs for `#23` and `#24` live in `docs/V2_WORKFLOW_IA.md` and `docs/V2_EVIDENCE_SCHEMA.md`, while downstream implementation remains tracked in later issues. Issue `#27` now has a calibrated demo-ready scorecard, CI artifact emission plus validation, and a linked local verify-evidence workflow in `docs/V2_RELEASE_RUBRIC.md`, and remains open for broader CI/pilot operationalization. Issue `#6` is complete with a closeout audit in `docs/ISSUE_6_CLOSEOUT_AUDIT.md`, including schema-versioned runtime cache envelopes with legacy raw-cache loading plus typed Run Timeline, Evidence Board, Issue Workspace, Memo Composer, and Export History read-model contracts. Issue `#7` has four slices landed: the provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing. Issue `#8` now has its first deterministic golden snapshot gate for committed offline scenarios, with broader fixture breadth still open. Issue `#9` now has a first CI failure-categorization slice with per-gate quality artifacts; broader e2e and security gates remain open.
+Issues `#4`, `#5`, `#22`, `#23`, and `#24` are complete and closed. The written source-of-truth specs for `#23` and `#24` live in `docs/V2_WORKFLOW_IA.md` and `docs/V2_EVIDENCE_SCHEMA.md`, while downstream implementation remains tracked in later issues. Issue `#27` now has a calibrated demo-ready scorecard, CI artifact emission plus validation, and a linked local verify-evidence workflow in `docs/V2_RELEASE_RUBRIC.md`, and remains open for broader CI/pilot operationalization. Issue `#6` is complete with a closeout audit in `docs/ISSUE_6_CLOSEOUT_AUDIT.md`, including schema-versioned runtime cache envelopes with legacy raw-cache loading plus typed Run Timeline, Evidence Board, Issue Workspace, Memo Composer, and Export History read-model contracts. Issue `#7` has four slices landed: the provider seam, notebook retrieval-state emission, citation-verify retrieval tracking, and deterministic retrieval-task timing. Issue `#8` now has its first deterministic golden snapshot gate for committed offline scenarios, with broader fixture breadth still open. Issue `#9` now has categorized per-gate quality artifacts plus an offline security hygiene gate; broader integration/e2e layering remains open.
 
 ## Roadmap (Simple)
 

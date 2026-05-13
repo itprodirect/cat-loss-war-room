@@ -58,6 +58,20 @@ def test_run_quality_gate_records_failed_command_without_raising(tmp_path: Path)
     assert "Offline fixture snapshot differs" in Path(result.log_path).read_text(encoding="utf-8")
 
 
+def test_security_hygiene_gate_is_categorized(tmp_path: Path):
+    result = run_quality_gate(
+        gate_id="security-hygiene-check",
+        command=[sys.executable, "-c", "print('Security hygiene check passed: 6/6 checks passed')"],
+        output_dir=tmp_path,
+        repo_root=ROOT,
+    )
+
+    assert result.status == "passed"
+    assert result.category == "security_hygiene"
+    assert result.name == "Security Hygiene Gate"
+    assert result.summary == "Security hygiene check passed: 6/6 checks passed"
+
+
 def test_write_quality_gate_summary_groups_passed_and_failed_results(tmp_path: Path):
     run_quality_gate(
         gate_id="offline-fixture-tests",
