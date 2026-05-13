@@ -1885,3 +1885,27 @@ Status: Complete
   - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed and artifacts were written under `runs/offline_e2e/`.
   - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
   - `python -m war_room --verify --release-candidate issue-7-none-response-contract-fix` -> passed; embedded `pytest -q` reported `334 passed in 8.62s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-7-none-response-contract-fix_20260513t195125z.json`.
+
+## Session 102 - Issue 8 Fixture Breadth Registry Slice
+Date: 2026-05-13
+Status: Complete
+
+- Completed the next focused `#8` fixture-breadth slice by promoting the existing committed Ida/Lloyd's/Orleans fixture lane into the curated scenario registry.
+- What changed:
+  - Added `scenarios/ida_orleans_lloyds_ho3.json` as an offline-ready registry scenario backed by the already committed `cache_samples/ida_lloyds_orleans` payloads.
+  - Updated the scenario registry order, notebook-runtime/scenario/release-scorecard tests, and the golden offline fixture snapshot so registry-backed and offline-ready fixture counts now report Milton plus Ida.
+  - Synced README, handoff, roadmap, issue-map, release-rubric, build-checklist, and repo-brief status language to say `#8` has a second registry-backed offline scenario while broader fixture breadth remains open.
+- Why:
+  - The existing Ida fixture lane is credible to promote without live retrieval or invented data because its intake and all four module fixtures are already committed.
+  - Adding a brand-new fifth cache fixture directory would still require live retrieval or a separate curated fixture-seeding pass, so this PR intentionally broadens registry-backed coverage without changing fixture payload data.
+- Decisions not added:
+  - no dependencies, notebooks, live Exa calls, new cache payloads, or issue `#10` product-orchestration work were added.
+  - no new formal decision-log entry was added; this is a narrow `#8` implementation slice under the existing fixture/snapshot direction.
+- Validation:
+  - `python -m pytest tests/test_fixture_snapshots.py tests/test_offline_demo_pack.py tests/test_intake_validation.py -q` -> `53 passed in 2.24s`.
+  - `python -m pytest -q` -> `334 passed in 12.30s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-13_offline-e2e_20260513t200751z.json`.
+  - `python -m war_room --verify --release-candidate issue-8-fixture-breadth` -> passed; embedded `pytest -q` reported `334 passed in 12.66s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-8-fixture-breadth_20260513t200758z.json`.
+- Remaining issue status:
+  - issue `#8` should remain open because the committed fixture directory count is still four and broader multi-jurisdiction fixture breadth/seeding work remains.

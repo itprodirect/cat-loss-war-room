@@ -1,0 +1,41 @@
+{
+  "schema_version": "scenario.v1",
+  "slug": "ida_orleans_lloyds_ho3",
+  "title": "Hurricane Ida (Orleans Lloyd's benchmark)",
+  "benchmark_focus": "Louisiana hurricane benchmark for wind-vs-water, concurrent causation, and adjustment-delay bad-faith issues.",
+  "fixture_case_key": "ida_lloyds_orleans",
+  "offline_demo_ready": true,
+  "event_name": "Hurricane Ida",
+  "event_date": "2021-08-29",
+  "state": "LA",
+  "county": "Orleans",
+  "carrier": "Certain Underwriters at Lloyd's, London",
+  "policy_type": "HO-3 Dwelling",
+  "posture": [
+    "denial",
+    "bad_faith"
+  ],
+  "key_facts": [
+    "Hurricane-force winds were documented in Orleans Parish during Ida landfall.",
+    "Interior water intrusion was reported immediately after roof and window-envelope damage.",
+    "The carrier attributed the majority of loss to excluded flood and delayed portions of the adjustment."
+  ],
+  "coverage_issues": [
+    "wind vs water causation",
+    "concurrent causation",
+    "duty to investigate"
+  ],
+  "tags": [
+    "louisiana",
+    "hurricane",
+    "orleans",
+    "ida",
+    "lloyds",
+    "offline-ready",
+    "ho3"
+  ],
+  "notes": [
+    "Promotes the existing committed ida_lloyds_orleans fixture lane into the curated scenario registry without adding invented source data.",
+    "Use this scenario to keep Louisiana wind/water and bad-faith fixture coverage visible in registry, snapshot, preflight, and scorecard outputs."
+  ]
+}
