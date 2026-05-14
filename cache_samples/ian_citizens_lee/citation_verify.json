@@ -1,0 +1,57 @@
+{
+  "module": "citation_verify",
+  "disclaimer": "CITATION SPOT-CHECK ONLY - These are confidence signals, not verification. KeyCite / Shepardize every citation before reliance.",
+  "checks": [
+    {
+      "status": "verified",
+      "badge": "verified",
+      "source_url": "https://www.courtlistener.com/c/fla-l-weekly-supp/41/?page=2",
+      "note": "Manually reviewed CourtListener reporter volume entry for the case name, docket, and reporter citation.",
+      "case_name": "Sebo v. American Home Assurance Co.",
+      "citation": "208 So. 3d 694",
+      "confidence": "high",
+      "status_reason": "manual_source_review",
+      "trust_explanation": "CourtListener's reporter-volume listing corroborates the case name, docket number, and citation; Shepardize before reliance.",
+      "source_tier": "official",
+      "source_class": "court_opinion",
+      "is_primary_authority": true,
+      "alternate_candidate_count": 0
+    },
+    {
+      "status": "uncertain",
+      "badge": "warning",
+      "source_url": "https://www.leagle.com/decision/20051981899so2d108221872",
+      "note": "Manual source review found the case name, court, date, and reporter citation on a professional case-law source; verify with KeyCite or Shepard's.",
+      "case_name": "Fayad v. Clarendon National Insurance Co.",
+      "citation": "899 So. 2d 1082",
+      "confidence": "medium",
+      "status_reason": "professional_source_manual_review",
+      "trust_explanation": "Professional case-law source corroborates the citation, but subscription citator review remains required.",
+      "source_tier": "professional",
+      "source_class": "court_opinion",
+      "is_primary_authority": true,
+      "alternate_candidate_count": 0
+    },
+    {
+      "status": "verified",
+      "badge": "verified",
+      "source_url": "https://www.courtlistener.com/c/so-3d/121/",
+      "note": "Manually reviewed CourtListener reporter volume entry for the case name, docket, and reporter citation.",
+      "case_name": "Trinidad v. Florida Peninsula Insurance Co.",
+      "citation": "121 So. 3d 433",
+      "confidence": "high",
+      "status_reason": "manual_source_review",
+      "trust_explanation": "CourtListener's reporter-volume listing corroborates the case name, docket number, and citation; Shepardize before reliance.",
+      "source_tier": "official",
+      "source_class": "court_opinion",
+      "is_primary_authority": true,
+      "alternate_candidate_count": 0
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "verified": 2,
+    "uncertain": 1,
+    "not_found": 0
+  }
+}

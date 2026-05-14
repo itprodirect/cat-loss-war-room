@@ -92,8 +92,8 @@ def fixture_snapshot_quality_failures(snapshot: dict[str, Any]) -> list[str]:
     scenarios = list(snapshot.get("scenarios") or [])
     scenario_count = int(snapshot.get("scenario_count") or 0)
     fixture_states = set(snapshot.get("fixture_states") or [])
-    if scenario_count < 4:
-        failures.append(f"scenario_count expected >= 4, got {scenario_count}")
+    if scenario_count < 5:
+        failures.append(f"scenario_count expected >= 5, got {scenario_count}")
     missing_states = sorted(set(EXPECTED_FIXTURE_STATES) - fixture_states)
     if missing_states:
         failures.append(f"fixture_states missing {', '.join(missing_states)}")

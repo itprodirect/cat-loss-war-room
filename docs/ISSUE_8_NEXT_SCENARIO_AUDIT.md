@@ -17,13 +17,15 @@ This PR promotes it as `texas_hail_tarrant_allstate_hob`, the first Texas hail h
 
 Follow-up on 2026-05-13: `tx_hail_allstate_tarrant_dp3` also satisfied the fixture-seeding checklist and was promoted as `texas_hail_tarrant_allstate_dp3`.
 
+Follow-up on 2026-05-14: `ian_lee_citizens_ho3` was manually source-reviewed and seeded as the fifth committed offline fixture lane, `ian_citizens_lee`.
+
 ## Candidate Classification
 
 | Candidate | Classification | Audit Result |
 |---|---|---|
 | `tx_hail_allstate_tarrant` | Ready to promote from existing committed fixture lane | Promoted in this PR as `texas_hail_tarrant_allstate_hob`. It broadens the registry beyond hurricane and HO-3 fact patterns while using already committed reviewed fixture data. |
 | `tx_hail_allstate_tarrant_dp3` | Ready to promote from existing committed fixture lane | Promoted in the follow-up slice as `texas_hail_tarrant_allstate_dp3`. It uses the same Tarrant hail event but focuses on the narrower DP-3 matching/scope dispute. |
-| `ian_lee_citizens_ho3` | Needs manual fixture seeding | Curated registry scenario exists, but no committed fixture lane exists yet. Keep live-only until reviewed weather/carrier/caselaw/citation fixtures are seeded. |
+| `ian_lee_citizens_ho3` | Seeded in follow-up slice | Promoted in the 2026-05-14 follow-up slice as `ian_citizens_lee` after manual source review and complete weather/carrier/caselaw/citation fixture seeding. |
 | `irma_monroe_citizens_ho3` | Needs manual fixture seeding | Curated registry scenario exists, but no committed fixture lane exists yet. Good future legal-depth candidate after reviewed fixture seeding. |
 | `michael_bay_default_ho3` | Needs manual fixture seeding | Curated registry scenario exists, but no committed fixture lane exists yet. Good future wind/scope candidate after reviewed fixture seeding. |
 | `idalia_taylor_default_ho3` | Needs manual fixture seeding | Curated registry scenario exists, but no committed fixture lane exists yet. Good future recent-source candidate after reviewed fixture seeding. |
@@ -33,7 +35,7 @@ Follow-up on 2026-05-13: `tx_hail_allstate_tarrant_dp3` also satisfied the fixtu
 
 ## Evidence Needed Before Future Promotions
 
-For live-only registry scenarios, promotion still requires the full `docs/FIXTURE_SEEDING.md` path:
+For remaining live-only registry scenarios, promotion still requires the full `docs/FIXTURE_SEEDING.md` path:
 
 - reviewed public/redacted fact pattern;
 - complete committed fixture directory with `weather.json`, `carrier.json`, `caselaw.json`, and `citation_verify.json`;
@@ -45,4 +47,4 @@ For live-only registry scenarios, promotion still requires the full `docs/FIXTUR
 
 ## Issue Status
 
-Issue `#8` should remain open. This audit promotes one safe existing fixture-backed candidate, but broader fixture breadth and future manual seeding remain incomplete.
+Issue `#8` should remain open through review of the fifth-lane Ian fixture-seeding PR. Any additional Florida seeding beyond that should be confirmed by maintainers or moved to a follow-up issue.

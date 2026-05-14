@@ -29,15 +29,17 @@ def test_offline_fixture_snapshot_quality_assertions_cover_current_scenarios():
     snapshot = build_offline_fixture_snapshot(repo_root=ROOT)
 
     assert snapshot["schema_version"] == "offline-fixture-snapshots.v1"
-    assert snapshot["scenario_count"] == 4
+    assert snapshot["scenario_count"] == 5
     assert set(snapshot["fixture_states"]) == set(EXPECTED_FIXTURE_STATES)
     assert snapshot["registry_backed_fixture_slugs"] == [
+        "ian_lee_citizens_ho3",
         "ida_orleans_lloyds_ho3",
         "milton_pinellas_citizens_ho3",
         "texas_hail_tarrant_allstate_dp3",
         "texas_hail_tarrant_allstate_hob",
     ]
     assert snapshot["offline_ready_registry_fixture_slugs"] == [
+        "ian_lee_citizens_ho3",
         "ida_orleans_lloyds_ho3",
         "milton_pinellas_citizens_ho3",
         "texas_hail_tarrant_allstate_dp3",

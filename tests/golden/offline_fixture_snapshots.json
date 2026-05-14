@@ -4,22 +4,84 @@
     "LA",
     "TX"
   ],
-  "offline_ready_registry_fixture_count": 4,
+  "offline_ready_registry_fixture_count": 5,
   "offline_ready_registry_fixture_slugs": [
+    "ian_lee_citizens_ho3",
     "ida_orleans_lloyds_ho3",
     "milton_pinellas_citizens_ho3",
     "texas_hail_tarrant_allstate_dp3",
     "texas_hail_tarrant_allstate_hob"
   ],
-  "registry_backed_fixture_count": 4,
+  "registry_backed_fixture_count": 5,
   "registry_backed_fixture_slugs": [
+    "ian_lee_citizens_ho3",
     "ida_orleans_lloyds_ho3",
     "milton_pinellas_citizens_ho3",
     "texas_hail_tarrant_allstate_dp3",
     "texas_hail_tarrant_allstate_hob"
   ],
-  "scenario_count": 4,
+  "scenario_count": 5,
   "scenarios": [
+    {
+      "carrier": "Citizens Property Insurance",
+      "carrier_document_count": 4,
+      "carrier_source_count": 4,
+      "case_key": "ian_citizens_lee",
+      "caselaw_case_count": 3,
+      "caselaw_issue_count": 2,
+      "caselaw_source_count": 3,
+      "citation_badge_counts": {
+        "verified": 2,
+        "warning": 1
+      },
+      "citation_summary": {
+        "not_found": 0,
+        "total": 3,
+        "uncertain": 1,
+        "verified": 2
+      },
+      "county": "Lee",
+      "coverage_issue_count": 3,
+      "event_name": "Hurricane Ian",
+      "evidence_cluster_count": 9,
+      "evidence_review_required_cluster_count": 1,
+      "export_delivery_state": "not_written",
+      "export_eligibility": "review_required_export",
+      "intake_ref": "scenario:ian_lee_citizens_ho3",
+      "issue_workspace_issue_count": 5,
+      "memo_composer_section_count": 12,
+      "memo_sections": [
+        "## Trust Snapshot",
+        "## Case Intake",
+        "## Weather Corroboration",
+        "## Carrier Document Pack",
+        "## Case Law",
+        "## Appendix: Query Plan",
+        "## Appendix: Evidence Clusters",
+        "## Appendix: Evidence Index",
+        "## Appendix: All Sources",
+        "## Methodology & Limitations"
+      ],
+      "module_files": [
+        "weather.json",
+        "carrier.json",
+        "caselaw.json",
+        "citation_verify.json"
+      ],
+      "policy_type": "HO-3 Dwelling",
+      "registry_offline_ready": true,
+      "registry_slug": "ian_lee_citizens_ho3",
+      "review_required_issue_count": 4,
+      "review_required_memo_section_count": 1,
+      "source_badge_counts": {
+        "official": 5,
+        "professional": 12
+      },
+      "state": "FL",
+      "weather_source_count": 3,
+      "workflow_review_required": true,
+      "workflow_status": "completed"
+    },
     {
       "carrier": "Certain Underwriters at Lloyd's, London",
       "carrier_document_count": 3,

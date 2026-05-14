@@ -1,0 +1,13 @@
+{
+  "status": "uncertain",
+  "badge": "warning",
+  "source_url": "https://www.leagle.com/decision/20051981899so2d108221872",
+  "note": "Manual source review found the case name, court, date, and reporter citation on a professional case-law source; verify with KeyCite or Shepard's.",
+  "confidence": "medium",
+  "status_reason": "professional_source_manual_review",
+  "trust_explanation": "Professional case-law source corroborates the citation, but subscription citator review remains required.",
+  "source_tier": "professional",
+  "source_class": "court_opinion",
+  "is_primary_authority": true,
+  "alternate_candidate_count": 0
+}

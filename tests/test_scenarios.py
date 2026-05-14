@@ -89,6 +89,7 @@ def test_offline_ready_scenarios_have_committed_fixture_bundles():
 
     assert {
         "ida_orleans_lloyds_ho3",
+        "ian_lee_citizens_ho3",
         "milton_pinellas_citizens_ho3",
         "texas_hail_tarrant_allstate_dp3",
         "texas_hail_tarrant_allstate_hob",
@@ -125,6 +126,12 @@ def test_load_scenario_for_fixture_case_returns_registry_backed_benchmark():
     assert texas_dp3_scenario is not None
     assert texas_dp3_scenario.slug == "texas_hail_tarrant_allstate_dp3"
     assert texas_dp3_scenario.offline_demo_ready is True
+
+    ian_scenario = load_scenario_for_fixture_case("ian_citizens_lee", repo_root=ROOT)
+
+    assert ian_scenario is not None
+    assert ian_scenario.slug == "ian_lee_citizens_ho3"
+    assert ian_scenario.offline_demo_ready is True
 
 
 def test_all_committed_scenario_files_are_valid():
