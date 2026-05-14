@@ -1,6 +1,6 @@
 # Roadmap (Simple, Current)
 
-Last updated: May 13, 2026
+Last updated: May 14, 2026
 
 This is the short version. Clean, practical, no drama.
 
@@ -50,7 +50,7 @@ Issue [#3](https://github.com/itprodirect/cat-loss-war-room/issues/3) remains th
 Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) are not ranked here because their written source-of-truth docs already landed and those definition issues are closed. Their downstream implementation work lives in `#10`, `#11`, and `#12`.
 
 1. [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) Broaden CI and pilot operationalization of the calibrated release rubric
-2. [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (golden snapshot gate, all four committed fixture lanes registry-backed, fixture-seeding process, and next-candidate audit landed; broader breadth still open)
+2. [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (golden snapshot gate, all four committed fixture lanes registry-backed, fixture-seeding process, next-candidate audit, and readiness audit landed; one final live-only Florida fixture-seeding PR remains recommended)
 3. [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) API orchestrator with graceful degradation
 4. [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) Guided web intake + run-status UX
 5. [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Evidence normalization + provenance implementation
@@ -81,7 +81,7 @@ Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#2
 Goal: finish the remaining definition/foundation work so V2 implementation starts from stable contracts and quality gates.
 
 - [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) Broaden CI and pilot operationalization of the calibrated release scorecard
-- [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (golden snapshot gate, all four committed fixture lanes registry-backed, fixture-seeding process, and next-candidate audit landed; broader breadth still open)
+- [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (golden snapshot gate, all four committed fixture lanes registry-backed, fixture-seeding process, next-candidate audit, and readiness audit landed; one final live-only Florida fixture-seeding PR remains recommended)
 
 ## Next (30-60 days)
 
@@ -122,5 +122,6 @@ Goal: trust, polish, and real-world adoption readiness.
 - Issue-by-issue map: [V2_ISSUE_MAP.md](V2_ISSUE_MAP.md)
 - Current project-health audit: [PROJECT_HEALTH_AUDIT_2026-03-10.md](PROJECT_HEALTH_AUDIT_2026-03-10.md)
 - Release rubric source of truth: [V2_RELEASE_RUBRIC.md](V2_RELEASE_RUBRIC.md)
+- Issue `#8` readiness audit: [ISSUE_8_READINESS_AUDIT.md](ISSUE_8_READINESS_AUDIT.md)
 - Workflow and IA source of truth: [V2_WORKFLOW_IA.md](V2_WORKFLOW_IA.md)
 - Evidence schema source of truth: [V2_EVIDENCE_SCHEMA.md](V2_EVIDENCE_SCHEMA.md)

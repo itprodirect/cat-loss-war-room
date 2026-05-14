@@ -82,9 +82,9 @@ Prioritize in this order:
 - `fix/` - bug fixes
 
 ## Current phase
-v0-demo shipped, issues #22, #23, #24, #6, #7, and #9 are complete, and active V2 execution work is now concentrated in broader #27 CI/pilot operationalization plus remaining #8 foundation slices. Cells 0-7 remain stable and CI runs package-installed tests.
+v0-demo shipped, issues #22, #23, #24, #6, #7, and #9 are complete, and active V2 execution work is now concentrated in broader #27 CI/pilot operationalization plus the remaining #8 fixture-seeding blocker documented in `docs/ISSUE_8_READINESS_AUDIT.md`. Cells 0-7 remain stable and CI runs package-installed tests.
 
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
 Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
-Next priority: continue the remaining #8 fixture breadth using the fixture-seeding process and broader #27 CI/pilot operationalization before downstream implementation in #10 onward.
+Next priority: complete one final #8 fixture-seeding PR for a live-only Florida registry scenario, or explicitly move that manual seeding scope to a follow-up issue, while continuing broader #27 CI/pilot operationalization before downstream implementation in #10 onward.

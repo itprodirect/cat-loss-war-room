@@ -1981,3 +1981,30 @@ Status: Complete
   - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
   - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-13_offline-e2e_20260513t205728z.json`.
   - `python -m war_room --verify --release-candidate issue-8-dp3-fixture-promotion` -> passed; embedded `pytest -q` reported `336 passed in 9.27s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-13_issue-8-dp3-fixture-promotion_20260513t205736z.json`.
+
+## Session 106 - Issue 8 Readiness Audit
+Date: 2026-05-14
+Status: Complete
+
+- Completed the requested `#8` readiness/closeout audit after all four committed fixture lanes became registry-backed and offline-ready.
+- Audit conclusion:
+  - issue `#8` should remain open.
+  - all four committed fixture lanes are registry-backed and offline-ready, and the snapshot/quality gates satisfy the current four-lane acceptance criteria.
+  - the remaining blocker is the issue deliverable for fixture breadth beyond the four committed directories: the repo still has exactly four complete fixture lanes.
+- What changed:
+  - Added `docs/ISSUE_8_READINESS_AUDIT.md` mapping issue `#8` deliverables and acceptance criteria to the current registry, fixture, snapshot, and offline-e2e state.
+  - Documented current breadth across states, perils, carriers, policy types, and postures.
+  - Documented remaining live-only Florida registry candidates and confirmed there is no unpromoted standalone intake-only fact pattern beyond the template.
+  - Synced README, handoff, roadmap, issue map, repo brief, CLAUDE, and heartbeat status language to point at the new audit and the exact remaining blocker.
+- Recommendation:
+  - keep `#8` open for one final fixture-seeding PR that manually seeds a live-only Florida registry scenario, preferably `ian_lee_citizens_ho3` unless source review chooses a stronger candidate.
+  - if maintainers decide four registry-backed fixture lanes are enough for `#8`, create a follow-up issue titled `Manually seed live-only Florida fixture scenarios` before closing `#8`.
+- Decisions not added:
+  - no fixture payloads, invented data, live retrieval, dependencies, notebooks, or issue `#10` orchestration work were added.
+  - this PR intentionally does not use `Closes #8`.
+- Validation:
+  - `python -m pytest tests/test_scenarios.py tests/test_fixture_snapshots.py tests/test_offline_demo_pack.py -q` -> `52 passed in 10.10s`.
+  - `python -m pytest -q` -> `336 passed in 23.19s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-14_offline-e2e_20260514t020742z.json`.
+  - `python -m war_room --verify --release-candidate issue-8-readiness-audit` -> passed; embedded `pytest -q` reported `336 passed in 19.04s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-14_issue-8-readiness-audit_20260514t020751z.json`.
