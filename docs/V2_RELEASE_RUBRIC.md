@@ -1,12 +1,12 @@
 # V2 Quality Rubric and Release Scorecard
 
-Last updated: May 13, 2026
+Last updated: May 14, 2026
 
 This document is the first-pass output of issue `#27`.
 
 It defines a v0.1 quality rubric and release scorecard for CAT-Loss War Room so future work can be judged against one shared standard instead of ad hoc opinions.
 
-This is intentionally a first pass. It should be refined as `#8` expands fixture coverage and `#19` produces pilot feedback.
+This is intentionally a first pass. It should be refined as future fixture-breadth work is scoped and `#19` produces pilot feedback.
 
 Demo-ready threshold calibration is now explicit in the local scorecard workflow. Issue `#9` CI quality-gate coverage is complete for the current acceptance criteria, while broader `#27` pilot operationalization remains open.
 
@@ -290,7 +290,7 @@ That `#8` gate compares `tests/golden/offline_fixture_snapshots.json` against th
 
 The curated scenario registry now has five offline-ready fixture-backed benchmarks: Milton/Pinellas/Citizens, Ian/Lee/Citizens HO-3, Ida/Orleans/Lloyd's, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3.
 
-Use `docs/FIXTURE_SEEDING.md` for future `#8` promotions. Offline-ready registry scenarios must have a `fixture_case_key` and a complete committed fixture bundle; tests enforce that lightweight guard so live-only or intake-only scenarios are not accidentally treated as cache-only demo paths.
+Use `docs/FIXTURE_SEEDING.md` for future fixture promotions. Offline-ready registry scenarios must have a `fixture_case_key` and a complete committed fixture bundle; tests enforce that lightweight guard so live-only or intake-only scenarios are not accidentally treated as cache-only demo paths.
 
 ## 8) Current Baseline Snapshot (May 14, 2026)
 
@@ -301,7 +301,7 @@ Target release level: `Demo-ready`
 | Dimension | Score | Verdict | Why |
 |---|---:|---|---|
 | Reliability | 3 | Strong | `343` tests pass on the supported verify path, CI covers fresh-env plus `exa-py` compatibility plus offline fixture smoke/golden snapshot validation, offline e2e demo validation, offline security and dependency hygiene, and release-scorecard artifact validation, and the committed five-scenario FL/TX/LA lane still meets the calibrated demo-ready thresholds. |
-| Evidence Quality | 2 | Acceptable | The committed five-scenario fixture set still satisfies explicit demo-ready thresholds for scenario count, state coverage, issue breadth, citation coverage, module completeness, source mix, output structure, and citation-summary consistency, with all five fixture lanes now represented as offline-ready curated registry scenarios. Broader scenario breadth and richer normalization still remain open under `#12` and `#13`; any additional Florida fixture seeding should be scoped by maintainers after `#8` review. |
+| Evidence Quality | 2 | Acceptable | The committed five-scenario fixture set still satisfies explicit demo-ready thresholds for scenario count, state coverage, issue breadth, citation coverage, module completeness, source mix, output structure, and citation-summary consistency, with all five fixture lanes now represented as offline-ready curated registry scenarios. Broader scenario breadth and richer normalization still remain open under `#12` and `#13`; any additional Florida fixture seeding should be scoped by maintainers as follow-up work after the completed `#8` baseline. |
 | Trust and Provenance | 2 | Acceptable | Disclaimers, source tiers, citation checks, evidence clusters, and claim/review trace links exist, but they are still notebook-era rather than full product workflow state. |
 | Workflow Usability | 1 | Weak | The product is still notebook-first and generally engineer-driven for setup and operation, but the notebook/preflight path now exposes a first workflow layer with research-plan preview, cluster-first evidence-board summary, issue-workspace summary, memo-composer readiness, export-history posture, and explicit run-stage review states. |
 | Review and Export Quality | 2 | Acceptable | Memo/export trust signals are stronger and audit structures exist, but export quality is still not polished for repeated client-facing use. |
@@ -407,7 +407,7 @@ What it does not do yet:
 
 This v0.1 rubric should be revised when the following land:
 
-- Additional fixture breadth only if maintainers scope it after `#8` review
+- Additional fixture breadth only if maintainers scope it as follow-up work after the completed `#8` baseline
 - `#10` and `#11`: real product workflow surfaces
 - `#12` and `#13`: better evidence normalization and case-law quality
 - `#19`: pilot feedback and operator usability benchmarks
@@ -421,9 +421,9 @@ Likely next revisions:
 
 ## 11) Dependency Guidance
 
-### For `#8`
+### For Completed `#8` and Future Fixture Breadth
 
-Use this rubric, `docs/FIXTURE_SEEDING.md`, and the committed golden fixture snapshot gate to define which fixture suites must exist before Beta-ready can be claimed.
+Issue `#8` is complete and closed at the five-lane offline fixture baseline. Use this rubric, `docs/FIXTURE_SEEDING.md`, and the committed golden fixture snapshot gate to define any future fixture suites that must exist before Beta-ready can be claimed.
 
 ### For `#9`
 

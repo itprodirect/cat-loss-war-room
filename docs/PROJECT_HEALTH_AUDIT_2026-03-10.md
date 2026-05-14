@@ -4,16 +4,18 @@ Date: March 10, 2026
 Audience: Internal builders
 Horizon: Next 2 weeks
 
+Status note as of May 14, 2026: issues `#6`, `#7`, `#8`, and `#9` are now complete or closed, and the next active roadmap task is `#27` scorecard/rubric operationalization. This March audit is retained as an orientation memo with light current-state syncs.
+
 ## Status memo
 
 ### Implemented now
 
 - The current product is a notebook-first V0 demo backed by `src/war_room/`.
-- The offline demo lane is real: committed `cache_samples/` support cache-first runs without an API key across three public/redacted scenarios in Florida, Texas, and Louisiana.
+- The offline demo lane is real: committed `cache_samples/` support cache-first runs without an API key across five public/redacted registry-backed scenarios in Florida, Texas, and Louisiana.
 - The supported test/bootstrap posture is real: `pip install -e . --no-deps --no-build-isolation` followed by `pytest -q`, or ad hoc local runs with `PYTHONPATH=src`.
-- `178` tests pass under the supported bootstrap path.
+- `343` tests pass under the supported bootstrap path.
 - CI enforces a fresh-environment test gate, an explicit offline fixture smoke gate, and an `exa-py` compatibility matrix.
-- Typed-domain and retrieval-contract work has landed substantial slices under `#6` and `#7`.
+- Typed-domain and retrieval-contract work is complete under `#6` and `#7`.
 - Issue `#27` now has a fixture-calibrated local release-scorecard workflow tied to the committed scenario set.
 
 ### Specified but not built yet
@@ -55,7 +57,7 @@ Horizon: Next 2 weeks
 - Raw-checkout `pytest -q` is not a supported path. Contributors must either use editable install or set `PYTHONPATH=src`.
 - The placeholder `apps/`, `workers/`, and `packages/` directories can look more implemented than they are unless docs call that out directly.
 - The notebook is still the main demo surface. V2 app/api/workers are roadmap targets, not current runtime entrypoints.
-- `#23` and `#24` are complete and closed as written specs. Downstream implementation belongs to `#10`, `#11`, and `#12`, plus remaining foundation work in `#6`, `#7`, `#8`, and `#9`.
+- `#23` and `#24` are complete and closed as written specs. Downstream implementation belongs to `#10`, `#11`, and `#12`; foundation issues `#6`, `#7`, `#8`, and `#9` are now complete or closed.
 
 ## Next 2 weeks action plan
 
@@ -63,10 +65,8 @@ Horizon: Next 2 weeks
 
 - Continue `#27` calibration now that the rubric, local artifact generator, and fixture-calibrated scorecard are in place.
   Artifact: threshold definitions tied to the committed fixture lane and future pilot evidence.
-- Complete the remaining `#6` and `#7` scope with contract boundaries tied back to the written schema/workflow specs.
-  Artifact: typed-model/retrieval work plus status updates in roadmap/handoff.
-- Extend `#8` fixture breadth beyond the current FL/TX/LA trio and keep `#9` CI expansion aligned with those scenarios.
-  Artifact: additional fixtures, stronger release-evidence automation, and refreshed build checklist.
+- Keep the completed `#6`, `#7`, `#8`, and `#9` foundation work reflected in roadmap, handoff, and checklist docs.
+  Artifact: status updates that keep the five-lane fixture baseline and completed CI gates aligned with the current repo state.
 
 ### Should fix
 

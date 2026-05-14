@@ -90,10 +90,16 @@ Track key architecture and design decisions so future sessions (human or AI) und
 **Date:** 2026-03-10
 **Decision:** Treat the current notebook/package flow as the shipped product surface, and treat `docs/V2_WORKFLOW_IA.md`, `docs/V2_EVIDENCE_SCHEMA.md`, plus the placeholder `apps/`, `workers/`, and `packages/` directories as V2 planning artifacts unless implementation work explicitly lands in code.
 **Reason:** The repo now has a stable V0 demo, completed written specs for `#23` and `#24`, and placeholder top-level directories for future runtime boundaries. Without an explicit rule, contributors can over-read roadmap/docs as if the V2 app/api/runtime already exists.
-**Impact:** README, HANDOFF, FOUNDATION, and ROADMAP should always separate "implemented now" from "planned V2". Active execution work should start with `#27`, `#6`, `#7`, `#8`, and `#9`, then move into `#10` onward.
+**Impact:** README, HANDOFF, FOUNDATION, and ROADMAP should always separate "implemented now" from "planned V2". As of May 14, 2026, `#6`, `#7`, `#8`, and `#9` are complete or closed, so active execution work should start with `#27`, then move into `#10` onward.
 
 ## D018: Release scorecards derive fixture coverage from committed scenarios
 **Date:** 2026-03-11
 **Decision:** Treat committed scenario folders under `cache_samples/` as the source of truth for local release-scorecard fixture coverage reporting.
-**Reason:** The repo now has four public/redacted offline scenarios across Florida, Texas, and Louisiana. Scorecard artifacts should report real committed coverage instead of a hardcoded narrative so `#27` calibration stays aligned with `#8` fixture work and `#9` CI smoke evidence.
+**Reason:** At the time, the repo had four public/redacted offline scenarios across Florida, Texas, and Louisiana; it now has five. Scorecard artifacts should report real committed coverage instead of a hardcoded narrative so `#27` calibration stays aligned with fixture work and `#9` CI smoke evidence.
 **Impact:** When fixture scenarios are added, removed, or materially changed, the release scorecard should reflect that automatically and the canonical docs should be updated with the new coverage and supported test count.
+
+## D019: Five-lane fixture baseline closes issue #8
+**Date:** 2026-05-14
+**Decision:** Treat the five registry-backed offline-ready fixture lanes as the completed issue `#8` baseline: Milton/Pinellas/Citizens HO-3, Ida/Orleans/Lloyds HO-3, Texas Hail/Tarrant/Allstate HO-B, Texas Hail/Tarrant/Allstate DP-3, and Ian/Lee/Citizens HO-3.
+**Reason:** Issue `#8` is closed as completed after PR #63 merged and the offline fixture, golden snapshot, e2e, and verify gates validated the five-lane baseline.
+**Impact:** Future fixture breadth should be explicitly scoped as follow-up work and should use `docs/FIXTURE_SEEDING.md`; it should not keep `#8` open or treat live-only registry scenarios as cache-only demo lanes before reviewed fixture bundles are committed.
