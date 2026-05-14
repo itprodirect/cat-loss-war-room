@@ -2033,3 +2033,20 @@ Status: Complete
   - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
   - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-14_offline-e2e_20260514t025227z.json`.
   - `python -m war_room --verify --release-candidate issue-8-final-florida-fixture` -> passed; embedded `pytest -q` reported `343 passed in 19.77s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-14_issue-8-final-florida-fixture_20260514t025241z.json`.
+
+## Session 108 - Issue 8 Closed-Status Docs Sync
+Date: 2026-05-14
+Status: Complete
+
+- Completed a focused docs-only status sync after issue `#8` was closed as completed and PR #63 was merged.
+- What changed:
+  - Updated current-state docs so `#8` now reads as complete/closed after the five registry-backed offline-ready fixture lanes landed.
+  - Kept #64 and #65 documented as non-blocking hygiene/normalization follow-ups rather than `#8` blockers.
+  - Moved the next roadmap focus back to `#27` scorecard/rubric operationalization.
+- Decisions not added:
+  - no runtime code, fixture data, dependencies, notebooks, or live retrieval work were added.
+  - no additional Florida fixture seeding was scoped in this docs-only closeout sync.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room --verify --release-candidate issue-8-closed-status-docs-sync` -> passed; embedded `pytest -q` reported `343 passed in 17.15s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-14_issue-8-closed-status-docs-sync_20260514t042129z.json`.

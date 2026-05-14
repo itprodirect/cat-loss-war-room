@@ -47,4 +47,4 @@ For remaining live-only registry scenarios, promotion still requires the full `d
 
 ## Issue Status
 
-Issue `#8` should remain open through review of the fifth-lane Ian fixture-seeding PR. Any additional Florida seeding beyond that should be confirmed by maintainers or moved to a follow-up issue.
+Issue `#8` is now closed as completed after the fifth-lane Ian fixture-seeding PR merged and the five-lane offline fixture baseline was validated. Any additional Florida seeding beyond that baseline should be confirmed by maintainers and tracked in a follow-up issue instead of reopening `#8`.

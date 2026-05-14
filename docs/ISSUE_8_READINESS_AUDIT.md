@@ -4,11 +4,9 @@ Date: 2026-05-14
 
 ## Decision
 
-Issue `#8` should remain open through this fixture-seeding PR.
+Issue `#8` is closed as completed after the fifth fixture lane landed and the five-lane offline fixture baseline passed validation.
 
-The prior four-lane breadth blocker is addressed by the new manually source-reviewed `ian_citizens_lee` fixture lane. The repo now has five complete committed fixture lanes, all registry-backed and offline-ready. This PR intentionally leaves issue disposition to maintainer review instead of using auto-close keywords.
-
-This audit intentionally avoids auto-close keywords.
+The prior four-lane breadth blocker was addressed by the manually source-reviewed `ian_citizens_lee` fixture lane. The repo now has five complete committed fixture lanes, all registry-backed and offline-ready, and issue `#8` is no longer an active roadmap blocker.
 
 ## Scope Reviewed
 
@@ -34,7 +32,7 @@ No fixture data was invented, no live retrieval was run in tests, no dependencie
 
 | Issue `#8` item | Current status | Evidence |
 |---|---|---|
-| Broaden the canonical scenario fixture set beyond the prior four committed directories | Complete for this PR's requested slice | `cache_samples/` now has five complete fixture directories: `milton_citizens_pinellas`, `ian_citizens_lee`, `ida_lloyds_orleans`, `tx_hail_allstate_tarrant`, and `tx_hail_allstate_tarrant_dp3`. All five are promoted to offline-ready registry scenarios. |
+| Broaden the canonical scenario fixture set beyond the prior four committed directories | Complete | `cache_samples/` now has five complete fixture directories: `milton_citizens_pinellas`, `ian_citizens_lee`, `ida_lloyds_orleans`, `tx_hail_allstate_tarrant`, and `tx_hail_allstate_tarrant_dp3`. All five are promoted to offline-ready registry scenarios. |
 | Define golden snapshots for key memo sections | Complete for the current five-lane fixture set | `tests/golden/offline_fixture_snapshots.json` records the five scenarios, memo section structure, workflow/export posture, evidence counts, source badges, and citation summaries. `python -m war_room.fixture_snapshots --check` is the deterministic diff gate. |
 | Add quality assertions for source mix, case count, citation-check summaries, and output structure | Complete for the current five-lane fixture set | `src/war_room/fixture_snapshots.py` enforces module completeness, FL/TX/LA state coverage, source badge minimums, case-law issue/case counts, citation summary consistency, at least one verified citation, memo sections, workflow status, evidence/issue counts, export posture, and at least five complete committed scenarios. |
 
@@ -66,7 +64,7 @@ Represented breadth:
 
 ## Remaining Candidates
 
-Live-only registry scenarios that still need manual fixture seeding only if maintainers want broader Florida coverage beyond this PR:
+Live-only registry scenarios that still need manual fixture seeding only if maintainers want broader Florida coverage beyond the completed `#8` baseline:
 
 | Scenario | State / county | Carrier | Policy type | Current status |
 |---|---|---|---|---|
@@ -80,13 +78,16 @@ Intake-only candidates:
 - `eval/intakes/_template_case_intake.json` is a template, not a fact pattern, and must not be promoted.
 - `eval/intakes/ida_lloyds_orleans.json`, `eval/intakes/tx_hail_allstate_tarrant.json`, and `eval/intakes/tx_hail_allstate_tarrant_dp3.json` already correspond to promoted fixture lanes.
 
-## Recommended Disposition
+## Closure Disposition
 
-Keep `#8` open for review of this fifth-lane fixture-seeding PR.
+Issue `#8` is closed as completed.
 
-After review, maintainers should decide whether the current five registry-backed fixture lanes satisfy `#8`:
+The current five registry-backed fixture lanes satisfy the `#8` fixture and snapshot baseline:
 
-- If yes, perform closeout separately after this PR is reviewed and merged.
-- If no, create a follow-up issue titled `Manually seed remaining live-only Florida fixture scenarios` and move any additional Florida seeding work there.
+- Milton / Pinellas / Citizens HO-3
+- Ida / Orleans / Lloyds HO-3
+- Texas Hail / Tarrant / Allstate HO-B
+- Texas Hail / Tarrant / Allstate DP-3
+- Ian / Lee / Citizens HO-3
 
-The remaining live-only Florida scenarios should not be treated as offline-ready until they receive their own reviewed fixture bundles under `docs/FIXTURE_SEEDING.md`.
+The remaining live-only Florida scenarios should not be treated as offline-ready until they receive their own reviewed fixture bundles under `docs/FIXTURE_SEEDING.md`. Any additional Florida seeding should be tracked in a follow-up issue rather than reopening `#8`; issues #64 and #65 remain separate non-blocking hygiene/normalization follow-ups.

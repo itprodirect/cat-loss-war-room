@@ -37,7 +37,7 @@ product API/UI readiness. Those remain tracked in downstream roadmap issues.
 
 The following work is intentionally not part of issue `#9` closeout:
 
-- broader fixture breadth and additional curated scenarios, tracked in `#8`;
+- optional future fixture breadth and additional curated scenarios, to be scoped in a follow-up now that `#8` is closed;
 - product API, guided UX, and evidence-normalization implementation, tracked in `#10`, `#11`, and `#12`;
 - production security controls, PII handling, access control, retention, and live vulnerability scanning, tracked in `#18`;
 - pilot usability and attorney validation, tracked in `#19`;

@@ -82,9 +82,9 @@ Prioritize in this order:
 - `fix/` - bug fixes
 
 ## Current phase
-v0-demo shipped, issues #22, #23, #24, #6, #7, and #9 are complete, and active V2 execution work is now concentrated in broader #27 CI/pilot operationalization plus #8 maintainer review after the Ian/Lee/Citizens fifth fixture lane was seeded. Cells 0-7 remain stable and CI runs package-installed tests.
+v0-demo shipped, issues #22, #23, #24, #6, #7, #8, and #9 are complete and closed. Active V2 execution work is now concentrated in broader #27 CI/pilot operationalization after the five-lane offline fixture baseline landed. Cells 0-7 remain stable and CI runs package-installed tests.
 
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
 Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
-Next priority: review the #8 Ian fixture-seeding PR and decide whether remaining live-only Florida scenarios move to a follow-up manual-seeding issue, while continuing broader #27 CI/pilot operationalization before downstream implementation in #10 onward.
+Next priority: continue broader #27 scorecard/rubric operationalization before downstream implementation in #10 onward. Issues #64 and #65 remain open as non-blocking hygiene/normalization follow-ups.

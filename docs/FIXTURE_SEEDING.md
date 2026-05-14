@@ -1,6 +1,6 @@
 # Fixture Seeding Process
 
-This checklist is the safe path for adding or promoting offline scenarios under issue `#8`.
+This checklist is the safe path for adding or promoting offline scenarios under the completed issue `#8` pattern or any future fixture-breadth follow-up.
 
 The goal is reviewable fixture breadth, not synthetic coverage. Do not mark a scenario offline-ready until the committed evidence exists and has been reviewed.
 
@@ -51,7 +51,7 @@ python -m pytest tests/test_fixture_snapshots.py tests/test_offline_demo_pack.py
 python -m pytest -q
 python -m war_room.fixture_snapshots --check
 python -m war_room.offline_e2e --check
-python -m war_room --verify --release-candidate issue-8-fixture-seeding-process
+python -m war_room --verify --release-candidate fixture-seeding
 ```
 
 ## PR Notes
@@ -61,7 +61,7 @@ Every fixture-seeding PR should say:
 - whether it adds a new committed fixture lane, promotes an existing lane, or only documents/seeds an intake;
 - whether any live retrieval happened during manual seeding, and that tests/CI do not make live calls;
 - what golden snapshot changes were intentional;
-- whether issue `#8` remains open.
+- which issue owns the seeding work, and whether it is closeout or follow-up scope.
 
 ## Do Not Promote When
 
