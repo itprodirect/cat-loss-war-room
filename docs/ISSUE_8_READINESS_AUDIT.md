@@ -4,11 +4,11 @@ Date: 2026-05-14
 
 ## Decision
 
-Issue `#8` should remain open.
+Issue `#8` should remain open through this fixture-seeding PR.
 
-All four committed fixture lanes are now registry-backed and offline-ready, and the current offline gates satisfy the snapshot and quality-threshold acceptance criteria for those four lanes. The remaining blocker is narrower: issue `#8` still asks for fixture breadth beyond the four committed directories, and the repo still has exactly four complete committed fixture lanes.
+The prior four-lane breadth blocker is addressed by the new manually source-reviewed `ian_citizens_lee` fixture lane. The repo now has five complete committed fixture lanes, all registry-backed and offline-ready. This PR intentionally leaves issue disposition to maintainer review instead of using auto-close keywords.
 
-This audit does not use `Closes #8`.
+This audit intentionally avoids auto-close keywords.
 
 ## Scope Reviewed
 
@@ -34,15 +34,15 @@ No fixture data was invented, no live retrieval was run in tests, no dependencie
 
 | Issue `#8` item | Current status | Evidence |
 |---|---|---|
-| Broaden the canonical scenario fixture set beyond the current four committed directories | Not complete | `cache_samples/` has exactly four complete fixture directories: `milton_citizens_pinellas`, `ida_lloyds_orleans`, `tx_hail_allstate_tarrant`, and `tx_hail_allstate_tarrant_dp3`. All four are promoted, but there is no fifth committed fixture lane. |
-| Define golden snapshots for key memo sections | Complete for the current four-lane fixture set | `tests/golden/offline_fixture_snapshots.json` records the four scenarios, memo section structure, workflow/export posture, evidence counts, source badges, and citation summaries. `python -m war_room.fixture_snapshots --check` is the deterministic diff gate. |
-| Add quality assertions for source mix, case count, citation-check summaries, and output structure | Complete for the current four-lane fixture set | `src/war_room/fixture_snapshots.py` enforces module completeness, FL/TX/LA state coverage, source badge minimums, case-law issue/case counts, citation summary consistency, at least one verified citation, memo sections, workflow status, evidence/issue counts, and export posture. |
+| Broaden the canonical scenario fixture set beyond the prior four committed directories | Complete for this PR's requested slice | `cache_samples/` now has five complete fixture directories: `milton_citizens_pinellas`, `ian_citizens_lee`, `ida_lloyds_orleans`, `tx_hail_allstate_tarrant`, and `tx_hail_allstate_tarrant_dp3`. All five are promoted to offline-ready registry scenarios. |
+| Define golden snapshots for key memo sections | Complete for the current five-lane fixture set | `tests/golden/offline_fixture_snapshots.json` records the five scenarios, memo section structure, workflow/export posture, evidence counts, source badges, and citation summaries. `python -m war_room.fixture_snapshots --check` is the deterministic diff gate. |
+| Add quality assertions for source mix, case count, citation-check summaries, and output structure | Complete for the current five-lane fixture set | `src/war_room/fixture_snapshots.py` enforces module completeness, FL/TX/LA state coverage, source badge minimums, case-law issue/case counts, citation summary consistency, at least one verified citation, memo sections, workflow status, evidence/issue counts, export posture, and at least five complete committed scenarios. |
 
 ## Acceptance Criteria Audit
 
 | Acceptance criterion | Current status | Evidence |
 |---|---|---|
-| Scenario suite runs offline and in CI | Satisfied for the committed four-lane suite | `src/war_room/offline_e2e.py` requires at least four committed scenarios, all offline-ready, complete workflow stages, populated memo/review surfaces, structured export posture, and linked preflight artifacts. |
+| Scenario suite runs offline and in CI | Satisfied for the committed five-lane suite | `src/war_room/offline_e2e.py` requires at least five committed scenarios, all offline-ready, complete workflow stages, populated memo/review surfaces, structured export posture, and linked preflight artifacts. |
 | Snapshot diffs are reviewable and intentional | Satisfied | `python -m war_room.fixture_snapshots --check` fails on drift and points maintainers to `--write` only for intentional refreshes. |
 | Failing quality thresholds block merges | Satisfied for the current gates | The golden snapshot and fixture-quality assertions are covered by tests and the completed `#9` CI quality-gate stack. |
 
@@ -51,6 +51,7 @@ No fixture data was invented, no live retrieval was run in tests, no dependencie
 | Fixture lane | Registry slug | State | Peril / event | Carrier | Policy type | Offline status |
 |---|---|---|---|---|---|---|
 | `milton_citizens_pinellas` | `milton_pinellas_citizens_ho3` | FL | Hurricane Milton | Citizens Property Insurance | HO-3 Dwelling | Registry-backed and offline-ready |
+| `ian_citizens_lee` | `ian_lee_citizens_ho3` | FL | Hurricane Ian | Citizens Property Insurance | HO-3 Dwelling | Registry-backed and offline-ready |
 | `ida_lloyds_orleans` | `ida_orleans_lloyds_ho3` | LA | Hurricane Ida | Certain Underwriters at Lloyd's, London | HO-3 Dwelling | Registry-backed and offline-ready |
 | `tx_hail_allstate_tarrant` | `texas_hail_tarrant_allstate_hob` | TX | Texas hailstorm | Allstate Texas Lloyds | HO-B Homeowners | Registry-backed and offline-ready |
 | `tx_hail_allstate_tarrant_dp3` | `texas_hail_tarrant_allstate_dp3` | TX | Texas hailstorm matching dispute | Allstate Texas Lloyds | DP-3 Dwelling | Registry-backed and offline-ready |
@@ -65,11 +66,10 @@ Represented breadth:
 
 ## Remaining Candidates
 
-Live-only registry scenarios that still need manual fixture seeding:
+Live-only registry scenarios that still need manual fixture seeding only if maintainers want broader Florida coverage beyond this PR:
 
 | Scenario | State / county | Carrier | Policy type | Current status |
 |---|---|---|---|---|
-| `ian_lee_citizens_ho3` | FL / Lee | Citizens Property Insurance | HO-3 Dwelling | `offline_demo_ready: false`, `fixture_case_key: null` |
 | `irma_monroe_citizens_ho3` | FL / Monroe | Citizens Property Insurance | HO-3 Dwelling | `offline_demo_ready: false`, `fixture_case_key: null` |
 | `michael_bay_default_ho3` | FL / Bay | Florida Peninsula Insurance Company | HO-3 Dwelling | `offline_demo_ready: false`, `fixture_case_key: null` |
 | `idalia_taylor_default_ho3` | FL / Taylor | Florida Peninsula Insurance Company | HO-3 Dwelling | `offline_demo_ready: false`, `fixture_case_key: null` |
@@ -82,15 +82,11 @@ Intake-only candidates:
 
 ## Recommended Disposition
 
-Keep `#8` open for one final fixture-seeding PR.
+Keep `#8` open for review of this fifth-lane fixture-seeding PR.
 
-That PR should manually seed one live-only Florida registry scenario, preferably `ian_lee_citizens_ho3` unless source review points to a stronger candidate. It should follow `docs/FIXTURE_SEEDING.md` end to end:
+After review, maintainers should decide whether the current five registry-backed fixture lanes satisfy `#8`:
 
-- review public/redacted facts;
-- create a complete `cache_samples/<case_key>/` bundle with `weather.json`, `carrier.json`, `caselaw.json`, and `citation_verify.json`;
-- verify official weather support, carrier/jurisdiction/policy support, two or more case-law issue buckets, at least three citation checks, and at least one verified citation;
-- promote the registry scenario only after the committed fixture bundle exists;
-- refresh the golden snapshot intentionally; and
-- run the offline validation gates.
+- If yes, perform closeout separately after this PR is reviewed and merged.
+- If no, create a follow-up issue titled `Manually seed remaining live-only Florida fixture scenarios` and move any additional Florida seeding work there.
 
-If maintainers decide that four registry-backed fixture lanes are enough for `#8`, they should first create a new follow-up issue titled `Manually seed live-only Florida fixture scenarios` and explicitly move the remaining Florida fixture-seeding scope there. Without that rescope, closing `#8` now would leave its breadth deliverable incomplete.
+The remaining live-only Florida scenarios should not be treated as offline-ready until they receive their own reviewed fixture bundles under `docs/FIXTURE_SEEDING.md`.

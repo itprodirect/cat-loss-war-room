@@ -56,8 +56,8 @@ def test_collect_scenario_registry_coverage_reads_curated_registry():
     summary = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
 
     assert summary.scenario_count == 8
-    assert summary.offline_ready_count == 4
-    assert summary.fixture_ready_count == 4
+    assert summary.offline_ready_count == 5
+    assert summary.fixture_ready_count == 5
     assert summary.default_scenario_id == "milton_pinellas_citizens_ho3"
     assert summary.states == ["FL", "LA", "TX"]
     assert [scenario.slug for scenario in summary.scenarios] == [
@@ -78,8 +78,10 @@ def test_collect_scenario_registry_coverage_reads_curated_registry():
     assert summary.scenarios[2].has_committed_fixture_bundle is True
     assert summary.scenarios[3].offline_demo_ready is True
     assert summary.scenarios[3].has_committed_fixture_bundle is True
-    assert all(not scenario.offline_demo_ready for scenario in summary.scenarios[4:])
-    assert all(not scenario.has_committed_fixture_bundle for scenario in summary.scenarios[4:])
+    assert summary.scenarios[4].offline_demo_ready is True
+    assert summary.scenarios[4].has_committed_fixture_bundle is True
+    assert all(not scenario.offline_demo_ready for scenario in summary.scenarios[5:])
+    assert all(not scenario.has_committed_fixture_bundle for scenario in summary.scenarios[5:])
 
 
 def test_default_verification_command_matches_supported_path():
@@ -124,8 +126,8 @@ def test_build_demo_release_scorecard_uses_fixture_calibration():
     assert scorecard.fixture_coverage.scenario_count == len(_expected_scenario_keys())
     assert scorecard.scenario_registry is not None
     assert scorecard.scenario_registry.scenario_count == 8
-    assert scorecard.scenario_registry.offline_ready_count == 4
-    assert scorecard.scenario_registry.fixture_ready_count == 4
+    assert scorecard.scenario_registry.offline_ready_count == 5
+    assert scorecard.scenario_registry.fixture_ready_count == 5
     assert any("Scenario registry:" in entry for entry in scorecard.evidence_bundle)
 
     markdown = render_release_scorecard_markdown(scorecard)
@@ -138,6 +140,7 @@ def test_build_demo_release_scorecard_uses_fixture_calibration():
     assert "## Scenario Registry" in markdown
     assert "## Threshold Calibration" in markdown
     assert "ida_lloyds_orleans" in markdown
+    assert "ian_citizens_lee" in markdown
     assert "milton_pinellas_citizens_ho3" in markdown
     assert "texas_hail_tarrant_allstate_dp3" in markdown
     assert "texas_hail_tarrant_allstate_hob" in markdown

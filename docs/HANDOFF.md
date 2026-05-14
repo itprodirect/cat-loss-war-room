@@ -21,19 +21,19 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 336 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 343 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + offline e2e gate + offline security and dependency hygiene gates + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install and categorized quality-gate artifacts |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
 | Typed domain contracts (#6) | Complete with closeout audit (intake/query + packs + citation/export contracts + graph/version envelopes + issue/authority contracts + run/retrieval lifecycle contracts + review/export graph-linkage contracts + schema-versioned runtime cache envelopes + Run Timeline, Evidence Board, Issue Workspace, Memo Composer, and Export History read-model contracts; see `docs/ISSUE_6_CLOSEOUT_AUDIT.md`) |
 | Retrieval contracts (#7) | Complete: provider seam, notebook retrieval-state emission, citation-verify tracking, deterministic timing, provider failure-mode normalization, and `None` provider-response malformed-contract handling are landed; the PR #57 audit gap is resolved in `docs/ISSUE_7_CLOSURE_SANITY_AUDIT.md` |
-| Scenario fixtures (#8) | Four committed scenario directories cover Florida, Texas, and Louisiana; all four now map from the curated registry to offline-ready committed fixture lanes, including the Texas hail/Tarrant/Allstate DP-3 matching benchmark; the first deterministic golden snapshot gate checks output structure, source mix, case counts, citation summaries, and coverage metadata; `docs/FIXTURE_SEEDING.md` defines the safe promotion path; `docs/ISSUE_8_READINESS_AUDIT.md` confirms `#8` should remain open until at least one live-only Florida scenario is manually seeded into a fifth committed fixture lane or that scope is explicitly moved to a follow-up issue |
+| Scenario fixtures (#8) | Five committed scenario directories cover Florida, Texas, and Louisiana; all five now map from the curated registry to offline-ready committed fixture lanes, including Ian/Lee/Citizens HO-3 and the Texas hail/Tarrant/Allstate DP-3 matching benchmark; the deterministic golden snapshot gate checks output structure, source mix, case counts, citation summaries, and coverage metadata; `docs/FIXTURE_SEEDING.md` defines the safe promotion path; `docs/ISSUE_8_READINESS_AUDIT.md` now reflects that this PR keeps `#8` open for maintainer review rather than auto-close keywords |
 | CI quality gates (#9) | Complete with closeout audit in `docs/ISSUE_9_CLOSEOUT_AUDIT.md`: categorized quality-gate artifacts, offline fixture and golden snapshot checks, offline e2e validation, security hygiene, dependency hygiene, Exa compatibility diagnostics, and release-scorecard validation are all wired |
 | Product foundation (`#22`) | Complete and closed: packaging/bootstrap lane implemented |
 | Workflow IA spec (`#23`) | Complete and closed as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
 | Evidence schema spec (`#24`) | Complete and closed as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |
 | Quality rubric (`#27`) | First-pass rubric plus local and CI artifact workflows landed in `docs/V2_RELEASE_RUBRIC.md`; demo-ready threshold calibration, live preflight evidence, run-scoped verify artifacts, verify manifests, and a stable latest pointer are now explicit, while broader CI and pilot operationalization remain open |
-| Cache samples | Milton/Citizens/Pinellas + TX hail/Allstate/Tarrant + TX hail matching/Allstate Texas Lloyds/Tarrant DP-3 + Ida/Lloyd's/Orleans committed |
+| Cache samples | Milton/Citizens/Pinellas + Ian/Citizens/Lee + TX hail/Allstate/Tarrant + TX hail matching/Allstate Texas Lloyds/Tarrant DP-3 + Ida/Lloyd's/Orleans committed |
 
 ## 3) What changed recently
 
@@ -52,8 +52,8 @@ This is research acceleration, not legal advice.
 - Runtime environment lanes and artifact boundaries are documented in `docs/FOUNDATION.md`.
 - V2 planning was expanded with a deeper rebuild blueprint plus new GitHub issues `#22` through `#27` covering product foundation, UX IA, provenance schema, AI guardrails, human review, and release scorecards.
 - A first-pass release rubric now exists in `docs/V2_RELEASE_RUBRIC.md` so release-readiness language is no longer purely roadmap text.
-- The offline fixture lane now spans four committed public/redacted scenario directories across Florida, Texas, and Louisiana.
-- The curated scenario registry now has four offline-ready fixture-backed benchmarks: Milton/Pinellas/Citizens, Ida/Orleans/Lloyd's, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3.
+- The offline fixture lane now spans five committed public/redacted scenario directories across Florida, Texas, and Louisiana.
+- The curated scenario registry now has five offline-ready fixture-backed benchmarks: Milton/Pinellas/Citizens, Ian/Lee/Citizens, Ida/Orleans/Lloyd's, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3.
 - The fixture-seeding process now lives in `docs/FIXTURE_SEEDING.md`, and scenario tests block marking registry scenarios offline-ready without a fixture key and complete committed fixture bundle.
 - CI now includes an explicit offline fixture smoke job, and the local release scorecard records fixture coverage from the committed scenario set.
 - The offline fixture lane now also has a deterministic golden snapshot command, `python -m war_room.fixture_snapshots --check`, backed by `tests/golden/offline_fixture_snapshots.json` and quality assertions for source mix, case counts, citation summaries, memo structure, workflow/export posture, and scenario coverage metadata.
@@ -100,14 +100,14 @@ Core implementation lives in `src/war_room/`.
 
 - Notebook UX is useful for demos but not ideal for non-technical users.
 - Case law relevance and authority summarization still need stricter filtering/ranking in edge cases.
-- Four public/redacted fact patterns are pre-seeded in cache samples, and all four are now registry-backed for cache-only notebook use; the exact `#8` blocker is manual seeding of at least one live-only Florida registry scenario into a new committed fixture lane, unless that work is moved to a follow-up issue.
+- Five public/redacted fact patterns are pre-seeded in cache samples, and all five are now registry-backed for cache-only notebook use; `#8` remains open for review of the final Florida fixture-seeding slice and any maintainer decision on whether the remaining live-only Florida scenarios should move to a follow-up issue.
 - Export output quality is materially cleaner than earlier notebook-era baselines, but it is not yet polished for repeated client-facing use across broader fixture coverage.
 
 ## 7) Roadmap summary
 
 ### Now
 - #27 broader CI and pilot operationalization of the release scorecard
-- #8 multi-jurisdiction fixtures and snapshots (first golden snapshot gate, all four committed fixture lanes registry-backed, fixture-seeding checklist/guard, next-candidate audit, and readiness audit landed; one final live-only Florida fixture-seeding PR remains recommended)
+- #8 multi-jurisdiction fixtures and snapshots (golden snapshot gate, all five committed fixture lanes registry-backed, fixture-seeding checklist/guard, next-candidate audit, readiness audit, and Ian/Lee/Citizens fixture-seeding slice landed; issue remains open for maintainer closeout review)
 
 ### Next
 - #10 API orchestrator
@@ -130,7 +130,7 @@ Core implementation lives in `src/war_room/`.
 - [HANDOFF.md](HANDOFF.md): builder orientation and implemented-vs-planned status
 - [FOUNDATION.md](FOUNDATION.md): bootstrap, envs, runtime boundaries, and placeholder repo-shape rules
 - [FIXTURE_SEEDING.md](FIXTURE_SEEDING.md): safe process for adding or promoting offline fixture scenarios under `#8`
-- [ISSUE_8_READINESS_AUDIT.md](ISSUE_8_READINESS_AUDIT.md): current `#8` close/no-close audit and remaining fixture-breadth blocker
+- [ISSUE_8_READINESS_AUDIT.md](ISSUE_8_READINESS_AUDIT.md): current `#8` readiness audit and maintainer closeout posture after the fifth fixture lane
 - [ROADMAP.md](ROADMAP.md): plain-language roadmap and active execution order
 - [V2_WORKFLOW_IA.md](V2_WORKFLOW_IA.md): canonical V2 workflow, IA, and design-system rules
 - [V2_EVIDENCE_SCHEMA.md](V2_EVIDENCE_SCHEMA.md): canonical V2 evidence graph, audit schema, and versioning rules

@@ -1,0 +1,83 @@
+{
+  "module": "caselaw",
+  "issues": [
+    {
+      "issue": "Concurrent Causation / Wind-Water Allocation",
+      "cases": [
+        {
+          "name": "Sebo v. American Home Assurance Co.",
+          "citation": "208 So. 3d 694",
+          "court": "Supreme Court of Florida",
+          "year": "2016",
+          "one_liner": "Florida Supreme Court authority applying concurrent-cause analysis where independent covered and excluded perils combined under all-risk property coverage.",
+          "url": "https://library.law.fsu.edu/Digital-Collections/flsupct/dockets/sc14-897/sc14-897.pdf",
+          "badge": "professional",
+          "source_class": "court_opinion",
+          "source_tier": "professional",
+          "is_primary_authority": true
+        },
+        {
+          "name": "Fayad v. Clarendon National Insurance Co.",
+          "citation": "899 So. 2d 1082",
+          "court": "Supreme Court of Florida",
+          "year": "2005",
+          "one_liner": "Florida Supreme Court authority for all-risk policy interpretation and strict construction of ambiguous exclusionary clauses against the insurer.",
+          "url": "https://library.law.fsu.edu/Digital-Collections/flsupct/dockets/sc03-1808/op-sc03-1808.pdf",
+          "badge": "professional",
+          "source_class": "court_opinion",
+          "source_tier": "professional",
+          "is_primary_authority": true
+        }
+      ],
+      "notes": [
+        "Use for the Lee County wind-versus-water allocation issue only after comparing policy language and available damage chronology."
+      ]
+    },
+    {
+      "issue": "Scope / Replacement Cost",
+      "cases": [
+        {
+          "name": "Trinidad v. Florida Peninsula Insurance Co.",
+          "citation": "121 So. 3d 433",
+          "court": "Supreme Court of Florida",
+          "year": "2013",
+          "one_liner": "Florida Supreme Court authority addressing replacement-cost scope, including contractor overhead and profit where a general contractor is reasonably likely to be needed.",
+          "url": "https://library.law.fsu.edu/Digital-Collections/flsupct/dockets/sc11-1643/op-sc11-1643.pdf",
+          "badge": "professional",
+          "source_class": "court_opinion",
+          "source_tier": "professional",
+          "is_primary_authority": true
+        }
+      ],
+      "notes": [
+        "Use for scope-of-repair and replacement-cost analysis, not as proof of Hurricane Ian facts."
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "title": "Sebo v. American Home Assurance Co.",
+      "url": "https://library.law.fsu.edu/Digital-Collections/flsupct/dockets/sc14-897/sc14-897.pdf",
+      "badge": "professional",
+      "reason": "Florida Supreme Court opinion PDF.",
+      "source_class": "court_opinion",
+      "is_primary_authority": true
+    },
+    {
+      "title": "Fayad v. Clarendon National Insurance Co.",
+      "url": "https://library.law.fsu.edu/Digital-Collections/flsupct/dockets/sc03-1808/op-sc03-1808.pdf",
+      "badge": "professional",
+      "reason": "Florida Supreme Court opinion PDF.",
+      "source_class": "court_opinion",
+      "is_primary_authority": true
+    },
+    {
+      "title": "Trinidad v. Florida Peninsula Insurance Co.",
+      "url": "https://library.law.fsu.edu/Digital-Collections/flsupct/dockets/sc11-1643/op-sc11-1643.pdf",
+      "badge": "professional",
+      "reason": "Florida Supreme Court opinion PDF.",
+      "source_class": "court_opinion",
+      "is_primary_authority": true
+    }
+  ]
+}

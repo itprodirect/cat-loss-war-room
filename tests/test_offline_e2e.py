@@ -25,8 +25,8 @@ def test_offline_demo_e2e_writes_structured_artifacts(tmp_path: Path):
 
     assert result.schema_version == SCHEMA_VERSION
     assert result.passed is True
-    assert result.scenario_count == 4
-    assert result.passed_scenario_count == 4
+    assert result.scenario_count == 5
+    assert result.passed_scenario_count == 5
     assert Path(result.json_path).exists()
     assert Path(result.markdown_path).exists()
     assert Path(result.preflight_artifact_path).exists()
@@ -34,7 +34,7 @@ def test_offline_demo_e2e_writes_structured_artifacts(tmp_path: Path):
     payload = json.loads(Path(result.json_path).read_text(encoding="utf-8"))
     assert payload["schema_version"] == SCHEMA_VERSION
     assert payload["passed"] is True
-    assert payload["scenario_count"] == 4
+    assert payload["scenario_count"] == 5
     assert payload["preflight_artifact_path"] == result.preflight_artifact_path
     assert all(scenario["workflow_status"] == "completed" for scenario in payload["scenarios"])
 
@@ -49,7 +49,7 @@ def test_offline_demo_e2e_cli_check_writes_artifacts(tmp_path: Path, capsys):
 
     assert exit_code == 0
     rendered = capsys.readouterr().out
-    assert "Offline e2e passed: 4/4 scenarios passed" in rendered
+    assert "Offline e2e passed: 5/5 scenarios passed" in rendered
     assert list((tmp_path / "offline_e2e").glob("*.json"))
     assert list((tmp_path / "offline_e2e" / "preflight").glob("*.json"))
 

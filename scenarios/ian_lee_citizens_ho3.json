@@ -3,8 +3,8 @@
   "slug": "ian_lee_citizens_ho3",
   "title": "Hurricane Ian (Lee benchmark)",
   "benchmark_focus": "Southwest Florida benchmark for severe wind, storm-surge overlap, and large-loss adjustment disputes.",
-  "fixture_case_key": null,
-  "offline_demo_ready": false,
+  "fixture_case_key": "ian_citizens_lee",
+  "offline_demo_ready": true,
   "event_name": "Hurricane Ian",
   "event_date": "2022-09-28",
   "state": "FL",
@@ -31,10 +31,11 @@
     "lee",
     "benchmark",
     "citizens",
-    "storm-surge"
+    "storm-surge",
+    "offline-ready"
   ],
   "notes": [
     "Useful benchmark for Lee County fact patterns where wind and surge narratives compete.",
-    "Strong scenario for testing evidence dedup when many news and government pages discuss the same landfall facts."
+    "Promoted as a manually source-reviewed offline fixture lane using official weather, Citizens carrier, and Florida Supreme Court authority sources."
   ]
 }

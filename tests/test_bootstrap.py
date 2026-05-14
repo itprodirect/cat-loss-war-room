@@ -119,8 +119,8 @@ def test_bootstrap_verify_runs_supported_test_command(monkeypatch, capsys):
 
     assert exit_code == 0
     assert commands == [[sys.executable, "-m", "pytest", "-q"]]
-    assert written_preflight_artifacts == [("codex/local", 4, "20260418T120000Z")]
-    assert written_scorecards == [("codex/local", "5 passed in 0.12s", 4)]
+    assert written_preflight_artifacts == [("codex/local", 5, "20260418T120000Z")]
+    assert written_scorecards == [("codex/local", "5 passed in 0.12s", 5)]
     assert written_manifests == [("20260418T120000Z", "5 passed in 0.12s")]
     assert written_latest_pointers == [("20260418T120000Z", str(Path("runs/verify/test.json")))]
     output = capsys.readouterr().out
@@ -226,7 +226,7 @@ def test_bootstrap_verify_honors_release_candidate_override(monkeypatch):
     exit_code = bootstrap_main(["--verify", "--release-candidate", "manual-candidate"])
 
     assert exit_code == 0
-    assert written_scorecards == ["manual-candidate:4"]
+    assert written_scorecards == ["manual-candidate:5"]
     assert written_manifests == ["manual-candidate:20260418T120500Z"]
     assert written_latest_pointers == [
         f"manual-candidate:20260418T120500Z:{Path('runs/verify/test.json')}"

@@ -21,6 +21,26 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE_SAMPLES_ROOT = ROOT / "cache_samples"
 
 SCENARIOS = {
+    "ian_citizens_lee": {
+        "event_name": "Hurricane Ian",
+        "event_date": "2022-09-28",
+        "state": "FL",
+        "county": "Lee",
+        "carrier": "Citizens Property Insurance",
+        "policy_type": "HO-3 Dwelling",
+        "posture": ["denial", "underpayment"],
+        "key_facts": [
+            "The insured property sustained roof failure, broken openings, and prolonged interior water exposure during Ian",
+            "Local storm-surge reporting complicated the allocation between wind-driven rain and flood-related damage",
+            "The initial carrier estimate scoped limited repairs despite photographs showing broad exterior and interior damage",
+        ],
+        "coverage_issues": [
+            "wind vs water causation",
+            "concurrent causation",
+            "scope of repair",
+        ],
+        "expected_checks": 3,
+    },
     "milton_citizens_pinellas": {
         "event_name": "Hurricane Milton",
         "event_date": "2024-10-09",

@@ -15,7 +15,7 @@ This repo is the current execution surface for attorney-demo research accelerati
 
 ## Current milestone
 
-Preserve the stable V0 notebook demo while finishing the active foundation tranche: broader `#27` CI/pilot operationalization and remaining `#8` fixture breadth.
+Preserve the stable V0 notebook demo while finishing the active foundation tranche: broader `#27` CI/pilot operationalization and `#8` closeout review after the fifth offline fixture lane.
 
 ## Non-goals
 
@@ -56,13 +56,13 @@ Preserve the stable V0 notebook demo while finishing the active foundation tranc
 ## Known risks
 
 - The primary UX is still notebook-first, which is less approachable for non-technical users.
-- Offline readiness is uneven: committed fixtures exist and now have a golden snapshot gate, all four committed fixture lanes are fixture-backed registry scenarios, and a fixture-seeding process exists, but `docs/ISSUE_8_READINESS_AUDIT.md` confirms `#8` still needs one more manually seeded fixture lane or a scoped follow-up for the live-only Florida scenarios.
+- Offline readiness is improved but still intentionally review-gated: five committed fixture lanes now have a golden snapshot gate and fixture-backed registry scenarios, and `docs/ISSUE_8_READINESS_AUDIT.md` keeps `#8` open for maintainer review rather than auto-closing this seeding slice.
 - Case-law precision and citation confidence still need ongoing hardening in edge cases.
 - Status can drift quickly because roadmap, handoff, and session history are dense and frequently updated.
 
 ## Next 3 tasks
 
-1. Continue `#8` with one final fixture-seeding PR for a live-only Florida registry scenario, following `docs/FIXTURE_SEEDING.md` and `docs/ISSUE_8_READINESS_AUDIT.md`.
+1. Review the `#8` Ian/Lee/Citizens fixture-seeding PR and decide whether remaining live-only Florida scenarios need a follow-up manual-seeding issue.
 2. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
 3. Keep the notebook-era demo stable while preparing the next downstream product slice in `#10` after `#8` and `#27` are sufficiently grounded.
 

@@ -84,12 +84,12 @@ def test_scenario_warning_message_skips_offline_ready_milton_in_offline_mode():
 
 
 def test_scenario_warning_message_warns_for_non_offline_ready_scenario_in_offline_mode():
-    scenario = load_scenario("ian_lee_citizens_ho3", repo_root=ROOT)
+    scenario = load_scenario("irma_monroe_citizens_ho3", repo_root=ROOT)
 
     warning = scenario_warning_message(scenario, live_retrieval_enabled=False)
 
     assert warning is not None
-    assert "ian_lee_citizens_ho3" in warning
+    assert "irma_monroe_citizens_ho3" in warning
     assert "milton_pinellas_citizens_ho3" in warning
 
 
@@ -101,10 +101,10 @@ def test_scenario_warning_message_suppressed_when_live_retrieval_enabled():
 
 def test_scenario_availability_summary_distinguishes_offline_ready_and_live_only():
     milton = load_scenario("milton_pinellas_citizens_ho3", repo_root=ROOT)
-    ian = load_scenario("ian_lee_citizens_ho3", repo_root=ROOT)
+    irma = load_scenario("irma_monroe_citizens_ho3", repo_root=ROOT)
 
     offline_ready = scenario_availability_summary(milton, live_retrieval_enabled=False)
-    live_only = scenario_availability_summary(ian, live_retrieval_enabled=False)
+    live_only = scenario_availability_summary(irma, live_retrieval_enabled=False)
 
     assert offline_ready.status == "offline-ready"
     assert "offline-demo-ready" in offline_ready.detail
@@ -123,6 +123,8 @@ def test_scenario_catalog_availability_reports_current_notebook_statuses():
     assert summaries[2].scenario_id == "texas_hail_tarrant_allstate_hob"
     assert summaries[3].status == "offline-ready"
     assert summaries[3].scenario_id == "texas_hail_tarrant_allstate_dp3"
+    assert summaries[4].status == "offline-ready"
+    assert summaries[4].scenario_id == "ian_lee_citizens_ho3"
     assert {summary.status for summary in summaries} == {"offline-ready", "live-only"}
 
 
@@ -148,15 +150,15 @@ def test_prepare_notebook_scenario_returns_full_contract_and_warning(monkeypatch
     )
 
     selection = prepare_notebook_scenario(
-        "ian_lee_citizens_ho3",
+        "irma_monroe_citizens_ho3",
         overrides={"coverage_issues": ["scope of repair"]},
         namespace=namespace,
         ensure_dirs=False,
     )
 
-    assert selection.selected_slug == "ian_lee_citizens_ho3"
-    assert selection.scenario.title == "Hurricane Ian (Lee benchmark)"
-    assert selection.case_key == "ian_lee_citizens_ho3"
+    assert selection.selected_slug == "irma_monroe_citizens_ho3"
+    assert selection.scenario.title == "Hurricane Irma (Monroe mature/legal benchmark)"
+    assert selection.case_key == "irma_monroe_citizens_ho3"
     assert selection.intake.coverage_issues == ["scope of repair"]
     assert selection.live_retrieval_enabled is False
     assert selection.warning_message is not None
@@ -167,7 +169,7 @@ def test_prepare_notebook_scenario_returns_full_contract_and_warning(monkeypatch
         "live-only",
     }
     assert namespace["SCENARIO_SELECTION"] == selection
-    assert namespace["CASE_KEY"] == "ian_lee_citizens_ho3"
+    assert namespace["CASE_KEY"] == "irma_monroe_citizens_ho3"
     assert namespace["SETTINGS"] == expected_context.settings
     assert namespace["SCENARIO_AVAILABILITY"].status == "live-only"
     assert len(namespace["SCENARIO_AVAILABILITY_SUMMARIES"]) == 8

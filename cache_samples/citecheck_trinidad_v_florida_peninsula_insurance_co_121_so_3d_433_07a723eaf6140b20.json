@@ -1,0 +1,13 @@
+{
+  "status": "verified",
+  "badge": "verified",
+  "source_url": "https://www.courtlistener.com/c/so-3d/121/",
+  "note": "Manually reviewed CourtListener reporter volume entry for the case name, docket, and reporter citation.",
+  "confidence": "high",
+  "status_reason": "manual_source_review",
+  "trust_explanation": "CourtListener's reporter-volume listing corroborates the case name, docket number, and citation; Shepardize before reliance.",
+  "source_tier": "official",
+  "source_class": "court_opinion",
+  "is_primary_authority": true,
+  "alternate_candidate_count": 0
+}

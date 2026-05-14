@@ -1,0 +1,76 @@
+{
+  "module": "carrier",
+  "carrier_snapshot": {
+    "name": "Citizens Property Insurance",
+    "state": "FL",
+    "event": "Hurricane Ian",
+    "policy_type": "HO-3 Dwelling"
+  },
+  "document_pack": [
+    {
+      "doc_type": "Regulatory Action",
+      "title": "Citizens Property Insurance Corporation Final Exam Report",
+      "url": "https://floir.com/docs-sf/default-source/property-and-casualty/citizens-market-conduct-exam-reports/citizens-property-insurance-corporation-final-exam-report_1-18-2023.pdf?sfvrsn=88e41c6c_6",
+      "badge": "official",
+      "why_it_matters": "Florida OIR market-conduct material provides regulator context for Citizens claim handling review."
+    },
+    {
+      "doc_type": "Claims Handling Guideline",
+      "title": "What to Expect After Reporting Your Claim",
+      "url": "https://www.citizensfla.com/documents/20702/460724/Claim%2BReport%2BProcess%2BBrochure%2B0919.pdf/e694b24a-77e2-4dc0-9a99-9b5502a6ae08?d=&t=1571240809250&version=1.2",
+      "badge": "professional",
+      "why_it_matters": "Citizens' claim-process brochure describes claim reporting, inspection, claim review, and payment steps to compare against the scenario's adjustment timeline."
+    },
+    {
+      "doc_type": "Claims Handling Guideline",
+      "title": "Citizens Policy Form Descriptions",
+      "url": "https://www.citizensfla.com/documents/20702/8867372/20181211%2B02d%2BCitizens%2BPolicy%2BForm%2BDescriptions.pdf/193ed521-74b6-4bf6-9b00-d763e33e63c0?t=1628806710333",
+      "badge": "professional",
+      "why_it_matters": "Citizens' form descriptions identify HO-3 homeowners coverage as available for detached owner-occupied dwellings and help anchor the policy-type fixture."
+    },
+    {
+      "doc_type": "Bad Faith Signal",
+      "title": "Citizens Updates Hurricane Ian Estimates",
+      "url": "https://www.citizensfla.com/documents/20702/20355943/20221114%2BPress%2BRelease%2BCitizens%2Bupdates%2BHurricane%2BIan%2Bestimates.pdf/",
+      "badge": "professional",
+      "why_it_matters": "Citizens' own Hurricane Ian estimate update ties the carrier to the event and notes claim activity, litigation costs, and loss adjustment expenses."
+    }
+  ],
+  "common_defenses": [
+    "Flood or storm-surge exclusion positioned against wind-created openings and wind-driven rain facts.",
+    "Limited scope of repair or ACV payment based on the carrier's estimate rather than full exterior and interior documentation.",
+    "Supplemental-damage documentation and timing disputes after a major-event adjustment."
+  ],
+  "rebuttal_angles": [
+    "Compare the official NHC and NWS Ian chronology to photographs, repair invoices, and opening-created water-intrusion evidence.",
+    "Use Citizens' claim-process guidance to test whether inspection, claim review, supplement review, and written explanation steps are documented in the claim file.",
+    "Separate flood/surge allocation from covered wind and wind-driven rain causation before accepting a blended water-damage denial rationale.",
+    "Use the Citizens Ian estimate update only as event and claim-volume context, not as proof of this insured's claim amount."
+  ],
+  "sources": [
+    {
+      "title": "Citizens Property Insurance Corporation Final Exam Report",
+      "url": "https://floir.com/docs-sf/default-source/property-and-casualty/citizens-market-conduct-exam-reports/citizens-property-insurance-corporation-final-exam-report_1-18-2023.pdf?sfvrsn=88e41c6c_6",
+      "badge": "official",
+      "reason": "Official Florida Office of Insurance Regulation market-conduct source."
+    },
+    {
+      "title": "What to Expect After Reporting Your Claim",
+      "url": "https://www.citizensfla.com/documents/20702/460724/Claim%2BReport%2BProcess%2BBrochure%2B0919.pdf/e694b24a-77e2-4dc0-9a99-9b5502a6ae08?d=&t=1571240809250&version=1.2",
+      "badge": "professional",
+      "reason": "Citizens source for claim-reporting, inspection, review, and payment process."
+    },
+    {
+      "title": "Citizens Policy Form Descriptions",
+      "url": "https://www.citizensfla.com/documents/20702/8867372/20181211%2B02d%2BCitizens%2BPolicy%2BForm%2BDescriptions.pdf/193ed521-74b6-4bf6-9b00-d763e33e63c0?t=1628806710333",
+      "badge": "professional",
+      "reason": "Citizens source identifying HO-3 homeowners policy form context."
+    },
+    {
+      "title": "Citizens Updates Hurricane Ian Estimates",
+      "url": "https://www.citizensfla.com/documents/20702/20355943/20221114%2BPress%2BRelease%2BCitizens%2Bupdates%2BHurricane%2BIan%2Bestimates.pdf/",
+      "badge": "professional",
+      "reason": "Citizens source linking the carrier to Hurricane Ian loss and adjustment exposure."
+    }
+  ]
+}

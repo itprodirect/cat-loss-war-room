@@ -7,7 +7,7 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 336 tests are passing on the supported verify path.
+- 343 tests are passing on the supported verify path.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job with golden snapshot validation, an offline e2e demo gate, offline security and dependency hygiene gates, and the `exa-py` compatibility matrix.
 - CI now also emits categorized quality-gate artifacts for unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene failures.
 - CI emits and validates a release-scorecard artifact from the calibrated `#27` workflow.
@@ -22,8 +22,8 @@ This is the short version. Clean, practical, no drama.
 - The Memo Composer read model now has the same typed `v2alpha1` contract path for section cards, claim support links, review events, and export eligibility.
 - The Export History read model now has the same typed `v2alpha1` contract path for export artifact rows, delivery state, disclaimer state, and audit references.
 - The Run Timeline read model now has a typed `v2alpha1` envelope over canonical `Run` and `RunStage` records.
-- The committed four-scenario offline fixture lane now has a deterministic golden snapshot check for source mix, case counts, citation summaries, output structure, and coverage metadata.
-- The curated scenario registry now has four offline-ready fixture-backed benchmarks: Milton/Pinellas/Citizens, Ida/Orleans/Lloyd's, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3.
+- The committed five-scenario offline fixture lane now has a deterministic golden snapshot check for source mix, case counts, citation summaries, output structure, and coverage metadata.
+- The curated scenario registry now has five offline-ready fixture-backed benchmarks: Milton/Pinellas/Citizens, Ian/Lee/Citizens HO-3, Ida/Orleans/Lloyd's, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3.
 - The fixture-seeding process now defines when a scenario can be promoted to offline-ready status and tests guard against fixture-key or bundle drift.
 - A deeper V2 foundation layer is tracked in issues `#22` through `#27`.
 - Issue [#4](https://github.com/itprodirect/cat-loss-war-room/issues/4) is complete and closed.
@@ -40,7 +40,7 @@ This is the short version. Clean, practical, no drama.
 
 - V0 implemented now: notebook-first demo, cache-backed offline lane, package bootstrap, and current memo pipeline.
 - V2 definition work completed: workflow/IA in `#23`, evidence schema in `#24`, repo/runtime boundary framing in `#22`, and a first-pass release rubric in `#27`.
-- V2 implementation work still pending: broaden CI and pilot operationalization from `#27`, complete the remaining foundation work in `#8`, then build product surfaces in `#10` onward.
+- V2 implementation work still pending: broaden CI and pilot operationalization from `#27`, finish `#8` maintainer closeout review, then build product surfaces in `#10` onward.
 
 ## Active Priority Rank
 
@@ -50,7 +50,7 @@ Issue [#3](https://github.com/itprodirect/cat-loss-war-room/issues/3) remains th
 Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) are not ranked here because their written source-of-truth docs already landed and those definition issues are closed. Their downstream implementation work lives in `#10`, `#11`, and `#12`.
 
 1. [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) Broaden CI and pilot operationalization of the calibrated release rubric
-2. [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (golden snapshot gate, all four committed fixture lanes registry-backed, fixture-seeding process, next-candidate audit, and readiness audit landed; one final live-only Florida fixture-seeding PR remains recommended)
+2. [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (golden snapshot gate, all five committed fixture lanes registry-backed, fixture-seeding process, next-candidate audit, readiness audit, and Ian/Lee/Citizens fixture-seeding slice landed; open for maintainer closeout review)
 3. [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) API orchestrator with graceful degradation
 4. [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) Guided web intake + run-status UX
 5. [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Evidence normalization + provenance implementation
@@ -81,7 +81,7 @@ Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#2
 Goal: finish the remaining definition/foundation work so V2 implementation starts from stable contracts and quality gates.
 
 - [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) Broaden CI and pilot operationalization of the calibrated release scorecard
-- [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (golden snapshot gate, all four committed fixture lanes registry-backed, fixture-seeding process, next-candidate audit, and readiness audit landed; one final live-only Florida fixture-seeding PR remains recommended)
+- [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) Multi-jurisdiction fixture suite + snapshots (golden snapshot gate, all five committed fixture lanes registry-backed, fixture-seeding process, next-candidate audit, readiness audit, and Ian/Lee/Citizens fixture-seeding slice landed; open for maintainer closeout review)
 
 ## Next (30-60 days)
 

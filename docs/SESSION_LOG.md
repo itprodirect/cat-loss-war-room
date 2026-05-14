@@ -2001,10 +2001,35 @@ Status: Complete
   - if maintainers decide four registry-backed fixture lanes are enough for `#8`, create a follow-up issue titled `Manually seed live-only Florida fixture scenarios` before closing `#8`.
 - Decisions not added:
   - no fixture payloads, invented data, live retrieval, dependencies, notebooks, or issue `#10` orchestration work were added.
-  - this PR intentionally does not use `Closes #8`.
+  - this PR intentionally leaves issue `#8` open for maintainer review.
 - Validation:
   - `python -m pytest tests/test_scenarios.py tests/test_fixture_snapshots.py tests/test_offline_demo_pack.py -q` -> `52 passed in 10.10s`.
   - `python -m pytest -q` -> `336 passed in 23.19s`.
   - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
   - `python -m war_room.offline_e2e --check` -> passed; `4/4` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-14_offline-e2e_20260514t020742z.json`.
   - `python -m war_room --verify --release-candidate issue-8-readiness-audit` -> passed; embedded `pytest -q` reported `336 passed in 19.04s`; offline preflight passed for 4 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-14_issue-8-readiness-audit_20260514t020751z.json`.
+
+## Session 107 - Issue 8 Final Florida Fixture Lane
+Date: 2026-05-14
+Status: Complete
+
+- Completed the requested final safe `#8` fixture-seeding slice by manually source-reviewing and promoting `ian_lee_citizens_ho3` into the committed offline fixture suite as `ian_citizens_lee`.
+- Candidate conclusion:
+  - `ian_lee_citizens_ho3` was the safest Florida candidate because the registry scenario already existed and the public source review supported the Hurricane Ian Lee County event, Citizens carrier context, HO-3 policy context, and Florida Supreme Court authorities without inventing facts.
+  - the fixture lane contains complete `weather`, `carrier`, `caselaw`, and `citation_verify` payloads, plus the matching flat cache keys required by the cache-first runtime.
+- What changed:
+  - Added `cache_samples/ian_citizens_lee/` and matching flat cache files for weather, carrier, case law, and citation checks.
+  - Promoted `scenarios/ian_lee_citizens_ho3.json` to `offline_demo_ready: true` with `fixture_case_key: ian_citizens_lee`.
+  - Updated offline pack, scenario, notebook-runtime, bootstrap, offline-e2e, release-scorecard, and snapshot tests for the five-lane baseline.
+  - Refreshed `tests/golden/offline_fixture_snapshots.json`; the intentional diff adds `ian_citizens_lee` and updates registry counts/lists from four to five lanes.
+  - Synced README, handoff, roadmap, issue map, rubric, repo brief, CLAUDE, build checklist, foundation, heartbeat, and `#8` audit docs to the five-lane state.
+- Decisions not added:
+  - no live retrieval was added to tests, snapshot checks, offline e2e, or verify.
+  - no dependencies, notebooks, invented facts, invented sources, invented citations, or issue `#10` orchestration work were added.
+  - this PR intentionally keeps issue `#8` open for maintainer review and avoids auto-close keywords.
+- Validation:
+  - `python -m pytest tests/test_scenarios.py tests/test_fixture_snapshots.py tests/test_offline_demo_pack.py -q` -> `59 passed in 5.24s`.
+  - `python -m pytest -q` -> `343 passed in 27.82s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-14_offline-e2e_20260514t025227z.json`.
+  - `python -m war_room --verify --release-candidate issue-8-final-florida-fixture` -> passed; embedded `pytest -q` reported `343 passed in 19.77s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-14_issue-8-final-florida-fixture_20260514t025241z.json`.

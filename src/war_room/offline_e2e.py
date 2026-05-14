@@ -19,7 +19,7 @@ from war_room.preflight import (
 
 SCHEMA_VERSION = "offline-demo-e2e.v1"
 DEFAULT_OUTPUT_DIR = Path("runs/offline_e2e")
-MIN_SCENARIO_COUNT = 4
+MIN_SCENARIO_COUNT = 5
 EXPECTED_WORKFLOW_STAGES = (
     "intake_validation",
     "research_plan",
