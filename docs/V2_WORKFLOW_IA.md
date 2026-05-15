@@ -1,4 +1,4 @@
-﻿# V2 Workflow IA and Design System
+# V2 Workflow IA and Design System
 
 Last updated: March 8, 2026
 
