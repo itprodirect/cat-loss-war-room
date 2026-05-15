@@ -57,7 +57,7 @@ def _validate_schema_version(value: str) -> str:
 
 
 def _model_to_payload(model: BaseModel) -> dict[str, Any]:
-    return model.model_dump()
+    return model.model_dump(mode="json")
 
 
 class OrchestrationFailurePayload(BaseModel):

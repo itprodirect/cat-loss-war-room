@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import json
 
 import pytest
 from pydantic import ValidationError
@@ -353,3 +354,39 @@ def test_orchestration_error_response_serializes_stable_failure_shape():
             "detail": "",
         },
     }
+
+
+def test_public_response_payload_helpers_return_json_safe_datetime_values():
+    queued_run = _run("queued")
+    queued_stages = [_stage(stage_key, "not_started") for stage_key in STAGE_KEYS]
+    start_payload = start_run_response_to_payload(
+        StartRunResponse(
+            run=queued_run,
+            status=_status(queued_run, queued_stages),
+            timeline=_timeline(queued_stages),
+        )
+    )
+
+    running_run = _run("running")
+    running_stages = [
+        _stage("intake_validation", "completed"),
+        _stage("research_plan", "completed"),
+        _stage("weather", "in_progress"),
+        _stage("carrier", "not_started"),
+    ]
+    status_payload = get_run_status_response_to_payload(
+        GetRunStatusResponse(
+            run=running_run,
+            status=_status(running_run, running_stages, current_stage_key="weather"),
+            timeline=_timeline(running_stages),
+        )
+    )
+
+    json.dumps(start_payload)
+    json.dumps(status_payload)
+
+    assert isinstance(start_payload["run"]["created_at"], str)
+    assert isinstance(status_payload["run"]["created_at"], str)
+    assert isinstance(status_payload["run"]["started_at"], str)
+    assert isinstance(status_payload["timeline"]["stages"][0]["started_at"], str)
+    assert isinstance(status_payload["timeline"]["stages"][0]["completed_at"], str)
