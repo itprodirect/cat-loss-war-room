@@ -22,6 +22,7 @@ from war_room.models import (
     memo_render_input_from_parts,
     run_audit_snapshot_from_memo_input,
 )
+from war_room.orchestration import derive_run_status_from_stages
 
 _PLAN_MODULE_LABELS = {
     "weather": "Weather",
@@ -416,19 +417,7 @@ def _citation_stage(run_id: str, citecheck: CitationVerifyPack) -> RunStage:
 
 
 def _overall_run_status(stages: list[RunStage]) -> str:
-    failed_output_stages = [
-        stage for stage in stages if stage.stage_key in _OUTPUT_STAGE_KEYS and stage.status == "failed"
-    ]
-    usable_output_stages = [
-        stage
-        for stage in stages
-        if stage.stage_key in _OUTPUT_STAGE_KEYS and stage.status in {"completed", "degraded"}
-    ]
-    if failed_output_stages and usable_output_stages:
-        return "partial_success"
-    if failed_output_stages:
-        return "failed"
-    return "completed"
+    return derive_run_status_from_stages(stages, output_stage_keys=_OUTPUT_STAGE_KEYS)
 
 
 def _next_step(run: Run, stages: list[RunStage]) -> str:

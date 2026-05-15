@@ -449,6 +449,8 @@ Recommended stage keys:
 - `memo_assembly`
 - `export`
 
+Current implementation note: the first narrow issue `#10` implementation slice now backs these run and stage names with the shared contract in `src/war_room/orchestration.py`. That module defines transition validation and stage-to-run rollup helpers for future API orchestration while preserving the current notebook/preflight behavior.
+
 ### Review-Required Semantics
 
 - `review_required` means the output is usable for human review but not trustworthy as clean final support.

@@ -21,7 +21,7 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 371 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 382 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + offline e2e gate + offline security and dependency hygiene gates + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install and categorized quality-gate artifacts |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -33,6 +33,7 @@ This is research acceleration, not legal advice.
 | Workflow IA spec (`#23`) | Complete and closed as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
 | Evidence schema spec (`#24`) | Complete and closed as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |
 | Quality rubric (`#27`) | First-pass rubric plus local and CI artifact workflows landed in `docs/V2_RELEASE_RUBRIC.md`; demo-ready threshold calibration, blocking/advisory metric categories, live preflight evidence, run-scoped verify artifacts, verify manifests, and a stable latest pointer are now explicit, while broader CI and pilot operationalization remain open |
+| Orchestration API (`#10`) | First narrow run-state contract slice is implemented in `src/war_room/orchestration.py` and documented in `docs/ISSUE_10_RUN_STATE_CONTRACT.md`; full API service, queues, persistence, retries, circuit breakers, auth, and UI remain future work |
 | Cache samples | Milton/Citizens/Pinellas + Ian/Citizens/Lee + TX hail/Allstate/Tarrant + TX hail matching/Allstate Texas Lloyds/Tarrant DP-3 + Ida/Lloyd's/Orleans committed |
 
 ## 3) What changed recently
@@ -73,6 +74,7 @@ This is research acceleration, not legal advice.
 - The Memo Composer read model now also lives behind a typed `v2alpha1` Pydantic contract with a payload adapter, so section readiness, claim support links, review events, and export eligibility validate before rendering.
 - The Export History read model now also lives behind a typed `v2alpha1` Pydantic contract with a payload adapter, so artifact delivery state, disclaimer state, review-required state, and audit references validate before rendering.
 - The Run Timeline read model now has a typed `v2alpha1` envelope over canonical `Run` and `RunStage` records, with payload validation for cross-run stage drift before rendering.
+- The first narrow issue `#10` slice now centralizes canonical run states, stage statuses, transition validation, and stage-to-run rollup helpers in `src/war_room/orchestration.py` without changing notebook or preflight behavior.
 - The notebook Evidence Board now has a styled HTML review surface over the existing typed read model, while the plain text formatter remains available as a fallback.
 
 ## 4) Quick run
