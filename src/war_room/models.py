@@ -8,23 +8,16 @@ from typing import Any, Literal, Mapping, Sequence
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from war_room.orchestration import (
+    RunStatus,
+    StageKey as RunStageKey,
+    StageStatus as RunStageStatus,
+)
 from war_room.source_scoring import score_url
 
 POSTURE_VALUE_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 SCHEMA_VERSION_DEFAULT = "v2alpha1"
 
-RunStatus = Literal["queued", "running", "partial_success", "failed", "completed", "cancelled"]
-RunStageStatus = Literal["not_started", "in_progress", "completed", "degraded", "failed", "skipped"]
-RunStageKey = Literal[
-    "intake_validation",
-    "research_plan",
-    "weather",
-    "carrier",
-    "caselaw",
-    "citation_verify",
-    "memo_assembly",
-    "export",
-]
 MemoSectionStatus = Literal["draft", "review_required", "ready"]
 LegalIssueStatus = Literal["open", "review_required", "resolved"]
 RunEventSeverity = Literal["info", "warning", "error"]

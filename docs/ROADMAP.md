@@ -7,7 +7,7 @@ This is the short version. Clean, practical, no drama.
 ## Where we are now
 
 - Demo pipeline is stable.
-- 371 tests are passing on the supported verify path.
+- 382 tests are passing on the supported verify path.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job with golden snapshot validation, an offline e2e demo gate, offline security and dependency hygiene gates, and the `exa-py` compatibility matrix.
 - CI now also emits categorized quality-gate artifacts for unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene failures.
 - CI emits and validates a release-scorecard artifact from the calibrated `#27` workflow, including machine-readable blocking/advisory readiness categories for dashboard consumers.
@@ -22,6 +22,7 @@ This is the short version. Clean, practical, no drama.
 - The Memo Composer read model now has the same typed `v2alpha1` contract path for section cards, claim support links, review events, and export eligibility.
 - The Export History read model now has the same typed `v2alpha1` contract path for export artifact rows, delivery state, disclaimer state, and audit references.
 - The Run Timeline read model now has a typed `v2alpha1` envelope over canonical `Run` and `RunStage` records.
+- A first narrow `#10` orchestration slice now defines shared run states, stage statuses, transition validation, and stage-to-run rollup helpers in `src/war_room/orchestration.py`; the full API service remains future work.
 - The committed five-scenario offline fixture lane now has a deterministic golden snapshot check for source mix, case counts, citation summaries, output structure, and coverage metadata.
 - The curated scenario registry now has five offline-ready fixture-backed benchmarks: Milton/Pinellas/Citizens, Ian/Lee/Citizens HO-3, Ida/Orleans/Lloyd's, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3.
 - The fixture-seeding process now defines when a scenario can be promoted to offline-ready status and tests guard against fixture-key or bundle drift.
@@ -35,6 +36,7 @@ This is the short version. Clean, practical, no drama.
 - Issue [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) is complete. The closure sanity audit in [ISSUE_7_CLOSURE_SANITY_AUDIT.md](ISSUE_7_CLOSURE_SANITY_AUDIT.md) documents the PR #56 gap and the follow-up fix for `None` provider-response malformed-contract handling.
 - Issue [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) is complete and closed. The five-lane offline fixture baseline now covers Milton, Ida, Ian/Lee/Citizens HO-3, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3 with registry-backed offline-ready scenarios and golden snapshot validation.
 - Issue [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) is complete. The closeout audit in [ISSUE_9_CLOSEOUT_AUDIT.md](ISSUE_9_CLOSEOUT_AUDIT.md) maps the expanded CI quality-gate requirements to workflow jobs, gate categories, tests, artifact evidence, and offline validation.
+- Issue [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) has a first run-state contract slice documented in [ISSUE_10_RUN_STATE_CONTRACT.md](ISSUE_10_RUN_STATE_CONTRACT.md). The API service, persistence, retries, and circuit-breaker behavior are still pending.
 - Placeholder directories under `apps/`, `packages/`, and `workers/` are planned V2 boundaries only. The active runtime remains the notebook plus `src/war_room/`.
 
 ## Delivery layers

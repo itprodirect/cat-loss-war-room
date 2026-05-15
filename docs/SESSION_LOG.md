@@ -2074,3 +2074,27 @@ Status: Complete
   - `python -m war_room --verify --release-candidate issue-27-scorecard-operationalization` -> passed; embedded `pytest -q` reported `371 passed in 10.62s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-15_issue-27-scorecard-operationalization_20260515t051144z.json`.
   - `python -m war_room.release_scorecard --validate-latest --output-dir runs\release_scorecards` -> passed; latest scorecard validation selected `runs\release_scorecards\2026-05-15_issue-27-scorecard-operationalization_20260515t051144z.json`.
   - `git diff --check` -> passed.
+
+## Session 110 - Issue 10 Run-State Contract Slice
+Date: 2026-05-15
+Status: Complete
+
+- Completed the first narrow `#10` orchestration slice without adding the API service or changing notebook/demo runtime behavior.
+- What changed:
+  - Added `src/war_room/orchestration.py` with canonical run states, stage keys, stage statuses, transition validation, terminal-state helpers, a `StageStateSnapshot` normalization shape, stage-to-run rollup logic, and review-required rollup logic.
+  - Reused the new status literals from `src/war_room/models.py` so canonical `Run` and `RunStage` records share the same state vocabulary as the orchestration contract.
+  - Updated `src/war_room/workflow_summary.py` so current run-timeline status derivation delegates to the shared rollup helper while preserving the existing V0 output-stage semantics.
+  - Added `tests/test_orchestration_state.py` covering valid/invalid run transitions, valid/invalid stage transitions, stage normalization, partial-success behavior, failed-stage behavior, completed-run behavior, queued state, and running state.
+  - Added `docs/ISSUE_10_RUN_STATE_CONTRACT.md` and linked current docs to clarify how the contract supports future `#10` API orchestration.
+  - Synced current-state docs to the `382`-test baseline and this branch's validation trail.
+- Decisions not added:
+  - no HTTP API framework, API routes, background queue, database, persistence layer, auth, dashboard, UI design, retry policy, circuit breaker behavior, or human-review workflow was added.
+  - no dependencies, fixture facts, citation facts, cache samples, notebooks, live retrieval behavior, golden snapshots, or placeholder V2 runtime surfaces were changed.
+- Validation:
+  - `python -m pytest tests/test_orchestration*.py tests/test_offline_demo_pack.py tests/test_release_scorecard.py -q` -> `95 passed in 2.01s` when run through Git Bash for glob expansion.
+  - `python -m pytest tests\test_orchestration_state.py tests\test_offline_demo_pack.py tests\test_release_scorecard.py -q` -> `95 passed in 2.40s` as the explicit PowerShell equivalent.
+  - `python -m pytest -q` -> `382 passed in 9.75s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-15_offline-e2e_20260515t054312z.json`.
+  - `python -m war_room --verify --release-candidate issue-10-run-state-contract` -> passed; embedded `pytest -q` reported `382 passed in 10.25s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-15_issue-10-run-state-contract_20260515t054320z.json`.
+  - `git diff --check` -> passed.
