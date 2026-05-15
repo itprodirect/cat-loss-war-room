@@ -6,6 +6,11 @@ This document records the first narrow implementation slice for issue `#10`.
 
 The full issue still calls for an API service, graceful degradation, retries, and circuit-breaker behavior. This slice only adds the run-state and stage-state contract that future API orchestration can build on.
 
+Follow-up issue `#73` adds typed API request/response boundary contracts in
+[`ISSUE_10_API_CONTRACTS.md`](ISSUE_10_API_CONTRACTS.md). Those contracts remain
+type-only and do not add HTTP routes, persistence, queueing, auth, retries, or
+UI.
+
 ## Scope Landed
 
 - `src/war_room/orchestration.py` defines canonical V2 run states, stage keys, stage statuses, transition rules, and stage-to-run rollup helpers.

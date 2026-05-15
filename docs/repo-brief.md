@@ -56,16 +56,16 @@ Preserve the stable V0 notebook demo while finishing broader `#27` CI/pilot oper
 ## Known risks
 
 - The primary UX is still notebook-first, which is less approachable for non-technical users.
-- The first issue `#10` run-state contract slice exists, but the actual API service, persistence, retries, circuit breakers, dashboard, and UI remain unbuilt.
+- The first issue `#10` run-state contract slice and issue `#73` API boundary contract slice exist, but the actual API service, persistence, retries, circuit breakers, dashboard, and UI remain unbuilt.
 - Offline readiness is stronger but still demo-scoped: five committed fixture lanes now have a golden snapshot gate and fixture-backed registry scenarios, and issue `#8` is closed as completed after the five-lane baseline validation.
 - Case-law precision and citation confidence still need ongoing hardening in edge cases.
 - Status can drift quickly because roadmap, handoff, and session history are dense and frequently updated.
 
 ## Next 3 tasks
 
-1. Finish the narrow issue `#10` run-state contract PR without adding the API service or changing notebook behavior.
+1. Review/merge the narrow issue `#73` orchestration API contract PR without adding the API service or changing notebook behavior.
 2. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
-3. Treat future fixture or cache normalization as separately scoped follow-up work rather than reopening completed `#8`.
+3. Start the next explicitly scoped issue `#10` implementation slice only after the contract PR is reviewed.
 
 ## Ownership
 

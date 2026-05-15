@@ -449,7 +449,7 @@ Recommended stage keys:
 - `memo_assembly`
 - `export`
 
-Current implementation note: the first narrow issue `#10` implementation slice now backs these run and stage names with the shared contract in `src/war_room/orchestration.py`. That module defines transition validation and stage-to-run rollup helpers for future API orchestration while preserving the current notebook/preflight behavior.
+Current implementation note: the first narrow issue `#10` implementation slice now backs these run and stage names with the shared contract in `src/war_room/orchestration.py`. Issue `#73` adds typed start-run and get-run-status API boundary contracts in `src/war_room/orchestration_api_contracts.py`. These modules define contract shapes for future API orchestration while preserving the current notebook/preflight behavior.
 
 ### Review-Required Semantics
 

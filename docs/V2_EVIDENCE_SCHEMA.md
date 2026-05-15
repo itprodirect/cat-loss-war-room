@@ -748,7 +748,7 @@ The notebook-era runtime now has typed `v2alpha1` read-model envelopes for all f
 
 These are still transitional read models over the current v0 audit snapshot and canonical `Run` / `RunStage` records. They are not a storage layer or a claim that the V2 API/UI exists.
 
-The first narrow issue `#10` run-state slice now centralizes the run/status vocabulary, transition validation, and stage rollup helpers in `src/war_room/orchestration.py`. The canonical `Run` and `RunStage` models use that contract, but the full API service, persistence layer, retries, and circuit breakers remain future work.
+The first narrow issue `#10` run-state slice now centralizes the run/status vocabulary, transition validation, and stage rollup helpers in `src/war_room/orchestration.py`. Issue `#73` adds typed API boundary contracts for future start-run and get-run-status responses in `src/war_room/orchestration_api_contracts.py`. The canonical `Run` and `RunStage` models use the shared vocabulary, but the full API service, persistence layer, retries, and circuit breakers remain future work.
 
 ## 10) Mapping From Current Typed Models
 
