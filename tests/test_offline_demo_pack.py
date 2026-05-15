@@ -143,6 +143,11 @@ _CASE_COMMENTARY_MARKERS = (
 
 _STABLE_SOURCE_BADGES = {"official", "professional", "unvetted", "paywalled"}
 _STABLE_CITATION_BADGES = {"verified", "warning", "not_found"}
+_CITATION_BADGE_FOR_STATUS = {
+    "verified": "verified",
+    "uncertain": "warning",
+    "not_found": "not_found",
+}
 
 
 class _FixtureProvider:
@@ -343,3 +348,17 @@ def test_fixture_badges_use_stable_ascii_tokens(case_key: str):
 
     citecheck = _load(case_key, "citation_verify")
     assert {check["badge"] for check in citecheck["checks"]}.issubset(_STABLE_CITATION_BADGES)
+    for check in citecheck["checks"]:
+        assert check["badge"] == _CITATION_BADGE_FOR_STATUS[check["status"]]
+
+
+@pytest.mark.parametrize(
+    "path",
+    sorted(CACHE_SAMPLES_ROOT.glob("citecheck_*.json")),
+    ids=lambda path: path.name,
+)
+def test_flat_citecheck_cache_badges_use_stable_ascii_tokens(path: Path):
+    data = json.loads(path.read_text(encoding="utf-8-sig"))
+
+    assert data["status"] in _CITATION_BADGE_FOR_STATUS
+    assert data["badge"] == _CITATION_BADGE_FOR_STATUS[data["status"]]
