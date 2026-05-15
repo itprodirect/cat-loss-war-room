@@ -2098,3 +2098,25 @@ Status: Complete
   - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-15_offline-e2e_20260515t054312z.json`.
   - `python -m war_room --verify --release-candidate issue-10-run-state-contract` -> passed; embedded `pytest -q` reported `382 passed in 10.25s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-15_issue-10-run-state-contract_20260515t054320z.json`.
   - `git diff --check` -> passed.
+
+## Session 111 - Issue 73 Orchestration API Contracts
+Date: 2026-05-15
+Status: Complete
+
+- Completed the issue `#73` contract-first slice for future issue `#10` API work without adding a live API service or changing notebook/offline demo behavior.
+- What changed:
+  - Added `src/war_room/orchestration_api_contracts.py` with typed Pydantic contracts for future start-run request, start-run response, get-run-status response, stage/status/timeline payloads, preserved usable outputs, stage failure details, and a small error response shape.
+  - Reused the canonical run statuses, stage keys, and stage statuses from `src/war_room/orchestration.py`, while nesting existing canonical `Run`, `RunStage`, and `RunEvent` concepts where appropriate.
+  - Added `tests/test_orchestration_api_contracts.py` covering serialization, validation, invalid states, queued creation, running progress, completed runs, partial-success with preserved outputs, failed runs with stage failure details, and review-required completed runs.
+  - Added `docs/ISSUE_10_API_CONTRACTS.md` and linked current docs to clarify these are API contracts only, not a live service.
+  - Synced current-state docs to the `400`-test baseline and this branch's validation trail.
+- Decisions not added:
+  - no HTTP routes, API framework, background queue, database tables, persistence, auth, retry policy, circuit breakers, dashboard work, UI, or placeholder V2 runtime surface was added.
+  - no fixtures, cache samples, citation facts, notebooks, live retrieval behavior, golden snapshots, or dependencies were changed.
+- Validation:
+  - `python -m pytest tests/test_orchestration*.py tests/test_*api* -q` -> `39 passed in 0.50s` when run through Git Bash for glob expansion.
+  - `python -m pytest -q` -> `400 passed in 11.52s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-15_offline-e2e_20260515t061619z.json`.
+  - `python -m war_room --verify --release-candidate issue-10-api-contracts` -> passed; embedded `pytest -q` reported `400 passed in 11.77s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-15_issue-10-api-contracts_20260515t061627z.json`.
+  - `git diff --check` -> passed.
