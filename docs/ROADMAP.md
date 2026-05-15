@@ -1,16 +1,16 @@
 # Roadmap (Simple, Current)
 
-Last updated: May 14, 2026
+Last updated: May 15, 2026
 
 This is the short version. Clean, practical, no drama.
 
 ## Where we are now
 
 - Demo pipeline is stable.
-- 343 tests are passing on the supported verify path.
+- 371 tests are passing on the supported verify path.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job with golden snapshot validation, an offline e2e demo gate, offline security and dependency hygiene gates, and the `exa-py` compatibility matrix.
 - CI now also emits categorized quality-gate artifacts for unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene failures.
-- CI emits and validates a release-scorecard artifact from the calibrated `#27` workflow.
+- CI emits and validates a release-scorecard artifact from the calibrated `#27` workflow, including machine-readable blocking/advisory readiness categories for dashboard consumers.
 - The supported test path is editable install plus `pytest -q`, or `PYTHONPATH=src` for ad hoc local runs. Raw-checkout `pytest -q` is not supported.
 - The offline demo path now has a deterministic preflight command: `python -m war_room --preflight`.
 - The notebook and preflight surfaces now expose a first workflow layer with research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run-timeline review state.
@@ -30,7 +30,7 @@ This is the short version. Clean, practical, no drama.
 - Issue [#5](https://github.com/itprodirect/cat-loss-war-room/issues/5) is complete and closed.
 - Issue [#22](https://github.com/itprodirect/cat-loss-war-room/issues/22) is complete and closed.
 - Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) are complete and closed as written source-of-truth specs.
-- Issue [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) is still open, but the local and CI release-evidence path now includes explicit demo-ready threshold calibration, run-scoped artifacts, verify manifests, and a stable latest pointer in `docs/V2_RELEASE_RUBRIC.md`.
+- Issue [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) is still open, but the local and CI release-evidence path now includes explicit demo-ready threshold calibration, blocking/advisory metric categories, run-scoped artifacts, verify manifests, and a stable latest pointer in `docs/V2_RELEASE_RUBRIC.md`.
 - Issue [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) is complete. The closeout audit in [ISSUE_6_CLOSEOUT_AUDIT.md](ISSUE_6_CLOSEOUT_AUDIT.md) maps the contract/cache requirements to code, tests, scope boundaries, and validation evidence.
 - Issue [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) is complete. The closure sanity audit in [ISSUE_7_CLOSURE_SANITY_AUDIT.md](ISSUE_7_CLOSURE_SANITY_AUDIT.md) documents the PR #56 gap and the follow-up fix for `None` provider-response malformed-contract handling.
 - Issue [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) is complete and closed. The five-lane offline fixture baseline now covers Milton, Ida, Ian/Lee/Citizens HO-3, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3 with registry-backed offline-ready scenarios and golden snapshot validation.
@@ -74,7 +74,7 @@ Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#2
   - `#11` should explicitly implement the workflow defined in `#23`.
   - `#12` should explicitly implement against the canonical schema defined in `#24`.
 - `#27` should now focus on CI and pilot operationalization of the calibrated rubric rather than inventing the first rubric draft.
-  - CI artifact emission, local verify evidence bundles, and artifact integrity checks already landed; the remaining work is broader gate coverage and pilot evidence.
+  - CI artifact emission, local verify evidence bundles, artifact integrity checks, and dashboard-ready blocking/advisory scorecard categories already landed; the remaining work is broader gate coverage and pilot evidence.
 
 ## Now (next 2-3 weeks)
 

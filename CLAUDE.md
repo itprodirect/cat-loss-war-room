@@ -44,7 +44,7 @@ notebooks/          # Jupyter notebooks (the demo surface)
 cache_samples/      # Committed demo fixtures (run without API key)
 cache/              # Runtime cache (gitignored)
 output/             # Generated reports (gitignored)
-tests/              # pytest test suite (343 tests, no network)
+tests/              # pytest test suite (371 tests, no network)
 scripts/            # Seed scripts (manual, not CI)
 docs/               # Project documentation
 apps/               # V2 app placeholders (web/api)
@@ -87,4 +87,4 @@ v0-demo shipped, issues #22, #23, #24, #6, #7, #8, and #9 are complete and close
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
 Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
-Next priority: continue broader #27 scorecard/rubric operationalization before downstream implementation in #10 onward. Issues #64 and #65 remain open as non-blocking hygiene/normalization follow-ups.
+Next priority: continue broader #27 scorecard/rubric operationalization before downstream implementation in #10 onward. Issues #64 and #65 are closed hygiene follow-ups.

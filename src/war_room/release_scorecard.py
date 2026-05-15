@@ -15,6 +15,9 @@ from war_room.scenarios import default_scenario_id as get_default_scenario_id, l
 
 DEFAULT_VERIFICATION_COMMAND = "pytest -q"
 _FIXTURE_FILE_NAMES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
+READINESS_BLOCKING = "blocking"
+READINESS_ADVISORY = "advisory"
+DEMO_READY_LEVEL = "Demo-ready"
 
 
 @dataclass(frozen=True)
@@ -26,6 +29,8 @@ class ScorecardDimension:
     verdict: str
     evidence: list[str] = field(default_factory=list)
     notes: str = ""
+    readiness_category: str = READINESS_ADVISORY
+    release_level: str = DEMO_READY_LEVEL
 
 
 @dataclass(frozen=True)
@@ -35,6 +40,8 @@ class MustPassGate:
     name: str
     passed: bool
     evidence: str
+    readiness_category: str = READINESS_BLOCKING
+    release_level: str = DEMO_READY_LEVEL
 
 
 @dataclass(frozen=True)
@@ -92,6 +99,25 @@ class CalibrationThreshold:
     target: str
     actual: str
     passed: bool
+    readiness_category: str = READINESS_BLOCKING
+    release_level: str = DEMO_READY_LEVEL
+
+
+@dataclass(frozen=True)
+class ReadinessPostureSummary:
+    """Dashboard-oriented summary of blocking and advisory readiness signals."""
+
+    target_release_level: str
+    demo_ready: str
+    pilot_ready: str
+    release_ready: str
+    blocking_metric_count: int
+    blocking_metric_failed_count: int
+    advisory_metric_count: int
+    advisory_attention_count: int
+    blocking_failures: list[str]
+    advisory_gaps: list[str]
+    pilot_readiness_gaps: list[str]
 
 
 @dataclass(frozen=True)
@@ -131,6 +157,7 @@ class ReleaseScorecard:
     preflight_summary: PreflightSummary | None
     fixture_coverage: FixtureCoverageSummary | None
     scenario_registry: ScenarioRegistrySummary | None
+    readiness_posture: ReadinessPostureSummary
     calibration_thresholds: list[CalibrationThreshold]
     dimensions: list[ScorecardDimension]
     must_pass_gates: list[MustPassGate]
@@ -312,7 +339,7 @@ def build_demo_release_scorecard(
             "Fixture coverage is exercised through an explicit CI smoke job and local smoke command."
         )
     else:
-        evidence_quality_evidence.insert(0, "Broader scenario coverage is still pending under #8.")
+        evidence_quality_evidence.insert(0, "Committed fixture coverage is missing from the scorecard inputs.")
 
     if scenario_registry and scenario_registry.scenario_count:
         registry_line = (
@@ -355,7 +382,7 @@ def build_demo_release_scorecard(
             score=2 if thresholds_passed else 1 if fixture_coverage and fixture_coverage.scenario_count else 0,
             verdict="Acceptable" if thresholds_passed else "Weak" if fixture_coverage and fixture_coverage.scenario_count else "Blocked",
             evidence=evidence_quality_evidence,
-            notes="Demo-ready evidence quality now has explicit fixture thresholds. Broader scenario breadth and richer output-quality thresholds remain future work under #8, #12, and #13.",
+            notes="Demo-ready evidence quality now has explicit fixture thresholds. Optional fixture-suite expansion and richer output-quality thresholds remain future work under separately scoped fixture follow-ups, #12, and #13.",
         ),
         ScorecardDimension(
             name="Trust and Provenance",
@@ -436,6 +463,11 @@ def build_demo_release_scorecard(
             passed=True,
             evidence="Current export path includes trust snapshot, review cues, and appendices.",
         ),
+        MustPassGate(
+            name="No quality dimension is blocked",
+            passed=all(dimension.score > 0 for dimension in dimensions),
+            evidence=_dimension_floor_evidence(dimensions),
+        ),
     ]
 
     default_blocking_gaps = [threshold.name for threshold in calibration_thresholds if not threshold.passed]
@@ -443,18 +475,26 @@ def build_demo_release_scorecard(
     for gap in blocking_gaps or []:
         if gap not in merged_blocking_gaps:
             merged_blocking_gaps.append(gap)
+    readiness_posture = _build_readiness_posture(
+        target_release_level=DEMO_READY_LEVEL,
+        decision=decision,
+        calibration_thresholds=calibration_thresholds,
+        dimensions=dimensions,
+        must_pass_gates=must_pass_gates,
+    )
 
     return ReleaseScorecard(
         run_id=resolved_run_id,
         date=chosen_date,
         candidate=candidate,
-        target_release_level="Demo-ready",
+        target_release_level=DEMO_READY_LEVEL,
         evaluators=evaluators or ["local builder"],
         evidence_bundle=evidence_bundle,
         preflight_artifact_path=preflight_artifact_path,
         preflight_summary=preflight_summary,
         fixture_coverage=fixture_coverage,
         scenario_registry=scenario_registry,
+        readiness_posture=readiness_posture,
         calibration_thresholds=calibration_thresholds,
         dimensions=dimensions,
         must_pass_gates=must_pass_gates,
@@ -480,6 +520,41 @@ def render_release_scorecard_markdown(scorecard: ReleaseScorecard) -> str:
         lines.append(f"  - {entry}")
     if scorecard.preflight_artifact_path:
         lines.append(f"  - Preflight artifact: {scorecard.preflight_artifact_path}")
+
+    lines.extend(
+        [
+            "",
+            "## Dashboard Readiness Summary",
+            f"- Target release level: {scorecard.readiness_posture.target_release_level}",
+            f"- Demo-ready posture: {scorecard.readiness_posture.demo_ready}",
+            f"- Pilot-ready posture: {scorecard.readiness_posture.pilot_ready}",
+            f"- Release-ready posture: {scorecard.readiness_posture.release_ready}",
+            (
+                f"- Blocking metrics: "
+                f"{scorecard.readiness_posture.blocking_metric_count - scorecard.readiness_posture.blocking_metric_failed_count}/"
+                f"{scorecard.readiness_posture.blocking_metric_count} passing"
+            ),
+            (
+                f"- Advisory metrics needing attention: "
+                f"{scorecard.readiness_posture.advisory_attention_count}/"
+                f"{scorecard.readiness_posture.advisory_metric_count}"
+            ),
+        ]
+    )
+    if scorecard.readiness_posture.blocking_failures:
+        lines.append("- Blocking failures:")
+        for failure in scorecard.readiness_posture.blocking_failures:
+            lines.append(f"  - {failure}")
+    else:
+        lines.append("- Blocking failures: none")
+    if scorecard.readiness_posture.advisory_gaps:
+        lines.append("- Advisory gaps:")
+        for gap in scorecard.readiness_posture.advisory_gaps:
+            lines.append(f"  - {gap}")
+    if scorecard.readiness_posture.pilot_readiness_gaps:
+        lines.append("- Pilot-readiness gaps:")
+        for gap in scorecard.readiness_posture.pilot_readiness_gaps:
+            lines.append(f"  - {gap}")
 
     if scorecard.preflight_summary and scorecard.preflight_summary.scenario_count:
         lines.extend(
@@ -543,32 +618,36 @@ def render_release_scorecard_markdown(scorecard: ReleaseScorecard) -> str:
             [
                 "",
                 "## Threshold Calibration",
-                "| Threshold | Target | Actual | Passed |",
-                "|---|---|---|---|",
+                "| Threshold | Category | Release level | Target | Actual | Passed |",
+                "|---|---|---|---|---|---|",
             ]
         )
         for threshold in scorecard.calibration_thresholds:
             lines.append(
-                f"| {threshold.name} | {threshold.target} | {threshold.actual} | {'Yes' if threshold.passed else 'No'} |"
+                f"| {threshold.name} | {threshold.readiness_category} | {threshold.release_level} | "
+                f"{threshold.target} | {threshold.actual} | {'Yes' if threshold.passed else 'No'} |"
             )
 
     lines.extend(
         [
             "",
-            "| Dimension | Score (0-3) | Verdict | Evidence | Notes |",
-            "|---|---:|---|---|---|",
+            "| Dimension | Category | Release level | Score (0-3) | Verdict | Evidence | Notes |",
+            "|---|---|---|---:|---|---|---|",
         ]
     )
     for dimension in scorecard.dimensions:
         evidence = "<br>".join(dimension.evidence)
         lines.append(
-            f"| {dimension.name} | {dimension.score} | {dimension.verdict} | {evidence} | {dimension.notes} |"
+            f"| {dimension.name} | {dimension.readiness_category} | {dimension.release_level} | "
+            f"{dimension.score} | {dimension.verdict} | {evidence} | {dimension.notes} |"
         )
 
     lines.extend(["", "## Must-pass gates"])
     for gate in scorecard.must_pass_gates:
         marker = "x" if gate.passed else " "
-        lines.append(f"- [{marker}] {gate.name} - {gate.evidence}")
+        lines.append(
+            f"- [{marker}] [{gate.readiness_category}][{gate.release_level}] {gate.name} - {gate.evidence}"
+        )
 
     lines.extend(["", "## Blocking gaps"])
     if scorecard.blocking_gaps:
@@ -603,10 +682,33 @@ def validate_release_scorecard_payload(payload: dict) -> list[str]:
     """Return validation failures for a release-scorecard payload."""
 
     failures: list[str] = []
+    readiness_posture = payload.get("readiness_posture") or {}
+    if not readiness_posture:
+        failures.append("Release scorecard artifact is missing dashboard readiness posture.")
+    else:
+        if readiness_posture.get("blocking_metric_failed_count") not in (0, "0"):
+            failures.append(
+                "Release scorecard blocking metrics failed: "
+                + ", ".join(readiness_posture.get("blocking_failures") or ["unknown"])
+            )
+        for required_field in ("demo_ready", "pilot_ready", "release_ready"):
+            if not readiness_posture.get(required_field):
+                failures.append(f"Release scorecard readiness posture is missing {required_field}.")
+
     thresholds = payload.get("calibration_thresholds") or []
     if not thresholds:
         failures.append("Release scorecard artifact is missing calibration thresholds.")
     else:
+        thresholds_without_category = [
+            str(item.get("name") or "unnamed threshold")
+            for item in thresholds
+            if not item.get("readiness_category")
+        ]
+        if thresholds_without_category:
+            failures.append(
+                "Release scorecard thresholds are missing readiness categories: "
+                + ", ".join(thresholds_without_category)
+            )
         failed_thresholds = [
             str(item.get("name") or "unnamed threshold")
             for item in thresholds
@@ -619,9 +721,30 @@ def validate_release_scorecard_payload(payload: dict) -> list[str]:
             )
 
     gates = {gate.get("name"): gate.get("passed") for gate in payload.get("must_pass_gates", [])}
+    gates_without_category = [
+        str(gate.get("name") or "unnamed gate")
+        for gate in payload.get("must_pass_gates", [])
+        if not gate.get("readiness_category")
+    ]
+    if gates_without_category:
+        failures.append(
+            "Release scorecard gates are missing readiness categories: "
+            + ", ".join(gates_without_category)
+        )
     required_gate = "Committed fixture coverage meets demo-ready threshold"
     if not gates.get(required_gate, False):
         failures.append(f"Release scorecard gate failed: {required_gate}")
+
+    dimensions_without_category = [
+        str(dimension.get("name") or "unnamed dimension")
+        for dimension in payload.get("dimensions", [])
+        if not dimension.get("readiness_category")
+    ]
+    if dimensions_without_category:
+        failures.append(
+            "Release scorecard dimensions are missing readiness categories: "
+            + ", ".join(dimensions_without_category)
+        )
 
     if payload.get("decision") != "Ship":
         failures.append(f"Unexpected release decision: {payload.get('decision')!r}")
@@ -631,7 +754,10 @@ def validate_release_scorecard_payload(payload: dict) -> list[str]:
 def validate_latest_release_scorecard_artifact(artifact_dir: Path) -> tuple[Path | None, list[str]]:
     """Validate the newest release-scorecard JSON artifact in a directory."""
 
-    artifact_paths = sorted(artifact_dir.glob("*.json"))
+    artifact_paths = sorted(
+        artifact_dir.glob("*.json"),
+        key=lambda path: (path.stat().st_mtime_ns, path.name),
+    )
     if not artifact_paths:
         return None, ["No release-scorecard JSON artifact found."]
     artifact_path = artifact_paths[-1]
@@ -816,6 +942,72 @@ def _thresholds_evidence(thresholds: list[CalibrationThreshold]) -> str:
         return "No threshold calibration recorded."
     passed = sum(1 for threshold in thresholds if threshold.passed)
     return f"{passed}/{len(thresholds)} calibrated fixture thresholds passed."
+
+
+def _dimension_floor_evidence(dimensions: list[ScorecardDimension]) -> str:
+    blocked_dimensions = [dimension.name for dimension in dimensions if dimension.score <= 0]
+    if blocked_dimensions:
+        return "Blocked quality dimensions: " + ", ".join(blocked_dimensions)
+    return "No quality dimension is scored 0/3."
+
+
+def _build_readiness_posture(
+    *,
+    target_release_level: str,
+    decision: str,
+    calibration_thresholds: list[CalibrationThreshold],
+    dimensions: list[ScorecardDimension],
+    must_pass_gates: list[MustPassGate],
+) -> ReadinessPostureSummary:
+    failed_gates = [
+        gate.name
+        for gate in must_pass_gates
+        if gate.readiness_category == READINESS_BLOCKING and not gate.passed
+    ]
+    failed_thresholds = [
+        threshold.name
+        for threshold in calibration_thresholds
+        if threshold.readiness_category == READINESS_BLOCKING and not threshold.passed
+    ]
+    blocked_dimensions = [
+        f"{dimension.name} scored 0/3"
+        for dimension in dimensions
+        if dimension.score <= 0
+    ]
+    blocking_failures = [*failed_gates, *failed_thresholds]
+    if blocked_dimensions:
+        blocking_failures.append("Blocked quality dimensions: " + ", ".join(blocked_dimensions))
+    advisory_gaps = [
+        f"{dimension.name}: {dimension.verdict} ({dimension.score}/3)"
+        for dimension in dimensions
+        if dimension.readiness_category == READINESS_ADVISORY and dimension.score < 2
+    ]
+    pilot_readiness_gaps = [
+        "Human review workflow remains roadmap work before pilot-ready claims.",
+        "Pilot usability benchmarks have not been measured yet.",
+        "Operational controls for repeated pilot use remain future work.",
+        "Security and retention controls are not yet pilot-grade.",
+    ]
+    blocking_metric_count = len(must_pass_gates) + len(calibration_thresholds)
+    blocking_metric_failed_count = len(failed_gates) + len(failed_thresholds)
+    release_ready = (
+        f"passes for {target_release_level} target"
+        if decision == "Ship" and not blocking_failures
+        else "blocked"
+    )
+    return ReadinessPostureSummary(
+        target_release_level=target_release_level,
+        demo_ready="passes" if not blocking_failures else "blocked",
+        pilot_ready="not claimed",
+        release_ready=release_ready,
+        blocking_metric_count=blocking_metric_count,
+        blocking_metric_failed_count=blocking_metric_failed_count,
+        advisory_metric_count=len(dimensions),
+        advisory_attention_count=len(advisory_gaps),
+        blocking_failures=blocking_failures,
+        advisory_gaps=advisory_gaps,
+        pilot_readiness_gaps=pilot_readiness_gaps,
+    )
 
 
 def _verification_summary_passed(summary: str) -> bool:

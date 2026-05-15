@@ -2050,3 +2050,27 @@ Status: Complete
   - `git diff --check` -> passed.
   - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
   - `python -m war_room --verify --release-candidate issue-8-closed-status-docs-sync` -> passed; embedded `pytest -q` reported `343 passed in 17.15s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-14_issue-8-closed-status-docs-sync_20260514t042129z.json`.
+
+## Session 109 - Issue 27 Scorecard Operationalization
+Date: 2026-05-15
+Status: Complete
+
+- Completed a narrow `#27` operationalization slice for the existing V2 release rubric and scorecard.
+- What changed:
+  - `src/war_room/release_scorecard.py` now tags must-pass gates and calibration thresholds as `blocking`, scored dimensions as `advisory`, and writes a top-level `readiness_posture` summary for dashboard consumers.
+  - Release scorecard Markdown now includes a Dashboard Readiness Summary with demo-ready, pilot-ready, and release-ready posture language plus blocking/advisory counts.
+  - Scorecard validation now fails artifacts that omit dashboard readiness posture or readiness categories.
+  - `tests/test_release_scorecard.py` covers the new JSON/Markdown fields, category validation, failed verification posture, and failed preflight posture.
+  - `docs/V2_RELEASE_RUBRIC.md` now clarifies blocking vs advisory metrics, release-ready posture, benchmark scenario evidence, and pilot-ready language without adding a new rubric.
+  - Current-state docs were synced to the 371-test baseline and the merged #64/#65 hygiene follow-ups.
+- Decisions not added:
+  - no fixture facts, citation facts, cache samples, notebooks, live retrieval behavior, dependencies, `#17` observability implementation, `#19` pilot execution, or `#25` AI guardrail implementation were changed.
+  - no pilot-study design, new benchmark scenarios, or actual pilot-readiness claim was added.
+- Validation:
+  - `python -m pytest tests/test_release_scorecard.py tests/test_bootstrap.py tests/test_quality_gates.py -q` -> `32 passed in 3.47s`.
+  - `python -m pytest -q` -> `371 passed in 11.95s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-15_offline-e2e_20260515t051126z.json`.
+  - `python -m war_room --verify --release-candidate issue-27-scorecard-operationalization` -> passed; embedded `pytest -q` reported `371 passed in 10.62s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-15_issue-27-scorecard-operationalization_20260515t051144z.json`.
+  - `python -m war_room.release_scorecard --validate-latest --output-dir runs\release_scorecards` -> passed; latest scorecard validation selected `runs\release_scorecards\2026-05-15_issue-27-scorecard-operationalization_20260515t051144z.json`.
+  - `git diff --check` -> passed.

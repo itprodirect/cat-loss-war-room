@@ -19,7 +19,7 @@ Written source-of-truth specs for `#23` and `#24` are complete and those definit
 | Product foundation and repo shape | [#22](https://github.com/itprodirect/cat-loss-war-room/issues/22) | Completed and closed Mar 6, 2026: packaging/bootstrap landed; app boundaries, envs, local dev, fixture lane documented |
 | Workflow IA and design system | [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) | Written spec complete and issue closed in `docs/V2_WORKFLOW_IA.md`; downstream implementation belongs to `#10` and `#11` |
 | Canonical evidence graph and audit schema | [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) | Written spec complete and issue closed in `docs/V2_EVIDENCE_SCHEMA.md`; downstream implementation belongs to `#6`, `#10`, `#11`, and `#12` |
-| Quality rubric and release scorecard | [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) | First-pass rubric plus fixture-calibrated local scorecard now live in `docs/V2_RELEASE_RUBRIC.md`; CI artifact emission and the linked local verify-evidence workflow are landed, and the next step is broader CI and pilot operationalization |
+| Quality rubric and release scorecard | [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) | First-pass rubric plus fixture-calibrated local scorecard now live in `docs/V2_RELEASE_RUBRIC.md`; CI artifact emission, the linked local verify-evidence workflow, and blocking/advisory readiness categories are landed, and the next step is broader CI and pilot operationalization |
 
 ## Phase 2: Foundation and Quality Gates
 
@@ -60,4 +60,4 @@ Written source-of-truth specs for `#23` and `#24` are complete and those definit
 | UX and design coherence | [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) | Keeps V2 from devolving into a backend-first tool with thin screens |
 | Provenance and canonical contracts | [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) | Backbone for evidence trust, review, audit, and export |
 | AI guardrails | [#25](https://github.com/itprodirect/cat-loss-war-room/issues/25) | Required for any serious AI-assisted extraction or drafting |
-| Release scorecard | [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) | Shared benchmark language across CI, dashboards, and pilot work; local artifacts now record committed fixture coverage and the supported verify path emits a linked release-evidence bundle |
+| Release scorecard | [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) | Shared benchmark language across CI, dashboards, and pilot work; local artifacts now record committed fixture coverage, blocking/advisory readiness categories, and a linked release-evidence bundle from the supported verify path |
