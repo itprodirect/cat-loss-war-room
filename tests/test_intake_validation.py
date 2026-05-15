@@ -1,4 +1,4 @@
-﻿"""Tests for strict case intake ingestion and schema validation."""
+"""Tests for strict case intake ingestion and schema validation."""
 
 import json
 from pathlib import Path
