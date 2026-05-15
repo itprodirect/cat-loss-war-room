@@ -4,7 +4,7 @@ Date: March 10, 2026
 Audience: Internal builders
 Horizon: Next 2 weeks
 
-Status note as of May 14, 2026: issues `#6`, `#7`, `#8`, and `#9` are now complete or closed, and the next active roadmap task is `#27` scorecard/rubric operationalization. This March audit is retained as an orientation memo with light current-state syncs.
+Status note as of May 15, 2026: issues `#6`, `#7`, `#8`, and `#9` are now complete or closed, and the active roadmap task remains `#27` scorecard/rubric operationalization. This March audit is retained as an orientation memo with light current-state syncs.
 
 ## Status memo
 
@@ -13,10 +13,10 @@ Status note as of May 14, 2026: issues `#6`, `#7`, `#8`, and `#9` are now comple
 - The current product is a notebook-first V0 demo backed by `src/war_room/`.
 - The offline demo lane is real: committed `cache_samples/` support cache-first runs without an API key across five public/redacted registry-backed scenarios in Florida, Texas, and Louisiana.
 - The supported test/bootstrap posture is real: `pip install -e . --no-deps --no-build-isolation` followed by `pytest -q`, or ad hoc local runs with `PYTHONPATH=src`.
-- `343` tests pass under the supported bootstrap path.
-- CI enforces a fresh-environment test gate, an explicit offline fixture smoke gate, and an `exa-py` compatibility matrix.
+- `371` tests pass under the supported bootstrap path.
+- CI enforces a fresh-environment test gate, explicit offline fixture and golden snapshot gates, offline e2e validation, release-scorecard validation, security/dependency hygiene, and an `exa-py` compatibility matrix.
 - Typed-domain and retrieval-contract work is complete under `#6` and `#7`.
-- Issue `#27` now has a fixture-calibrated local release-scorecard workflow tied to the committed scenario set.
+- Issue `#27` now has a fixture-calibrated local release-scorecard workflow tied to the committed scenario set, with blocking/advisory readiness categories for dashboard consumers.
 
 ### Specified but not built yet
 

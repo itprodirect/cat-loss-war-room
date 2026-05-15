@@ -1,6 +1,6 @@
 # V2 Quality Rubric and Release Scorecard
 
-Last updated: May 14, 2026
+Last updated: May 15, 2026
 
 This document is the first-pass output of issue `#27`.
 
@@ -9,6 +9,8 @@ It defines a v0.1 quality rubric and release scorecard for CAT-Loss War Room so 
 This is intentionally a first pass. It should be refined as future fixture-breadth work is scoped and `#19` produces pilot feedback.
 
 Demo-ready threshold calibration is now explicit in the local scorecard workflow. Issue `#9` CI quality-gate coverage is complete for the current acceptance criteria, while broader `#27` pilot operationalization remains open.
+
+The current operationalization keeps the existing rubric and adds clearer reporting categories. Scorecard artifacts now distinguish blocking metrics from advisory metrics so local runs, CI artifacts, and future dashboards can consume the same readiness language without inventing a second rubric.
 
 ## 1) Purpose
 
@@ -42,8 +44,18 @@ Every release candidate should produce a scorecard entry with:
 - the target release level,
 - the score for each dimension,
 - the evidence used to justify each score,
+- the category for each metric (`blocking` or `advisory`),
 - any blocking gaps,
 - and the final ship / no-ship decision.
+
+Use these categories consistently:
+
+| Category | Meaning | Current artifact fields |
+|---|---|---|
+| `blocking` | A failed item blocks the target readiness claim. | `must_pass_gates`, `calibration_thresholds`, and the no-0-dimension gate |
+| `advisory` | A weak item does not block the current target by itself, but it explains risk, roadmap priority, or why a higher readiness level is not claimed. | `dimensions`, scenario/fixture coverage summaries, preflight details, and pilot-readiness gaps |
+
+For this repo, `release-ready` is not a separate fourth maturity level. It means "ready to ship for the target release level named in the scorecard." A candidate can be release-ready for `Demo-ready` while still not being `Pilot-ready`.
 
 ## 3) Release Levels
 
@@ -83,6 +95,10 @@ Expected characteristics:
 - security and retention controls are defined,
 - operational behavior is measurable,
 - and benchmark plus usability thresholds are consistently met.
+
+### Release-ready posture
+
+The scorecard's release-ready posture answers whether the candidate satisfies the blocking metrics for its stated target release level. It should always be read with the target level. For example, the current baseline can pass release-ready posture for a controlled demo while still reporting `Pilot-ready: not claimed`.
 
 ## 4) Scoring Scale
 
@@ -217,14 +233,16 @@ Must pass all of the following:
 - committed fixture coverage meets the demo-ready calibration threshold,
 - required disclaimer language appears in outputs,
 - no known blocker prevents a narrated end-to-end demo,
-- and the memo remains readable enough for internal review.
+- memo remains readable enough for internal review,
+- and no quality dimension is scored `0`.
 
-Recommended minimum scores:
+Advisory score guidance:
 
 - Reliability: `2`
 - Trust and Provenance: `2`
 - Review and Export Quality: `2`
-- No dimension may be `0`
+
+Scores below these advisory levels explain risk and future work. A score of `0` is blocking because it means the dimension is missing, unsafe, or clearly below minimum quality.
 
 ### Beta-ready gates
 
@@ -257,6 +275,8 @@ Must pass all of the following:
 - security baseline is explicit,
 - observability and cost controls exist,
 - and pilot runs can be audited after the fact.
+
+The current scorecard may list pilot-readiness gaps, but it should not claim to satisfy these gates until `#19` pilot validation, `#26` human review workflow, and the relevant operational/security controls exist. Listing those gaps is advisory for the current demo-ready target; resolving them is blocking for any future pilot-ready claim.
 
 Recommended minimum scores:
 
@@ -300,7 +320,7 @@ Target release level: `Demo-ready`
 
 | Dimension | Score | Verdict | Why |
 |---|---:|---|---|
-| Reliability | 3 | Strong | `343` tests pass on the supported verify path, CI covers fresh-env plus `exa-py` compatibility plus offline fixture smoke/golden snapshot validation, offline e2e demo validation, offline security and dependency hygiene, and release-scorecard artifact validation, and the committed five-scenario FL/TX/LA lane still meets the calibrated demo-ready thresholds. |
+| Reliability | 3 | Strong | `371` tests pass on the supported verify path, CI covers fresh-env plus `exa-py` compatibility plus offline fixture smoke/golden snapshot validation, offline e2e demo validation, offline security and dependency hygiene, and release-scorecard artifact validation, and the committed five-scenario FL/TX/LA lane still meets the calibrated demo-ready thresholds. |
 | Evidence Quality | 2 | Acceptable | The committed five-scenario fixture set still satisfies explicit demo-ready thresholds for scenario count, state coverage, issue breadth, citation coverage, module completeness, source mix, output structure, and citation-summary consistency, with all five fixture lanes now represented as offline-ready curated registry scenarios. Broader scenario breadth and richer normalization still remain open under `#12` and `#13`; any additional Florida fixture seeding should be scoped by maintainers as follow-up work after the completed `#8` baseline. |
 | Trust and Provenance | 2 | Acceptable | Disclaimers, source tiers, citation checks, evidence clusters, and claim/review trace links exist, but they are still notebook-era rather than full product workflow state. |
 | Workflow Usability | 1 | Weak | The product is still notebook-first and generally engineer-driven for setup and operation, but the notebook/preflight path now exposes a first workflow layer with research-plan preview, cluster-first evidence-board summary, issue-workspace summary, memo-composer readiness, export-history posture, and explicit run-stage review states. |
@@ -313,6 +333,13 @@ Current verdict:
 - Passes `Demo-ready`
 - Does not pass `Beta-ready`
 - Not close to `Pilot-ready`
+
+Current dashboard posture:
+
+- Blocking demo-ready metrics pass when the supported verification command, offline preflight lane, demo calibration thresholds, disclaimer/readability gates, and no-0-dimension gate pass.
+- Advisory metrics still show weak Workflow Usability, Operational Readiness, and Security and Governance scores.
+- Pilot-ready is explicitly `not claimed`; the artifact lists pilot-readiness gaps without designing or executing a pilot study.
+- Release-ready means "passes for the Demo-ready target," not ready for beta, pilot, or production use.
 
 Why the current build still counts as demo-ready:
 
@@ -349,6 +376,13 @@ Use this template for future release candidates.
 - [ ] Gate 2
 - [ ] Gate 3
 
+### Dashboard readiness summary
+- Blocking metrics:
+- Advisory metrics needing attention:
+- Demo-ready posture:
+- Pilot-ready posture:
+- Release-ready posture:
+
 ### Blocking gaps
 - 
 
@@ -377,6 +411,8 @@ What this does now:
 - runs the deterministic offline preflight and the supported `pytest -q` path
 - writes Markdown and JSON scorecard artifacts into `runs/release_scorecards/`
 - writes the underlying machine-readable offline preflight payload into `runs/preflight/`
+- writes a machine-readable `readiness_posture` summary with blocking/advisory counts, demo-ready status, pilot-ready status, release-ready status, blocking failures, advisory gaps, and pilot-readiness gaps
+- tags gates, calibration thresholds, and scored dimensions with `readiness_category` fields so dashboard consumers do not have to infer blocking versus advisory behavior from display text
 - assigns a shared run id to the preflight and scorecard artifacts so repeated same-day verify runs do not overwrite each other
 - writes a verify-run manifest into `runs/verify/` that points to the exact preflight and scorecard artifacts for that run
 - refreshes `runs/verify/latest.json` so downstream tooling can discover the newest successful verify run without scanning filenames
@@ -396,7 +432,7 @@ Manual and CI-specific scorecard generation still remains available with:
 ```bash
 python -m war_room.release_scorecard \
   --candidate local-demo \
-  --verification-summary "343 passed"
+  --verification-summary "371 passed"
 ```
 
 What it does not do yet:

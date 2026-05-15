@@ -15,13 +15,13 @@ Given a case intake, it assembles:
 
 This is research acceleration, not legal advice.
 
-## 2) Current status (as of May 14, 2026)
+## 2) Current status (as of May 15, 2026)
 
 | Item | Status |
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 343 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 371 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + offline e2e gate + offline security and dependency hygiene gates + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install and categorized quality-gate artifacts |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -32,7 +32,7 @@ This is research acceleration, not legal advice.
 | Product foundation (`#22`) | Complete and closed: packaging/bootstrap lane implemented |
 | Workflow IA spec (`#23`) | Complete and closed as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
 | Evidence schema spec (`#24`) | Complete and closed as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |
-| Quality rubric (`#27`) | First-pass rubric plus local and CI artifact workflows landed in `docs/V2_RELEASE_RUBRIC.md`; demo-ready threshold calibration, live preflight evidence, run-scoped verify artifacts, verify manifests, and a stable latest pointer are now explicit, while broader CI and pilot operationalization remain open |
+| Quality rubric (`#27`) | First-pass rubric plus local and CI artifact workflows landed in `docs/V2_RELEASE_RUBRIC.md`; demo-ready threshold calibration, blocking/advisory metric categories, live preflight evidence, run-scoped verify artifacts, verify manifests, and a stable latest pointer are now explicit, while broader CI and pilot operationalization remain open |
 | Cache samples | Milton/Citizens/Pinellas + Ian/Citizens/Lee + TX hail/Allstate/Tarrant + TX hail matching/Allstate Texas Lloyds/Tarrant DP-3 + Ida/Lloyd's/Orleans committed |
 
 ## 3) What changed recently
@@ -63,7 +63,7 @@ This is research acceleration, not legal advice.
 - The offline e2e gate runs `python -m war_room.offline_e2e --check`, validates the committed fixture workflow through preflight, and writes linked preflight/e2e artifacts under `runs/offline_e2e/`.
 - The repository now has a deterministic offline demo preflight command at `python -m war_room --preflight`.
 - The repository now also has a one-command local verification wrapper at `python -m war_room --verify`.
-- The supported verify flow now emits a linked release-evidence bundle: run-scoped preflight artifacts, run-scoped scorecards, verify manifests, a stable `runs/verify/latest.json` pointer, and an integrity test that reloads the linked artifact set.
+- The supported verify flow now emits a linked release-evidence bundle: run-scoped preflight artifacts, run-scoped scorecards with blocking/advisory readiness categories, verify manifests, a stable `runs/verify/latest.json` pointer, and an integrity test that reloads the linked artifact set.
 - The notebook and preflight surfaces now expose a workflow-oriented research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run timeline, so grouped support, issue-level review, section readiness, export posture, and review-required state are visible before the memo is treated as complete.
 - The Milton benchmark fixture lane now normalizes cached citation trust metadata, carrier/case-law runtime quality, and markdown/export readability without changing the scenario registry or overall notebook-era runtime flow.
 - The Milton rendered-memo path now has an export readability guard that blocks obvious mojibake, scraped navigation text, generic weather pages, Casetext boilerplate, and broken markdown-table rows from reappearing in demo output.

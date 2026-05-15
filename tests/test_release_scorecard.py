@@ -1,5 +1,6 @@
 """Tests for release scorecard artifact generation."""
 
+import os
 from dataclasses import asdict
 from pathlib import Path
 
@@ -107,6 +108,16 @@ def test_build_demo_release_scorecard_uses_fixture_calibration():
 
     assert scorecard.target_release_level == "Demo-ready"
     assert scorecard.decision == "Ship"
+    assert scorecard.readiness_posture.target_release_level == "Demo-ready"
+    assert scorecard.readiness_posture.demo_ready == "passes"
+    assert scorecard.readiness_posture.pilot_ready == "not claimed"
+    assert scorecard.readiness_posture.release_ready == "passes for Demo-ready target"
+    assert scorecard.readiness_posture.blocking_metric_failed_count == 0
+    assert scorecard.readiness_posture.advisory_attention_count == 3
+    assert scorecard.readiness_posture.blocking_failures == []
+    assert all(threshold.readiness_category == "blocking" for threshold in scorecard.calibration_thresholds)
+    assert all(gate.readiness_category == "blocking" for gate in scorecard.must_pass_gates)
+    assert all(dimension.readiness_category == "advisory" for dimension in scorecard.dimensions)
     assert len(scorecard.dimensions) == 7
     assert len(scorecard.calibration_thresholds) == 5
     assert all(threshold.passed for threshold in scorecard.calibration_thresholds)
@@ -135,6 +146,11 @@ def test_build_demo_release_scorecard_uses_fixture_calibration():
     assert "Run id: 20260311T101530Z" in markdown
     assert "codex/local" in markdown
     assert "Preflight artifact: runs/preflight/2026-03-11_codex-local_20260311t101530z.json" in markdown
+    assert "## Dashboard Readiness Summary" in markdown
+    assert "Demo-ready posture: passes" in markdown
+    assert "Pilot-ready posture: not claimed" in markdown
+    assert "Blocking metrics: " in markdown
+    assert "[blocking][Demo-ready]" in markdown
     assert "## Offline Preflight" in markdown
     assert "## Fixture Coverage" in markdown
     assert "## Scenario Registry" in markdown
@@ -179,6 +195,9 @@ def test_write_release_scorecard_artifacts_writes_json_and_markdown(tmp_path: Pa
     assert '"run_id": "20260311T101530Z"' in payload
     assert '"candidate": "Feature Branch 27"' in payload
     assert '"target_release_level": "Demo-ready"' in payload
+    assert '"readiness_posture"' in payload
+    assert '"readiness_category": "blocking"' in payload
+    assert '"readiness_category": "advisory"' in payload
     assert '"preflight_artifact_path": null' in payload
     assert '"fixture_coverage"' in payload
     assert '"scenario_registry"' in payload
@@ -213,9 +232,33 @@ def test_validate_release_scorecard_payload_reports_actionable_failures():
 
     failures = validate_release_scorecard_payload(payload)
 
-    assert "Fixture scenario count" in failures[0]
-    assert "Committed fixture coverage meets demo-ready threshold" in failures[1]
-    assert "No ship" in failures[2]
+    assert any("dashboard readiness posture" in failure for failure in failures)
+    assert any("Fixture scenario count" in failure for failure in failures)
+    assert any("Committed fixture coverage meets demo-ready threshold" in failure for failure in failures)
+    assert any("No ship" in failure for failure in failures)
+
+
+def test_validate_release_scorecard_payload_requires_dashboard_categories():
+    summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+    scorecard = build_demo_release_scorecard(
+        run_id="20260418T120000Z",
+        candidate="codex/local",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+    payload = asdict(scorecard)
+    payload["calibration_thresholds"][0].pop("readiness_category")
+    payload["must_pass_gates"][0].pop("readiness_category")
+    payload["dimensions"][0].pop("readiness_category")
+
+    failures = validate_release_scorecard_payload(payload)
+
+    assert any("thresholds are missing readiness categories" in failure for failure in failures)
+    assert any("gates are missing readiness categories" in failure for failure in failures)
+    assert any("dimensions are missing readiness categories" in failure for failure in failures)
 
 
 def test_validate_latest_release_scorecard_artifact_reads_newest_json(tmp_path: Path):
@@ -237,6 +280,37 @@ def test_validate_latest_release_scorecard_artifact_reads_newest_json(tmp_path: 
     assert failures == []
 
 
+def test_validate_latest_release_scorecard_artifact_uses_newest_modified_file(tmp_path: Path):
+    summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+    older_scorecard = build_demo_release_scorecard(
+        run_id="20260418T120000Z",
+        candidate="zz-old-name",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+    newer_scorecard = build_demo_release_scorecard(
+        run_id="20260418T120100Z",
+        candidate="aa-new-name",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+    older_json_path, _older_markdown_path = write_release_scorecard_artifacts(older_scorecard, output_dir=tmp_path)
+    newer_json_path, _newer_markdown_path = write_release_scorecard_artifacts(newer_scorecard, output_dir=tmp_path)
+    os.utime(older_json_path, (100, 100))
+    os.utime(newer_json_path, (200, 200))
+
+    artifact_path, failures = validate_latest_release_scorecard_artifact(tmp_path)
+
+    assert older_json_path.name > newer_json_path.name
+    assert artifact_path == newer_json_path
+    assert failures == []
+
+
 def test_build_demo_release_scorecard_marks_failed_verification_gate():
     summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
     registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
@@ -251,6 +325,10 @@ def test_build_demo_release_scorecard_marks_failed_verification_gate():
 
     assert scorecard.dimensions[0].score == 0
     assert scorecard.must_pass_gates[0].passed is False
+    assert scorecard.readiness_posture.demo_ready == "blocked"
+    assert scorecard.readiness_posture.blocking_metric_failed_count == 2
+    assert "Supported test path is green" in scorecard.readiness_posture.blocking_failures
+    assert any("Blocked quality dimensions" in failure for failure in scorecard.readiness_posture.blocking_failures)
 
 
 def test_summarize_preflight_report_captures_failed_scenarios():
@@ -334,3 +412,5 @@ def test_build_demo_release_scorecard_marks_failed_preflight_gate():
     assert scorecard.dimensions[0].verdict == "Weak"
     assert scorecard.must_pass_gates[1].passed is False
     assert "0/1 scenarios passed" in scorecard.must_pass_gates[1].evidence
+    assert scorecard.readiness_posture.demo_ready == "blocked"
+    assert scorecard.readiness_posture.blocking_metric_failed_count == 1

@@ -41,7 +41,7 @@ Preserve the stable V0 notebook demo while finishing broader `#27` CI/pilot oper
 - Citation verification summaries.
 - Markdown research memo exports with disclaimers and audit linkage.
 - Preflight and verification results for demo readiness.
-- Run-scoped preflight, scorecard, and verify-manifest artifacts for the supported local release-evidence path.
+- Run-scoped preflight, scorecard, and verify-manifest artifacts for the supported local release-evidence path, including blocking/advisory readiness categories for dashboard use.
 - Golden offline fixture snapshots for reviewable scenario/output drift checks.
 - Categorized CI quality-gate artifacts for unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene lanes.
 
@@ -63,8 +63,8 @@ Preserve the stable V0 notebook demo while finishing broader `#27` CI/pilot oper
 ## Next 3 tasks
 
 1. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
-2. Keep #64 and #65 as non-blocking hygiene/normalization follow-ups rather than reopening `#8` scope.
-3. Keep the notebook-era demo stable while preparing the next downstream product slice in `#10` after `#27` is sufficiently grounded.
+2. Keep the notebook-era demo stable while preparing the next downstream product slice in `#10` after `#27` is sufficiently grounded.
+3. Treat future fixture or cache normalization as separately scoped follow-up work rather than reopening completed `#8`.
 
 ## Ownership
 
