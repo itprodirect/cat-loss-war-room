@@ -16,7 +16,7 @@ This repo exists to support demo-ready legal research acceleration for Merlin La
 
 ## Current milestone
 
-Keep the V0 notebook demo stable while finishing the remaining operationalization in issue `#27` and completing the remaining `#6` to `#9` foundation slices. The active runtime is still the notebook plus `src/war_room/`; `apps/`, `workers/`, and `packages/` remain future-boundary placeholders.
+Keep the V0 notebook demo stable while finishing broader operationalization in issue `#27` and any explicitly scoped `#10`/`#11` follow-up slices. The active runtime is still the notebook plus `src/war_room/`; the post-PR79 orchestration work is a dependency-free contracts/service/status/transport stack, not a full web app; `apps/`, `workers/`, and `packages/` remain future-boundary placeholders.
 
 ## Non-goals
 

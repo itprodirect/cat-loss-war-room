@@ -44,7 +44,7 @@ notebooks/          # Jupyter notebooks (the demo surface)
 cache_samples/      # Committed demo fixtures (run without API key)
 cache/              # Runtime cache (gitignored)
 output/             # Generated reports (gitignored)
-tests/              # pytest test suite (411 tests, no network)
+tests/              # pytest test suite (423 tests, no network)
 scripts/            # Seed scripts (manual, not CI)
 docs/               # Project documentation
 apps/               # V2 app placeholders (web/api)
@@ -82,9 +82,9 @@ Prioritize in this order:
 - `fix/` - bug fixes
 
 ## Current phase
-v0-demo shipped, issues #22, #23, #24, #6, #7, #8, and #9 are complete and closed. Active V2 execution work is now concentrated in broader #27 CI/pilot operationalization after the five-lane offline fixture baseline landed. Cells 0-7 remain stable and CI runs package-installed tests.
+v0-demo shipped, issues #22, #23, #24, #6, #7, #8, and #9 are complete and closed. The issue #10 stack now includes canonical run/stage state, typed API contracts, an in-process offline service, operator-facing status presentation, and a dependency-free thin transport wrapper, without a web app or production API framework. Active V2 execution work remains concentrated in broader #27 CI/pilot operationalization and explicitly scoped #10/#11 follow-ups. Cells 0-7 remain stable and CI runs package-installed tests.
 
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
 Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
-Next priority: continue broader #27 scorecard/rubric operationalization before downstream implementation in #10 onward. Issues #64 and #65 are closed hygiene follow-ups.
+Next priority: continue broader #27 scorecard/rubric operationalization, or scope the next #10/#11 slice against the existing offline orchestration stack. Issues #64 and #65 are closed hygiene follow-ups.

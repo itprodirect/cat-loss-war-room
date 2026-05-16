@@ -2259,3 +2259,35 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported `423 passed in 18.67s`; verify manifest written under `runs/verify/2026-05-16_codex-issue-78-thin-orchestration-transport_20260516t043722z.json`.
   - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3` -> passed; status `completed`, `operator_status=degraded`, `usable_outputs_available=true`, `review_required=true`, degraded stages included `citation_verify` and `memo_assembly`, and usable output summaries included weather, carrier, caselaw, citation verification, memo draft, and audit bundle.
   - `git diff --check` -> passed.
+
+## Session 116 - Post-PR79 Status Docs Refresh
+Date: 2026-05-16
+Status: Complete
+
+- Refreshed repo status docs after merged PR `#79` without changing runtime
+  behavior.
+- What changed:
+  - Started from latest `main` at PR `#79` and inspected the existing stash
+    `wip docs after issue 10 service slice`.
+  - Kept the useful service-slice wording from that stash, then updated the
+    status docs to include the PR `#77` status presentation layer and PR `#79`
+    thin transport/request-handler wrapper.
+  - Synced handoff, heartbeat, repo brief, README, roadmap, Claude/agent
+    guidance, repo memory front door, and the issue `#73` API contract note to
+    the `423`-test post-transport baseline.
+- Decisions not added:
+  - no runtime code, dependencies, routes, FastAPI/Flask/Streamlit/React/Next.js
+    surfaces, persistence, queues, auth, retries, circuit breakers, dashboards,
+    UI, fixture changes, notebook changes, or live retrieval were added.
+  - preserved the transport distinction that invalid requests or unknown run
+    IDs return `ok=false`, while accepted orchestration run failures stay
+    `ok=true` with `payload.run.status="failed"`.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `423 passed in 24.83s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `423 passed in 19.46s`; verify manifest written under
+    `runs/verify/2026-05-16_docs-post-pr79-housekeeping_20260516t194522z.json`.
+  - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3`
+    -> passed; status `completed`, `operator_status=degraded`, and usable
+    outputs were available.
