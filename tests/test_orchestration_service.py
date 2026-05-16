@@ -13,7 +13,7 @@ from war_room.orchestration_api_contracts import (
     get_run_status_response_to_payload,
     start_run_response_to_payload,
 )
-from war_room.orchestration_service import InMemoryOrchestrationService
+from war_room.orchestration_service import InMemoryOrchestrationService, main
 from war_room.scenarios import load_scenario
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -84,6 +84,25 @@ def test_execute_run_uses_offline_fixtures_and_preserves_outputs():
     assert outputs.run_timeline is not None
     assert outputs.run_timeline.run.status == "completed"
     assert "NOT LEGAL ADVICE" in outputs.memo_markdown
+
+
+def test_smoke_cli_exposes_operator_status_summary(capsys):
+    exit_code = main(["--smoke", "--scenario", "milton_pinellas_citizens_ho3"])
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["scenario_id"] == "milton_pinellas_citizens_ho3"
+    assert payload["status"] == "completed"
+    assert payload["operator_status"] == "degraded"
+    assert payload["usable_outputs_available"] is True
+    assert "Outputs are usable" in payload["operator_message"]
+    assert payload["review_required"] is True
+    assert payload["review_reasons"]
+    assert payload["degraded_stages"]
+    assert payload["next_actions"]
+    assert payload["stage_summary"]["citation_verify"] == "degraded"
+    assert payload["usable_output_summary"]
 
 
 def test_execute_run_does_not_call_live_retrieval(monkeypatch):

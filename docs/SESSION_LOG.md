@@ -2180,3 +2180,41 @@ Status: Complete
   - `python -m war_room.security_hygiene --check` -> passed; `6/6` checks passed.
   - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
   - `git diff --check` -> passed.
+
+## Session 114 - Issue 10 Run-Status Presentation Contract
+Date: 2026-05-16
+Status: Complete
+
+- Completed a small orchestration run-status presentation contract without adding
+  a web framework, HTTP route, persistence, queues, auth, workers, dependencies,
+  fixture changes, or live retrieval.
+- What changed:
+  - Added `src/war_room/orchestration_status_view.py` with a dataclass-based
+    `OrchestrationStatusView` and payload helper that converts typed
+    `GetRunStatusResponse` values into stable operator-facing fields:
+    canonical `status`, derived `operator_status`, `headline`,
+    `operator_message`, usable-output availability, review reasons, degraded
+    stages, failed stages, typed failure details, and next actions.
+  - Updated the offline service smoke CLI so
+    `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3`
+    now prints the operator-facing summary while preserving the existing
+    machine-readable status, stage summary, and usable-output summary.
+  - Added focused presentation tests for completed, review-required, degraded,
+    partial-success, and failed run outcomes, plus a smoke CLI output assertion.
+  - Added `docs/ISSUE_10_STATUS_PRESENTATION.md` with run-status meanings, the
+    smoke command, demo-operator checks, usable-output semantics, and explicit
+    out-of-scope items.
+- Decisions not added:
+  - no distinct canonical `degraded` or `review_required` run state was added;
+    the presentation layer derives those operator statuses from completed runs
+    with degraded stages or `review_required=true`.
+  - no API transport, web app, live claim intake, production auth, persistence,
+    queues, retries, circuit breakers, dashboards, fixture changes, notebook
+    changes, or dependency changes were added.
+- Validation:
+  - `python -m pytest tests/test_orchestration_status_view.py tests/test_orchestration_service.py -q` -> `11 passed in 3.51s`.
+  - `python -m pytest tests/test_orchestration_service.py tests/test_orchestration_api_contracts.py tests/test_orchestration_state.py -q` -> `36 passed in 2.78s`.
+  - `python -m pytest -q` -> `417 passed in 22.09s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported `417 passed in 22.32s`; verify manifest written under `runs/verify/2026-05-16_codex-orchestration-status-presentation-contract_20260516t040535z.json`.
+  - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3` -> passed; status `completed`, `operator_status=degraded`, `usable_outputs_available=true`, `review_required=true`, degraded stages included `citation_verify` and `memo_assembly`, and usable output summaries included weather, carrier, caselaw, citation verification, memo draft, and audit bundle.
+  - `git diff --check` -> passed.

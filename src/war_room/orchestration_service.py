@@ -54,6 +54,7 @@ from war_room.orchestration_api_contracts import (
     run_status_payload_from_run,
     start_run_response_to_payload,
 )
+from war_room.orchestration_status_view import orchestration_status_view_to_payload
 from war_room.query_plan import build_research_plan
 from war_room.scenarios import (
     ScenarioDefinition,
@@ -564,7 +565,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(error_response_to_payload(exc), indent=2))
         return 1
 
-    print(json.dumps(_smoke_summary(response, status), indent=2))
+    print(json.dumps(_smoke_summary(response, status, scenario_id=args.scenario), indent=2))
     return 0 if status.run.status in {"completed", "partial_success"} else 1
 
 
@@ -796,13 +797,27 @@ def _utc_now() -> dt.datetime:
 def _smoke_summary(
     start_response: StartRunResponse,
     status_response: GetRunStatusResponse,
+    *,
+    scenario_id: str | None = None,
 ) -> dict[str, Any]:
     payload = get_run_status_response_to_payload(status_response)
+    view = orchestration_status_view_to_payload(status_response, scenario_id=scenario_id)
     return {
         "started": start_run_response_to_payload(start_response)["run"]["status"],
+        "scenario_id": view["scenario_id"],
         "run_id": payload["run"]["run_id"],
         "status": payload["run"]["status"],
+        "operator_status": view["operator_status"],
+        "headline": view["headline"],
+        "operator_message": view["operator_message"],
+        "usable_outputs_available": view["usable_outputs_available"],
         "review_required": payload["run"]["review_required"],
+        "review_reasons": view["review_reasons"],
+        "degraded_stages": view["degraded_stages"],
+        "failed_stages": view["failed_stages"],
+        "failure_kind": view["failure_kind"],
+        "failure_message": view["failure_message"],
+        "next_actions": view["next_actions"],
         "stage_summary": {
             stage["stage_key"]: stage["status"]
             for stage in payload["timeline"]["stages"]
