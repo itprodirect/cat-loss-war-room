@@ -21,7 +21,7 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 423 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 430 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + offline e2e gate + offline security and dependency hygiene gates + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install and categorized quality-gate artifacts |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -33,7 +33,7 @@ This is research acceleration, not legal advice.
 | Workflow IA spec (`#23`) | Complete and closed as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
 | Evidence schema spec (`#24`) | Complete and closed as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |
 | Quality rubric (`#27`) | First-pass rubric plus local and CI artifact workflows landed in `docs/V2_RELEASE_RUBRIC.md`; demo-ready threshold calibration, blocking/advisory metric categories, live preflight evidence, run-scoped verify artifacts, verify manifests, and a stable latest pointer are now explicit, while broader CI and pilot operationalization remain open |
-| Orchestration API (`#10`) | First narrow run-state contract slice is implemented in `src/war_room/orchestration.py` and documented in `docs/ISSUE_10_RUN_STATE_CONTRACT.md`; issue `#73` adds typed start-run and get-run-status API boundary contracts in `src/war_room/orchestration_api_contracts.py` and `docs/ISSUE_10_API_CONTRACTS.md`; the first in-process offline service slice is implemented in `src/war_room/orchestration_service.py` and documented in `docs/ISSUE_10_SERVICE_SLICE.md`; the operator-facing status presentation layer is implemented in `src/war_room/orchestration_status_view.py` and documented in `docs/ISSUE_10_STATUS_PRESENTATION.md`; issue `#78` adds the dependency-free thin transport/request-handler wrapper in `src/war_room/orchestration_transport.py` and `docs/ISSUE_78_THIN_TRANSPORT_WRAPPER.md`; HTTP routes, queues, persistence, retries, circuit breakers, auth, dashboards, and UI remain future work |
+| Orchestration API (`#10`) | First narrow run-state contract slice is implemented in `src/war_room/orchestration.py` and documented in `docs/ISSUE_10_RUN_STATE_CONTRACT.md`; issue `#73` adds typed start-run and get-run-status API boundary contracts in `src/war_room/orchestration_api_contracts.py` and `docs/ISSUE_10_API_CONTRACTS.md`; the first in-process offline service slice is implemented in `src/war_room/orchestration_service.py` and documented in `docs/ISSUE_10_SERVICE_SLICE.md`; the operator-facing status presentation layer is implemented in `src/war_room/orchestration_status_view.py` and documented in `docs/ISSUE_10_STATUS_PRESENTATION.md`; issue `#78` adds the dependency-free thin transport/request-handler wrapper in `src/war_room/orchestration_transport.py` and `docs/ISSUE_78_THIN_TRANSPORT_WRAPPER.md`; the dev-only standard-library HTTP adapter lives in `src/war_room/orchestration_http.py` and `docs/ISSUE_10_DEV_HTTP_WRAPPER.md`; production API routing, queues, persistence, retries, circuit breakers, auth, dashboards, and UI remain future work |
 | Cache samples | Milton/Citizens/Pinellas + Ian/Citizens/Lee + TX hail/Allstate/Tarrant + TX hail matching/Allstate Texas Lloyds/Tarrant DP-3 + Ida/Lloyd's/Orleans committed |
 
 ## 3) What changed recently
@@ -79,6 +79,7 @@ This is research acceleration, not legal advice.
 - The first issue `#10` service slice now adds an in-process offline orchestration service that starts typed queued runs, executes committed fixture-backed scenarios with `client=None`, preserves read-model outputs, and returns typed status responses without adding HTTP routes, queueing, persistence, auth, UI, or live retrieval.
 - The run-status presentation layer now derives operator-facing status, review reasons, degraded/failed stage summaries, usable-output availability, and next actions from the typed service response without adding UI or transport.
 - The thin orchestration transport wrapper now returns JSON-safe dependency-free handler payloads with `ok`, `operation`, typed `payload`, and `status_presentation`; invalid requests and unknown run IDs are transport errors, while accepted offline scenario failures remain `ok=true` typed failed run-status responses.
+- The dev-only standard-library HTTP adapter now exposes `GET /healthz`, `POST /runs`, `POST /runs/{run_id}/execute`, and `GET /runs/{run_id}` over the existing transport handlers for local future-app probes while preserving process-local in-memory service state and the transport JSON envelope.
 - The notebook Evidence Board now has a styled HTML review surface over the existing typed read model, while the plain text formatter remains available as a fallback.
 
 ## 4) Quick run
@@ -136,6 +137,7 @@ Core implementation lives in `src/war_room/`.
 - [FOUNDATION.md](FOUNDATION.md): bootstrap, envs, runtime boundaries, and placeholder repo-shape rules
 - [FIXTURE_SEEDING.md](FIXTURE_SEEDING.md): safe process for adding or promoting offline fixture scenarios under the completed `#8` pattern or a future fixture follow-up
 - [ISSUE_8_READINESS_AUDIT.md](ISSUE_8_READINESS_AUDIT.md): `#8` readiness/closure audit after the fifth fixture lane and five-lane baseline validation
+- [ISSUE_10_DEV_HTTP_WRAPPER.md](ISSUE_10_DEV_HTTP_WRAPPER.md): dev-only standard-library HTTP adapter over the existing orchestration transport layer
 - [ROADMAP.md](ROADMAP.md): plain-language roadmap and active execution order
 - [V2_WORKFLOW_IA.md](V2_WORKFLOW_IA.md): canonical V2 workflow, IA, and design-system rules
 - [V2_EVIDENCE_SCHEMA.md](V2_EVIDENCE_SCHEMA.md): canonical V2 evidence graph, audit schema, and versioning rules

@@ -2291,3 +2291,46 @@ Status: Complete
   - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3`
     -> passed; status `completed`, `operator_status=degraded`, and usable
     outputs were available.
+
+## Session 117 - Issue 10 Dev-Only HTTP Adapter
+Date: 2026-05-16
+Status: Complete
+
+- Completed a tiny dev-only HTTP adapter over the existing orchestration
+  transport layer without turning the repo into a web app.
+- What changed:
+  - Added `src/war_room/orchestration_http.py` with a standard-library-only
+    `http.server` adapter exposing:
+    - `GET /healthz`
+    - `POST /runs`
+    - `POST /runs/{run_id}/execute`
+    - `GET /runs/{run_id}`
+  - The adapter delegates start, execute, and status requests to
+    `src/war_room/orchestration_transport.py` and keeps the existing
+    `ok` / `operation` / `payload` / `status_presentation` envelope.
+  - HTTP status codes reflect request handling, while envelope semantics remain
+    authoritative: invalid requests and unknown run IDs are `ok=false`, and
+    accepted offline run failures stay `ok=true` with
+    `payload.run.status="failed"`.
+  - Added `tests/test_orchestration_http.py` covering health, Milton
+    start/execute/status over HTTP, invalid JSON, invalid start payloads,
+    unknown run IDs, accepted run failure, unsupported methods, and unknown
+    paths.
+  - Added `docs/ISSUE_10_DEV_HTTP_WRAPPER.md` and synced handoff, roadmap,
+    heartbeat, and this session log to the `430`-test baseline.
+- Decisions not added:
+  - no FastAPI, Flask, Streamlit, Django, Next.js, React, production API
+    routing, persistence, database, auth, sessions, queues, workers, retries,
+    circuit breakers, dashboards, frontend, notebook changes, fixture changes,
+    cache sample changes, citation fact changes, dependency changes, broad
+    architecture rewrite, or live retrieval changes were added.
+- Validation:
+  - `python -m pytest tests/test_orchestration_http.py tests/test_orchestration_transport.py tests/test_orchestration_service.py -q` -> `19 passed in 3.19s`.
+  - `python -m pytest -q` -> `430 passed in 14.29s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `430 passed in 14.41s`; verify manifest written under
+    `runs/verify/2026-05-16_feat-issue-10-dev-http-wrapper_20260516t204511z.json`.
+  - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3`
+    -> passed; status `completed`, `operator_status=degraded`, and usable
+    outputs were available.
+  - `git diff --check` -> passed.
