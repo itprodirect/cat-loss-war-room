@@ -2218,3 +2218,44 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported `417 passed in 22.32s`; verify manifest written under `runs/verify/2026-05-16_codex-orchestration-status-presentation-contract_20260516t040535z.json`.
   - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3` -> passed; status `completed`, `operator_status=degraded`, `usable_outputs_available=true`, `review_required=true`, degraded stages included `citation_verify` and `memo_assembly`, and usable output summaries included weather, carrier, caselaw, citation verification, memo draft, and audit bundle.
   - `git diff --check` -> passed.
+
+## Session 115 - Issue 78 Thin Orchestration Transport Wrapper
+Date: 2026-05-16
+Status: Complete
+
+- Completed issue `#78` as a narrow dependency-free transport/request-handler
+  wrapper over the existing offline orchestration service and status
+  presentation contracts.
+- What changed:
+  - Added `src/war_room/orchestration_transport.py` with
+    `handle_start_run`, `handle_execute_run`, `handle_get_run_status`, and
+    `transport_response_to_payload`.
+  - The transport handlers accept existing typed request/status contracts,
+    return JSON-safe dictionaries with `ok`, `operation`, `payload`, and
+    `status_presentation`, and keep the service's usable outputs and typed
+    failure details intact.
+  - Added public lazy exports for the transport helpers from
+    `src/war_room/__init__.py`.
+  - Added `tests/test_orchestration_transport.py` covering queued start
+    payloads, Milton execute/status behavior, review-required/degraded
+    operator presentation, reachable partial-success behavior, unmapped
+    scenario failure details, unknown run IDs, and invalid start payloads.
+  - Added `docs/ISSUE_78_THIN_TRANSPORT_WRAPPER.md` with the wrapper shape,
+    error semantics, explicit non-goals, and local validation commands.
+  - Cross-linked the new transport note from the service and status
+    presentation docs without changing their original slice boundaries.
+- Decisions not added:
+  - no FastAPI, Flask, Streamlit, React, Next.js, HTTP routing, server startup,
+    auth, sessions, persistence, queues, background workers, retries, circuit
+    breakers, dashboards, web UI, dependencies, notebook changes, fixtures,
+    cache samples, citation facts, prompts, schemas, golden snapshots, or live
+    retrieval changes were added.
+  - offline scenario failures after a run is accepted remain service-level
+    typed failed status responses (`ok=true`) rather than transport errors.
+- Validation:
+  - `python -m pytest tests/test_orchestration_transport.py -q` -> `6 passed in 6.63s`.
+  - `python -m pytest tests/test_orchestration_transport.py tests/test_orchestration_service.py tests/test_orchestration_api_contracts.py tests/test_orchestration_status_view.py tests/test_orchestration_state.py -q` -> `47 passed in 7.67s`.
+  - `python -m pytest -q` -> `423 passed in 19.60s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported `423 passed in 18.67s`; verify manifest written under `runs/verify/2026-05-16_codex-issue-78-thin-orchestration-transport_20260516t043722z.json`.
+  - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3` -> passed; status `completed`, `operator_status=degraded`, `usable_outputs_available=true`, `review_required=true`, degraded stages included `citation_verify` and `memo_assembly`, and usable output summaries included weather, carrier, caselaw, citation verification, memo draft, and audit bundle.
+  - `git diff --check` -> passed.

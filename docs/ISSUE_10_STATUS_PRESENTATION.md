@@ -65,10 +65,18 @@ when the run needs review or did not fully complete.
 - For `failed` runs, usable outputs are not expected. Investigate the typed
   failure and rerun after fixing scenario or fixture setup.
 
+## Transport Follow-Up
+
+This presentation slice did not add API transport. Follow-up issue `#78` adds a
+thin dependency-free request-handler wrapper in
+[`ISSUE_78_THIN_TRANSPORT_WRAPPER.md`](ISSUE_78_THIN_TRANSPORT_WRAPPER.md) that
+includes this presentation payload in start, execute, and status responses
+without adding HTTP routes or a web framework.
+
 ## Intentionally Not Included
 
 - no web app
-- no API transport or HTTP route
+- no production API transport or HTTP route
 - no live claim intake
 - no production auth
 - no persistence

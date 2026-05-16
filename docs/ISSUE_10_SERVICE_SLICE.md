@@ -89,8 +89,10 @@ This slice intentionally does not add:
 
 ## Future API Use
 
-The next `#10` slice can wrap this in-process service with explicit API
-transport decisions, or it can add persistence/worker semantics behind the same
-typed response contracts. The next `#11` slice can consume the same stage,
-status, review-required, and usable-output semantics for guided intake and run
-status UX.
+Follow-up issue `#78` adds a thin dependency-free transport/request-handler
+wrapper over this in-process service in
+[`ISSUE_78_THIN_TRANSPORT_WRAPPER.md`](ISSUE_78_THIN_TRANSPORT_WRAPPER.md).
+Production HTTP routing, persistence, worker semantics, and retry policy remain
+future `#10` work behind the same typed response contracts. The next `#11`
+slice can consume the same stage, status, review-required, and usable-output
+semantics for guided intake and run status UX.
