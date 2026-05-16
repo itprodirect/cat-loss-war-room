@@ -63,6 +63,17 @@ def test_security_hygiene_flags_non_placeholder_secret_assignment(tmp_path: Path
     assert findings[0].line == 1
 
 
+def test_security_hygiene_allows_not_set_status_text(tmp_path: Path):
+    tracked_files = _write_compliant_repo(tmp_path)
+    secret_name = "EXA_API" + "_KEY"
+    _write(tmp_path / "notebooks" / "demo.ipynb", f"  {secret_name}:        not set\\n")
+    tracked_files.append("notebooks/demo.ipynb")
+
+    report = run_security_hygiene(tmp_path, tracked_files=tracked_files)
+
+    assert report.passed
+
+
 def test_security_hygiene_flags_env_template_drift(tmp_path: Path):
     tracked_files = _write_compliant_repo(tmp_path)
     exa_key = "EXA_API" + "_KEY"

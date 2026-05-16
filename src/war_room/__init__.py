@@ -194,6 +194,17 @@ _EXPORTS = {
     "run_status_payload_from_run": "war_room.orchestration_api_contracts",
     "start_run_request_to_payload": "war_room.orchestration_api_contracts",
     "start_run_response_to_payload": "war_room.orchestration_api_contracts",
+    "InMemoryOrchestrationService": "war_room.orchestration_service",
+    "OfflineScenarioUnavailableError": "war_room.orchestration_service",
+    "OrchestrationServiceError": "war_room.orchestration_service",
+    "OrchestrationServiceOutputs": "war_room.orchestration_service",
+    "UnknownRunError": "war_room.orchestration_service",
+    "default_service": "war_room.orchestration_service",
+    "error_response_to_payload": "war_room.orchestration_service",
+    "execute_run": "war_room.orchestration_service",
+    "get_run_outputs": "war_room.orchestration_service",
+    "get_run_status": "war_room.orchestration_service",
+    "start_run": "war_room.orchestration_service",
 }
 
 __all__ = list(_EXPORTS)

@@ -2149,3 +2149,34 @@ Status: Complete
   - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed and artifact `runs/offline_e2e/2026-05-16_offline-e2e_20260516t012508z.json` was written.
   - `python -m json.tool notebooks/01_case_war_room.ipynb | Out-Null` -> passed.
   - `git diff --check` -> passed.
+
+## Session 113 - Issue 10 Offline Orchestration Service Slice
+Date: 2026-05-16
+Status: Complete
+
+- Completed the first narrow issue `#10` product-mode service slice without adding HTTP routes, web UI, persistence, queues, auth, dashboard, dependencies, fixture changes, or live retrieval.
+- Root design choice:
+  - added a synchronous in-process service boundary over the existing offline notebook-era runtime so future HTTP/API wrapping can reuse the same typed start-run and get-run-status contracts.
+- What changed:
+  - Added `src/war_room/orchestration_service.py` with `InMemoryOrchestrationService`, process-local `start_run`, `execute_run`, `get_run_status`, and `get_run_outputs` helpers, typed failure payload conversion, preserved in-memory output containers, and a dependency-free smoke CLI.
+  - The service accepts `StartRunRequest`, creates a queued `StartRunResponse`, maps the typed intake to a curated offline-ready scenario, executes committed fixture-backed weather/carrier/caselaw/citation paths with `client=None`, builds evidence-board, issue-workspace, memo-composer, export-history, and run-timeline read models, and returns typed `GetRunStatusResponse` payloads.
+  - Added `tests/test_orchestration_service.py` covering queued start/status, fixture-backed execution, preserved usable outputs, no live retrieval calls, partial-success behavior for a failed output stage, and typed failed status for missing offline scenarios.
+  - Added `docs/ISSUE_10_SERVICE_SLICE.md` and synced README, handoff, roadmap, repo brief, CLAUDE, and heartbeat status to the 411-test service-slice baseline.
+  - Fixed a security-hygiene false positive where notebook output text `EXA_API_KEY: not set` was treated as a committed secret assignment; added regression coverage in `tests/test_security_hygiene.py`.
+- Decisions not added:
+  - no FastAPI, Flask, Streamlit, React, Next.js, background workers, database, persistence, auth, access control, retry policy, circuit breakers, dashboard, web intake UI, dependency changes, fixture edits, golden snapshot edits, notebook behavior changes, or live retrieval were added.
+  - `notebooks/01_case_war_room.ipynb` and `Untitled.ipynb` were already dirty before this slice and were not part of the service implementation.
+- Smoke validation:
+  - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3` -> passed; status `completed`, `review_required=true`, stages included `citation_verify=degraded`, `memo_assembly=degraded`, `export=skipped`, and usable outputs included weather, carrier, caselaw, citation verification, memo draft, and audit bundle summaries.
+- Validation:
+  - `python -m pytest tests/test_orchestration_service.py tests/test_orchestration_api_contracts.py tests/test_orchestration_state.py -q` -> `35 passed in 3.44s`.
+  - `python -m pytest tests/test_security_hygiene.py -q` -> `6 passed in 2.55s`.
+  - `python -m pytest tests/test_orchestration*.py tests/test_notebook_runtime.py tests/test_preflight.py -q` -> `56 passed in 13.32s` when run through Git Bash for glob expansion.
+  - `python -m pytest -q` -> `411 passed in 15.59s` after the final docs/session-log update.
+  - `python -m war_room --preflight` -> passed; `5/5` offline scenarios passed.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported `411 passed in 24.39s`; verify manifest written under `runs/verify/2026-05-16_feat-issue-10-offline-orchestration-service_20260516t031924z.json`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed and artifact `runs/offline_e2e/2026-05-16_offline-e2e_20260516t032031z.json` was written.
+  - `python -m war_room.security_hygiene --check` -> passed; `6/6` checks passed.
+  - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
+  - `git diff --check` -> passed.

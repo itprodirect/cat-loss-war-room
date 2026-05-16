@@ -265,6 +265,8 @@ def _check_secret_patterns(tracked: Sequence[_TrackedFile]) -> SecurityHygieneCh
             for match in SECRET_ASSIGNMENT_PATTERN.finditer(line):
                 if _looks_like_python_type_annotation(line, match):
                     continue
+                if _looks_like_not_set_status(line, match):
+                    continue
                 value = match.group("value").strip().strip("'\"")
                 if _is_placeholder_secret_value(value):
                     continue
@@ -536,6 +538,11 @@ def _line_has_allowlist_marker(line: str) -> bool:
 
 def _looks_like_python_type_annotation(line: str, match: re.Match[str]) -> bool:
     return match.group("sep") == ":" and "=" in line[match.end() :]
+
+
+def _looks_like_not_set_status(line: str, match: re.Match[str]) -> bool:
+    suffix = line[match.start("value") :].strip().strip("'\"")
+    return bool(re.match(r"not\s+set\b", suffix, flags=re.IGNORECASE))
 
 
 def _normalize_policy_text(text: str) -> str:
