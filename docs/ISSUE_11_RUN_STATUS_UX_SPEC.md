@@ -16,7 +16,7 @@ fixtures, cache changes, citation changes, or live retrieval changes.
 The run-status screen answers five user questions:
 
 - Has the run been accepted, started, completed, degraded, partially completed,
-  or failed?
+  failed, or cancelled?
 - Are any outputs usable for human review?
 - Which stages need attention?
 - What should the operator do next?
@@ -74,11 +74,14 @@ The typed `payload` remains the source for canonical machine detail:
 - `payload.failure`
 
 If a dev smoke summary provides convenience fields such as `stage_summary` or
-`usable_output_summary`, the screen may render those directly. When consuming
-the transport or HTTP envelope, the screen should build the stage progress list
-from `payload.timeline.stages` and the usable-output list from
-`status_presentation.usable_outputs` or `payload.usable_outputs`, while keeping
-`status_presentation.operator_status` authoritative.
+`usable_output_summary`, treat them as local smoke CLI conveniences only. They
+are not transport or HTTP envelope fields, and a future UI should not treat them
+as canonical product contract fields. When consuming the transport or HTTP
+envelope, build the stage progress list from `payload.timeline.stages` and the
+usable-output list from `status_presentation.usable_outputs`, while keeping the
+full `status_presentation` payload as the authoritative product-facing read
+model. Use `payload.usable_outputs` as typed technical detail, not as the
+default product-facing list when the presentation payload is present.
 
 For `ok=false` transport responses, `status_presentation` is `null`. The UI
 should present the typed `payload.error` as a request or lookup problem, not as
@@ -96,6 +99,7 @@ an accepted run's product status unless the accepted run payload itself reports
 | `review_required` | Outputs are usable, but the run or output contract says human review is required. | Mark outputs as usable but not clean final support. |
 | `partial_success` | The run did not fully complete, but at least one usable output survived. | Clearly distinguish surviving usable outputs from failed stages; never call it complete. |
 | `failed` | The run did not produce a reviewable bundle. | Block demo-ready language and direct the operator to failure details and rerun steps. |
+| `cancelled` | The run was stopped after acceptance before reaching a completed, partial-success, or failed terminal state. | Show a neutral terminal stopped state, do not present the run as demo-ready, and direct the operator to start a fresh run or inspect technical details. |
 
 ## Field Presentation
 
@@ -111,16 +115,21 @@ an accepted run's product status unless the accepted run payload itself reports
 
 ### Stage Progress List
 
-- Render every stage from `stage_summary` when present, otherwise from
-  `payload.timeline.stages`.
-- Show stage key, status, short summary, and review-required marker.
+- Render every stage from `payload.timeline.stages`.
+- Do not use dev smoke CLI `stage_summary` as the default UI source. It is only
+  a flat `{stage_key: status}` convenience summary and does not carry stage
+  `summary`, `error_summary`, or `review_required` detail.
+- Show stage key, status, short summary, error summary when present, and
+  review-required marker.
 - Elevate stages listed in `degraded_stages` and `failed_stages`.
 - Do not hide degraded, skipped, or failed stages in logs.
 
 ### Usable Outputs Section
 
-- Render `usable_output_summary` when present, otherwise render
-  `status_presentation.usable_outputs`.
+- Render `status_presentation.usable_outputs` as the default product-facing
+  output list.
+- Do not use dev smoke CLI `usable_output_summary` as the default UI source. It
+  is a compact smoke convenience view, not a transport or HTTP envelope field.
 - Show output label, output type, stage key, URI when available, and
   `review_required`.
 - Label review-required outputs as usable for review, not verified final
@@ -138,6 +147,9 @@ an accepted run's product status unless the accepted run payload itself reports
 - Render `next_actions` as the operator checklist.
 - For `failed`, use blocking language such as "Do not present this run as
   demo-ready."
+- For `cancelled`, use neutral stopped-run language and direct the operator to
+  start a fresh run or inspect technical details before attempting another demo
+  path.
 - For `degraded`, `review_required`, and `partial_success`, make inspection and
   citation/disclaimer review the next action before any external-facing demo.
 
@@ -162,6 +174,9 @@ an accepted run's product status unless the accepted run payload itself reports
 - Prefer "usable for human review" over "approved", "verified", or "ready".
 - Use stage names from the payload; do not invent new product-stage names that
   conflict with the orchestration contract.
+- Do not infer UI contract meaning from smoke CLI `stage_summary` or
+  `usable_output_summary`; those summaries are convenience output for local dev
+  smoke checks only.
 
 ## Layout and IA Guidance
 
@@ -195,7 +210,7 @@ This spec is sufficient for the current slice when:
 - a future UI builder can identify `status_presentation` as the primary
   product-facing read model,
 - the screen behavior for queued, running, completed, degraded,
-  review-required, partial-success, and failed runs is explicit,
+  review-required, partial-success, failed, and cancelled runs is explicit,
 - usable outputs are distinguished from failed or unreviewed outputs,
 - review-required language is prominent and preserves disclaimers,
 - technical details remain available but secondary,

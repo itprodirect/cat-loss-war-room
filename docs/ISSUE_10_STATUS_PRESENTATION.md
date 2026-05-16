@@ -13,8 +13,9 @@ HTTP routes, a web framework, persistence, queues, auth, or UI.
 - The view keeps the canonical run `status` and adds `operator_status`,
   `headline`, `operator_message`, usable-output availability, review reasons,
   degraded stages, failed stages, typed failure details, and next actions.
-- The smoke CLI now includes those operator-facing fields while preserving the
-  existing machine-readable status, stage summary, and usable-output summary.
+- The smoke CLI now includes those operator-facing fields while preserving
+  local dev convenience summaries for stage status and usable outputs. Those
+  smoke summaries are not transport or HTTP envelope fields.
 
 ## Status Meanings
 
