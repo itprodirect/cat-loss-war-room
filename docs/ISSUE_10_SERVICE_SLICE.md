@@ -59,6 +59,8 @@ registry.
   survive.
 - Failed planning or missing fixture scenarios return `failed` with a typed
   failure payload.
+- The operator-facing run-status presentation checklist lives in
+  [`ISSUE_10_STATUS_PRESENTATION.md`](ISSUE_10_STATUS_PRESENTATION.md).
 
 ## Out of Scope
 
