@@ -1,12 +1,23 @@
 # Issue 10 API Contract Slice
 
-Last updated: May 15, 2026
+Last updated: May 16, 2026
 
 This document records issue `#73`, the second narrow contract-first slice for
 issue `#10`.
 
 It adds typed request and response payloads for future orchestration API
-boundaries. It does not add a live API service.
+boundaries. This slice itself did not add a live API service or transport.
+
+Follow-up work in [`ISSUE_10_SERVICE_SLICE.md`](ISSUE_10_SERVICE_SLICE.md)
+uses these contracts in a small in-process offline service without adding HTTP
+routes, persistence, queues, auth, dashboards, UI, or live retrieval.
+
+Later follow-up work adds an operator-facing status presentation layer in
+[`ISSUE_10_STATUS_PRESENTATION.md`](ISSUE_10_STATUS_PRESENTATION.md) and a thin
+dependency-free transport/request-handler wrapper in
+[`ISSUE_78_THIN_TRANSPORT_WRAPPER.md`](ISSUE_78_THIN_TRANSPORT_WRAPPER.md).
+Those layers still do not add HTTP routes, a production API framework,
+persistence, queues, auth, dashboards, UI, or live retrieval.
 
 ## Scope Landed
 
@@ -62,7 +73,7 @@ The current V0 notebook/offline demo remains the active runtime surface.
 
 ## Future API Use
 
-Future issue `#10` implementation can route HTTP handlers or worker updates
-through these contracts, but this slice is only the type boundary. Service
-runtime choices, persistence, queue semantics, retries, and operational policy
-remain future work.
+Future issue `#10` implementation can keep routing handlers or worker updates
+through these contracts and the thin transport wrapper. Production HTTP routing,
+persistence, queue semantics, retries, and operational policy remain future
+work.

@@ -56,16 +56,16 @@ Preserve the stable V0 notebook demo while finishing broader `#27` CI/pilot oper
 ## Known risks
 
 - The primary UX is still notebook-first, which is less approachable for non-technical users.
-- The first issue `#10` run-state contract slice and issue `#73` API boundary contract slice exist, but the actual API service, persistence, retries, circuit breakers, dashboard, and UI remain unbuilt.
+- The first issue `#10` run-state contract slice, issue `#73` API boundary contract slice, in-process offline service slice, operator-facing status presentation layer, and dependency-free thin transport/request-handler wrapper exist, but HTTP routing, persistence, retries, circuit breakers, dashboards, and UI remain unbuilt.
 - Offline readiness is stronger but still demo-scoped: five committed fixture lanes now have a golden snapshot gate and fixture-backed registry scenarios, and issue `#8` is closed as completed after the five-lane baseline validation.
 - Case-law precision and citation confidence still need ongoing hardening in edge cases.
 - Status can drift quickly because roadmap, handoff, and session history are dense and frequently updated.
 
 ## Next 3 tasks
 
-1. Review/merge the narrow issue `#73` orchestration API contract PR without adding the API service or changing notebook behavior.
-2. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
-3. Start the next explicitly scoped issue `#10` implementation slice only after the contract PR is reviewed.
+1. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
+2. Scope the next issue `#10` implementation slice against the existing contracts/service/status/transport stack, keeping HTTP routing, persistence, queues, auth, retries, circuit breakers, dashboards, and UI out unless explicitly authorized.
+3. Scope issue `#11` guided intake or run-status UX only after its boundary is written against the existing status and transport semantics.
 
 ## Ownership
 
