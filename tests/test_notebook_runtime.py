@@ -7,7 +7,9 @@ from pathlib import Path
 from war_room.bootstrap import BootstrapContext
 from war_room.notebook_runtime import (
     build_intake_from_scenario,
+    build_notebook_citation_review,
     ensure_runtime_context,
+    load_notebook_citation_fixture,
     prepare_notebook_scenario,
     resolve_live_retrieval_enabled,
     scenario_warning_message,
@@ -138,6 +140,130 @@ def test_build_intake_from_scenario_applies_overrides():
     assert scenario.slug == "idalia_taylor_default_ho3"
     assert intake.posture == ["underpayment"]
     assert intake.coverage_issues == ["scope of repair"]
+
+
+def test_load_notebook_citation_fixture_reads_scenario_fixture():
+    citecheck = load_notebook_citation_fixture(
+        "milton_citizens_pinellas",
+        cache_samples_dir=ROOT / "cache_samples",
+    )
+
+    assert citecheck is not None
+    assert citecheck["module"] == "citation_verify"
+    assert citecheck["summary"]["total"] == 6
+    assert citecheck["summary"]["verified"] >= 1
+
+
+def test_build_notebook_citation_review_uses_offline_fixture_with_null_client(monkeypatch):
+    caselaw = {
+        "issues": [
+            {
+                "issue": "Coverage",
+                "cases": [{"name": "Doe v. Ins", "citation": "123 So.3d 456"}],
+            }
+        ],
+    }
+
+    def _unexpected_live_check(*args, **kwargs):
+        raise AssertionError("offline notebook path should not call live citation spot-checking")
+
+    monkeypatch.setattr("war_room.notebook_runtime.spot_check_citations", _unexpected_live_check)
+
+    citecheck = build_notebook_citation_review(
+        caselaw,
+        None,
+        case_key="milton_citizens_pinellas",
+        use_cache=True,
+        live_retrieval_enabled=False,
+        cache_samples_dir=ROOT / "cache_samples",
+    )
+
+    assert citecheck["module"] == "citation_verify"
+    assert citecheck["summary"]["total"] == 6
+    assert citecheck["summary"]["verified"] >= 1
+
+
+def test_build_notebook_citation_review_preserves_live_spot_check_when_client_exists(monkeypatch, tmp_path):
+    caselaw = {
+        "issues": [
+            {
+                "issue": "Coverage",
+                "cases": [{"name": "Doe v. Ins", "citation": "123 So.3d 456"}],
+            }
+        ],
+    }
+    observed: dict[str, object] = {}
+    client = object()
+
+    def _live_check(caselaw_pack, client_arg, **kwargs):
+        observed["caselaw_pack"] = caselaw_pack
+        observed["client"] = client_arg
+        observed["kwargs"] = kwargs
+        return {
+            "module": "citation_verify",
+            "disclaimer": "CITATION SPOT-CHECK ONLY - review required.",
+            "checks": [],
+            "summary": {"total": 0, "verified": 0, "uncertain": 0, "not_found": 0},
+        }
+
+    monkeypatch.setattr("war_room.notebook_runtime.spot_check_citations", _live_check)
+
+    citecheck = build_notebook_citation_review(
+        caselaw,
+        client,
+        case_key="missing_fixture",
+        use_cache=True,
+        live_retrieval_enabled=True,
+        cache_dir=tmp_path / "cache",
+        cache_samples_dir=tmp_path / "cache_samples",
+    )
+
+    assert citecheck["module"] == "citation_verify"
+    assert observed["caselaw_pack"] == caselaw
+    assert observed["client"] is client
+    assert observed["kwargs"] == {
+        "use_cache": True,
+        "cache_dir": tmp_path / "cache",
+        "cache_samples_dir": tmp_path / "cache_samples",
+        "max_checks": 6,
+    }
+
+
+def test_build_notebook_citation_review_returns_safe_payload_when_offline_fixture_missing(tmp_path):
+    caselaw = {
+        "issues": [
+            {
+                "issue": "Coverage",
+                "cases": [
+                    {"name": "Doe v. Ins", "citation": "123 So.3d 456"},
+                    {"name": "Blank v. Case", "citation": ""},
+                ],
+            }
+        ],
+    }
+
+    citecheck = build_notebook_citation_review(
+        caselaw,
+        None,
+        case_key="missing_fixture",
+        use_cache=True,
+        live_retrieval_enabled=False,
+        cache_samples_dir=tmp_path,
+    )
+
+    assert citecheck["module"] == "citation_verify"
+    assert citecheck["summary"] == {
+        "total": 1,
+        "verified": 0,
+        "uncertain": 1,
+        "not_found": 0,
+    }
+    assert citecheck["checks"][0]["case_name"] == "Doe v. Ins"
+    assert citecheck["checks"][0]["status"] == "uncertain"
+    assert citecheck["checks"][0]["badge"] == "warning"
+    assert citecheck["checks"][0]["status_reason"] == "offline_fixture_missing"
+    assert "review citations manually" in citecheck["checks"][0]["note"]
+    assert "CITATION SPOT-CHECK ONLY" in citecheck["disclaimer"]
 
 
 def test_prepare_notebook_scenario_returns_full_contract_and_warning(monkeypatch):
