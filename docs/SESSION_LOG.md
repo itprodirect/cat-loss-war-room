@@ -2334,3 +2334,45 @@ Status: Complete
     -> passed; status `completed`, `operator_status=degraded`, and usable
     outputs were available.
   - `git diff --check` -> passed.
+
+## Session 118 - Issue 11 Run-Status UX Spec
+Date: 2026-05-16
+Status: Complete
+
+- Completed a narrow issue `#11` run-status UX/spec slice over the existing
+  orchestration status presentation payload without building a frontend app.
+- What changed:
+  - Added `docs/ISSUE_11_RUN_STATUS_UX_SPEC.md` defining the purpose, user
+    types, primary status states, field presentation rules, copy rules,
+    layout/IA guidance, data contract, and non-goals for a future run-status
+    screen.
+  - The spec makes `status_presentation.operator_status`, `headline`,
+    `operator_message`, `review_reasons`, degraded/failed stages, usable
+    outputs, and `next_actions` the authoritative product-facing read model.
+  - The spec clarifies that a future UI may render stage progress from
+    `payload.timeline.stages` or dev smoke `stage_summary`, but must not infer
+    operator status independently when `status_presentation` already provides
+    it.
+  - Cross-linked the spec from the issue `#10` status presentation note and the
+    issue `#78` thin transport wrapper note.
+  - Synced handoff, roadmap, heartbeat, and this session log to the new
+    documentation-only issue `#11` slice.
+- Decisions not added:
+  - no frontend implementation, React, Next.js, dashboard, auth, persistence,
+    production API, queues, workers, retries, circuit breakers, notebook
+    changes, dependencies, fixture/cache/citation changes, prompts, schemas,
+    golden snapshots, or live retrieval changes were added.
+  - no docs test was added because there is no existing lightweight
+    docs/reference validation pattern for this issue-note cross-link.
+- Validation:
+  - `python -m pytest -q` -> `430 passed in 16.30s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `430 passed in 20.73s`; verify manifest written under
+    `runs/verify/2026-05-16_feat-issue-11-run-status-ux-spec_20260516t211620z.json`.
+  - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3`
+    -> passed; status `completed`, `operator_status=degraded`,
+    `usable_outputs_available=true`, review reasons were present, degraded
+    stages included `citation_verify` and `memo_assembly`, and usable output
+    summaries included weather, carrier, caselaw, citation verification, memo
+    draft, and audit bundle.
+  - `git diff --check` -> passed.

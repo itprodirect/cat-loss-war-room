@@ -9,6 +9,11 @@ The wrapper proves that a future app can start an offline orchestration run,
 execute it synchronously, and retrieve status through JSON-safe request-handler
 functions. It does not add a production HTTP API.
 
+The companion issue `#11` run-status UX/spec note lives in
+[`ISSUE_11_RUN_STATUS_UX_SPEC.md`](ISSUE_11_RUN_STATUS_UX_SPEC.md). It treats
+the `status_presentation` field in this envelope as the authoritative
+operator-facing read model for a future UI.
+
 ## Scope Landed
 
 - `src/war_room/orchestration_transport.py` adds dependency-free handlers:

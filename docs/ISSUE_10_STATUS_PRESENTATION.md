@@ -73,6 +73,13 @@ thin dependency-free request-handler wrapper in
 includes this presentation payload in start, execute, and status responses
 without adding HTTP routes or a web framework.
 
+## UX Follow-Up
+
+Issue `#11` now has a narrow run-status UX/spec slice in
+[`ISSUE_11_RUN_STATUS_UX_SPEC.md`](ISSUE_11_RUN_STATUS_UX_SPEC.md). That
+document explains how a future user-facing status screen should consume this
+`status_presentation` payload without adding a frontend app in this repo.
+
 ## Intentionally Not Included
 
 - no web app
