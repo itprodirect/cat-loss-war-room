@@ -2120,3 +2120,32 @@ Status: Complete
   - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed and artifacts were written under `runs/offline_e2e/2026-05-15_offline-e2e_20260515t061619z.json`.
   - `python -m war_room --verify --release-candidate issue-10-api-contracts` -> passed; embedded `pytest -q` reported `400 passed in 11.77s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-15_issue-10-api-contracts_20260515t061627z.json`.
   - `git diff --check` -> passed.
+
+## Session 112 - Offline Notebook Citation Review Fix
+Date: 2026-05-15
+Status: Complete
+
+- Fixed the offline notebook citation-review runtime failure without changing the broader research engine.
+- Root cause:
+  - Cell 6 passed `client=None` to `spot_check_citations(...)` in offline mode.
+  - `spot_check_citations(...)` reads `client.provider_name` before per-citation cache lookup can run, so the offline notebook crashed before `citecheck` existed.
+- What changed:
+  - Added notebook-runtime citation helpers that load `cache_samples/<case_key>/citation_verify.json` for offline cache-backed notebook runs.
+  - Preserved the live citation spot-check path when live retrieval is enabled and a real retrieval client exists.
+  - Added a safe review-required fallback payload when an offline scenario citation fixture is missing, without attempting live retrieval.
+  - Updated Cell 6 to call the helper and cleared stale failed notebook outputs while preserving the default `milton_pinellas_citizens_ho3` scenario.
+  - Added focused tests for fixture loading, null-client offline behavior, live delegation, and missing-fixture fallback.
+- Decisions not added:
+  - no live retrieval, fixture changes, cache-sample changes, memo generation changes, golden snapshot updates, package dependencies, CI changes, or broader citation-engine refactor were added.
+  - no legal/demo disclaimer or citation-review warning language was weakened.
+- Validation:
+  - `python -m pytest tests\test_notebook_runtime.py tests\test_citation_verify.py tests\test_preflight.py -q` -> `34 passed in 3.16s`.
+  - `python -m jupyter nbconvert --execute notebooks/01_case_war_room.ipynb --to notebook --output-dir runs/notebook_smoke --output 01_case_war_room.executed.ipynb --ExecutePreprocessor.timeout=180` -> passed; executed notebook written to `runs/notebook_smoke/01_case_war_room.executed.ipynb`.
+  - Executed notebook evidence: Cell 1 output showed `USE_CACHE: True` and `LIVE_RETRIEVAL: False`; Cell 6 output included Citation Spot-Check, Evidence Board, and ISSUE WORKSPACE; Cell 7 output included MEMO COMPOSER, RUN TIMELINE, EXPORT HISTORY, and a saved memo path.
+  - `python -m war_room --preflight` -> passed; `5/5` offline scenarios passed.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported `405 passed in 10.46s`; verify manifest written under `runs/verify/2026-05-16_docs-notebook-demo-narrative-polish_20260516t012421z.json`.
+  - `python -m pytest -q` -> `405 passed in 9.95s`.
+  - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
+  - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed and artifact `runs/offline_e2e/2026-05-16_offline-e2e_20260516t012508z.json` was written.
+  - `python -m json.tool notebooks/01_case_war_room.ipynb | Out-Null` -> passed.
+  - `git diff --check` -> passed.
