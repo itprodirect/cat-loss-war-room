@@ -13,8 +13,9 @@ HTTP routes, a web framework, persistence, queues, auth, or UI.
 - The view keeps the canonical run `status` and adds `operator_status`,
   `headline`, `operator_message`, usable-output availability, review reasons,
   degraded stages, failed stages, typed failure details, and next actions.
-- The smoke CLI now includes those operator-facing fields while preserving the
-  existing machine-readable status, stage summary, and usable-output summary.
+- The smoke CLI now includes those operator-facing fields while preserving
+  local dev convenience summaries for stage status and usable outputs. Those
+  smoke summaries are not transport or HTTP envelope fields.
 
 ## Status Meanings
 
@@ -72,6 +73,13 @@ thin dependency-free request-handler wrapper in
 [`ISSUE_78_THIN_TRANSPORT_WRAPPER.md`](ISSUE_78_THIN_TRANSPORT_WRAPPER.md) that
 includes this presentation payload in start, execute, and status responses
 without adding HTTP routes or a web framework.
+
+## UX Follow-Up
+
+Issue `#11` now has a narrow run-status UX/spec slice in
+[`ISSUE_11_RUN_STATUS_UX_SPEC.md`](ISSUE_11_RUN_STATUS_UX_SPEC.md). That
+document explains how a future user-facing status screen should consume this
+`status_presentation` payload without adding a frontend app in this repo.
 
 ## Intentionally Not Included
 
