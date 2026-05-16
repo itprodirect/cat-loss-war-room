@@ -7,6 +7,10 @@ This document defines a narrow product-facing run-status screen spec for issue
 the existing orchestration `status_presentation` payload without building a
 frontend app in this repo.
 
+Companion deterministic preview: [`examples/run_status_milton_degraded.md`](examples/run_status_milton_degraded.md)
+shows how a future product surface should present the current Milton degraded
+`status_presentation` payload without adding a frontend.
+
 This is a UX/spec/read-model slice only. It does not add React, Next.js, a
 dashboard, auth, persistence, a production API, notebook changes, dependencies,
 fixtures, cache changes, citation changes, or live retrieval changes.
