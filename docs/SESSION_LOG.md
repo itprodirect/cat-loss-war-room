@@ -2549,3 +2549,51 @@ Status: Complete
     stages included `citation_verify` and `memo_assembly`, failed stages were
     empty, and usable outputs included weather, carrier, caselaw, citation
     verification, memo draft, and audit bundle.
+
+## Session 123 - Issue 88 Release-Scorecard Reviewer Summary
+Date: 2026-05-17
+Status: Complete
+
+- Completed issue `#88` as a narrow issue `#27` operationalization slice for
+  release-scorecard reviewer consumption.
+- What changed:
+  - Added a top-level `reviewer_summary` object to release-scorecard JSON,
+    derived from the existing `readiness_posture` data.
+  - Added a matching `## Reviewer Summary` section before the deeper dashboard
+    readiness details in release-scorecard Markdown output.
+  - Expanded `tests/test_release_scorecard.py` to cover JSON shape, derivation
+    from readiness posture, Markdown rendering, validator coverage, and blocked
+    summary behavior.
+  - Lightly updated `docs/V2_RELEASE_RUBRIC.md`,
+    `docs/ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md`, `docs/HANDOFF.md`,
+    `docs/ROADMAP.md`, and this heartbeat/session-log current-state surface.
+- `reviewer_summary` shape:
+  - `target_release_level`, `demo_ready`, `demo_ready_posture`, `beta_ready`,
+    `pilot_ready`, `release_ready`, `blocking_failure_count`,
+    `advisory_attention_count`, `top_advisory_gaps`, `recommended_action`, and
+    `readiness_warning`.
+- Decisions not added:
+  - no second readiness model, renamed release levels, changed score
+    thresholds, CI workflow changes, dashboard, frontend, app shell,
+    persistence, auth, queues, workers, production API, retries, circuit
+    breakers, fixture/cache/citation changes, prompt/schema changes, live
+    retrieval changes, notebook behavior changes, or dependency changes were
+    added.
+- Validation:
+  - `python -m pytest tests\test_release_scorecard.py -q` -> `15 passed in
+    1.83s`.
+  - `python -m pytest -q` -> `431 passed in 14.25s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `431 passed in 14.32s`; verify manifest written under
+    `runs/verify/2026-05-17_feat-issue-88-release-scorecard-reviewer-summary_20260517t033857z.json`;
+    release scorecard written under
+    `runs/release_scorecards/2026-05-16_feat-issue-88-release-scorecard-reviewer-summary_20260517t033857z.json`.
+  - `python -m war_room.release_scorecard --validate-latest --output-dir runs\release_scorecards`
+    -> passed against the new issue `#88` scorecard JSON.
+  - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3`
+    -> passed; status `completed`, `operator_status=degraded`,
+    `usable_outputs_available=true`, review reasons were present, degraded
+    stages included `citation_verify` and `memo_assembly`, failed stages were
+    empty, and usable outputs included weather, carrier, caselaw, citation
+    verification, memo draft, and audit bundle.
+  - `git diff --check` -> passed.

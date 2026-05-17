@@ -172,6 +172,7 @@ for exact fields.
 In the Markdown, inspect:
 
 - `Evidence bundle`
+- `Reviewer Summary`
 - `Dashboard Readiness Summary`
 - `Offline Preflight`
 - `Fixture Coverage`
@@ -190,6 +191,8 @@ In the JSON, inspect:
   the live preflight artifact.
 - `fixture_coverage` and `scenario_registry`: show current committed fixture
   and curated scenario coverage.
+- `reviewer_summary`: top-level reviewer convenience summary derived from the
+  existing `readiness_posture`, blocking/advisory counts, and advisory gaps.
 - `readiness_posture`: dashboard-oriented summary of blocking and advisory
   readiness.
 - `calibration_thresholds`: Demo-ready fixture thresholds, all tagged
@@ -202,6 +205,32 @@ In the JSON, inspect:
 The Markdown and JSON should tell the same story. If they diverge, use the JSON
 as the machine-readable artifact and treat the divergence as a documentation or
 rendering issue to fix before relying on the bundle.
+
+## How To Interpret `reviewer_summary`
+
+`reviewer_summary` is a concise convenience summary over the existing
+`readiness_posture` and rubric data. It is not a new readiness model and does
+not rename release levels or change scoring thresholds.
+
+Key fields:
+
+- `target_release_level`: the stated scorecard target, currently `Demo-ready`.
+- `demo_ready`: boolean convenience value derived from
+  `readiness_posture.demo_ready`.
+- `beta_ready`: currently `not claimed`.
+- `pilot_ready`: mirrors `readiness_posture.pilot_ready`, currently
+  `not claimed`.
+- `release_ready`: mirrors the target-scoped
+  `readiness_posture.release_ready` value.
+- `blocking_failure_count`: mirrors
+  `readiness_posture.blocking_metric_failed_count`.
+- `advisory_attention_count`: mirrors
+  `readiness_posture.advisory_attention_count`.
+- `top_advisory_gaps`: the leading advisory attention areas derived from
+  `readiness_posture.advisory_gaps`.
+- `recommended_action`: short human-review guidance for the current target.
+- `readiness_warning`: reminder not to claim Beta-ready, Pilot-ready, or
+  production readiness from the current Demo-ready bundle.
 
 ## How To Interpret `readiness_posture`
 

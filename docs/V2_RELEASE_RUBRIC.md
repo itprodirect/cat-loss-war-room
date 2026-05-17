@@ -1,6 +1,6 @@
 # V2 Quality Rubric and Release Scorecard
 
-Last updated: May 15, 2026
+Last updated: May 17, 2026
 
 This document is the first-pass output of issue `#27`.
 
@@ -376,6 +376,18 @@ Use this template for future release candidates.
 - [ ] Gate 2
 - [ ] Gate 3
 
+### Reviewer summary
+- Target release level:
+- Demo-ready posture:
+- Beta-ready posture:
+- Pilot-ready posture:
+- Release-ready posture:
+- Blocking failures:
+- Advisory attention areas:
+- Top advisory gaps:
+- Recommended reviewer action:
+- Readiness reminder:
+
 ### Dashboard readiness summary
 - Blocking metrics:
 - Advisory metrics needing attention:
@@ -417,7 +429,9 @@ What this does now:
 - runs the deterministic offline preflight and the supported `pytest -q` path
 - writes Markdown and JSON scorecard artifacts into `runs/release_scorecards/`
 - writes the underlying machine-readable offline preflight payload into `runs/preflight/`
+- writes a top-level `reviewer_summary` convenience summary over the existing `readiness_posture`, rubric dimensions, and blocking/advisory counts; this is not a new scoring framework
 - writes a machine-readable `readiness_posture` summary with blocking/advisory counts, demo-ready status, pilot-ready status, release-ready status, blocking failures, advisory gaps, and pilot-readiness gaps
+- renders a matching `Reviewer Summary` section before the deeper dashboard readiness details in the Markdown scorecard
 - tags gates, calibration thresholds, and scored dimensions with `readiness_category` fields so dashboard consumers do not have to infer blocking versus advisory behavior from display text
 - assigns a shared run id to the preflight and scorecard artifacts so repeated same-day verify runs do not overwrite each other
 - writes a verify-run manifest into `runs/verify/` that points to the exact preflight and scorecard artifacts for that run
