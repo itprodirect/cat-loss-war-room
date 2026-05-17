@@ -7,6 +7,11 @@ This document defines a narrow product-facing guided-intake spec for issue
 by describing the future intake surface that should precede run creation,
 without building a frontend app in this repo.
 
+Companion deterministic preview:
+[`examples/guided_intake_milton_preview.md`](examples/guided_intake_milton_preview.md)
+shows how the existing `milton_pinellas_citizens_ho3` fixture should appear in
+a future guided-intake surface before Research Plan Preview and Run Status.
+
 This is a UX/spec slice only. It does not add React, Next.js, a dashboard, app
 shell, auth, persistence, production API, document upload, OCR/extraction,
 notebook changes, dependencies, fixtures, cache changes, citation changes, or
@@ -263,6 +268,10 @@ existing Milton scenario used by the orchestration smoke path. When it does:
 
 Offline scenario selection is a demo shortcut, not a replacement for the
 guided intake contract.
+
+See
+[`examples/guided_intake_milton_preview.md`](examples/guided_intake_milton_preview.md)
+for the deterministic Milton fixture copy pattern.
 
 ## Handoff to Run Status
 
