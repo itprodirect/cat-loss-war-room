@@ -32,7 +32,7 @@ This is the short version. Clean, practical, no drama.
 - Issue [#5](https://github.com/itprodirect/cat-loss-war-room/issues/5) is complete and closed.
 - Issue [#22](https://github.com/itprodirect/cat-loss-war-room/issues/22) is complete and closed.
 - Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) are complete and closed as written source-of-truth specs.
-- Issue [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) is still open, but the local and CI release-evidence path now includes explicit demo-ready threshold calibration, blocking/advisory metric categories, run-scoped artifacts, verify manifests, and a stable latest pointer in `docs/V2_RELEASE_RUBRIC.md`.
+- Issue [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) is still open, but the local and CI release-evidence path now includes explicit demo-ready threshold calibration, blocking/advisory metric categories, run-scoped artifacts, verify manifests, a stable latest pointer in `docs/V2_RELEASE_RUBRIC.md`, and a reviewer guide in [ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md](ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md).
 - Issue [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) is complete. The closeout audit in [ISSUE_6_CLOSEOUT_AUDIT.md](ISSUE_6_CLOSEOUT_AUDIT.md) maps the contract/cache requirements to code, tests, scope boundaries, and validation evidence.
 - Issue [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) is complete. The closure sanity audit in [ISSUE_7_CLOSURE_SANITY_AUDIT.md](ISSUE_7_CLOSURE_SANITY_AUDIT.md) documents the PR #56 gap and the follow-up fix for `None` provider-response malformed-contract handling.
 - Issue [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) is complete and closed. The five-lane offline fixture baseline now covers Milton, Ida, Ian/Lee/Citizens HO-3, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3 with registry-backed offline-ready scenarios and golden snapshot validation.
@@ -78,7 +78,7 @@ Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#2
   - `#11` now has guided-intake and run-status UX/spec slices plus deterministic Milton guided-intake and degraded run-status previews; future implementation should still follow the workflow defined in `#23`.
   - `#12` should explicitly implement against the canonical schema defined in `#24`.
 - `#27` should now focus on CI and pilot operationalization of the calibrated rubric rather than inventing the first rubric draft.
-  - CI artifact emission, local verify evidence bundles, artifact integrity checks, and dashboard-ready blocking/advisory scorecard categories already landed; the remaining work is broader gate coverage and pilot evidence.
+  - CI artifact emission, local verify evidence bundles, artifact integrity checks, dashboard-ready blocking/advisory scorecard categories, and the human release-evidence review guide already landed; the remaining work is broader gate coverage and pilot evidence.
 
 ## Now (next 2-3 weeks)
 
@@ -125,6 +125,7 @@ Goal: trust, polish, and real-world adoption readiness.
 - Issue-by-issue map: [V2_ISSUE_MAP.md](V2_ISSUE_MAP.md)
 - Current project-health audit: [PROJECT_HEALTH_AUDIT_2026-03-10.md](PROJECT_HEALTH_AUDIT_2026-03-10.md)
 - Release rubric source of truth: [V2_RELEASE_RUBRIC.md](V2_RELEASE_RUBRIC.md)
+- Release-evidence reviewer guide: [ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md](ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md)
 - Issue `#8` readiness and closure audit: [ISSUE_8_READINESS_AUDIT.md](ISSUE_8_READINESS_AUDIT.md)
 - Workflow and IA source of truth: [V2_WORKFLOW_IA.md](V2_WORKFLOW_IA.md)
 - Evidence schema source of truth: [V2_EVIDENCE_SCHEMA.md](V2_EVIDENCE_SCHEMA.md)

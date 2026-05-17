@@ -400,6 +400,12 @@ The supported verification command now writes a paired scorecard artifact automa
 python -m war_room --verify
 ```
 
+Human reviewer guidance for this verify bundle lives in
+[`ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md`](ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md).
+That guide explains how to inspect `runs/verify/latest.json`, the run-specific
+verify manifest, preflight artifacts, and release-scorecard JSON/Markdown while
+preserving this rubric as the only readiness model.
+
 Optional candidate override for local release evidence:
 
 ```bash

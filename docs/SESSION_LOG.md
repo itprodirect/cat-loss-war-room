@@ -2508,3 +2508,44 @@ Status: Complete
     stages included `citation_verify` and `memo_assembly`, failed stages were
     empty, and usable outputs included weather, carrier, caselaw, citation
     verification, memo draft, and audit bundle.
+
+## Session 122 - Issue 87 Release-Evidence Reviewer Guide
+Date: 2026-05-17
+Status: Complete
+
+- Completed issue `#87` as a tiny docs-only reviewer guide for the existing
+  issue `#27` release-evidence bundle produced by
+  `python -m war_room --verify`.
+- What changed:
+  - Added `docs/ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md`.
+  - The guide explains the current `Demo-ready` target, the files written under
+    `runs/verify/`, `runs/preflight/`, and `runs/release_scorecards/`, how to
+    read `runs/verify/latest.json`, the run-specific verify manifest, the
+    preflight artifact, and the release-scorecard JSON and Markdown.
+  - The guide explains `readiness_posture`, blocking versus advisory
+    categories, why `Demo-ready` can pass while `Beta-ready` and `Pilot-ready`
+    remain not claimed, the narrated-demo reviewer checklist, and what would
+    need to change before future Beta-ready or Pilot-ready claims.
+  - Cross-linked the guide from `docs/HANDOFF.md`, `docs/ROADMAP.md`,
+    `docs/V2_RELEASE_RUBRIC.md`, and this heartbeat/session-log current-state
+    surface.
+- Decisions not added:
+  - no second readiness model, renamed release levels, new scoring categories,
+    runtime behavior, CI workflow, dashboard, frontend, app shell, persistence,
+    auth, queues, workers, production API, retries, circuit breakers, fixtures,
+    cache samples, citation behavior, prompts, schemas, live retrieval,
+    notebook behavior, or dependency changes were added.
+  - `release-ready` remains scoped to the stated target level, currently
+    `Demo-ready`; Pilot-ready is still not claimed by the current repo.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `430 passed in 10.23s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `430 passed in 10.28s`; verify manifest written under
+    `runs/verify/2026-05-17_main_20260517t030301z.json`.
+  - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3`
+    -> passed; status `completed`, `operator_status=degraded`,
+    `usable_outputs_available=true`, review reasons were present, degraded
+    stages included `citation_verify` and `memo_assembly`, failed stages were
+    empty, and usable outputs included weather, carrier, caselaw, citation
+    verification, memo draft, and audit bundle.
