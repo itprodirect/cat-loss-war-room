@@ -2464,3 +2464,47 @@ Status: Complete
     stages included `citation_verify` and `memo_assembly`, failed stages were
     empty, and usable outputs included weather, carrier, caselaw, citation
     verification, memo draft, and audit bundle.
+
+## Session 121 - Issue 85 Milton Guided-Intake Preview
+Date: 2026-05-17
+Status: Complete
+
+- Completed issue `#85` as a tiny docs-only Milton guided-intake preview that
+  complements the existing issue `#11` guided-intake UX spec, run-status UX
+  spec, and Milton degraded run-status preview.
+- What changed:
+  - Added `docs/examples/guided_intake_milton_preview.md` for the existing
+    `milton_pinellas_citizens_ho3` scenario.
+  - The preview shows source scenario and purpose, matter/intake summary card
+    copy, required and optional field tables, validation and readiness state,
+    warnings and review notes, demo/offline fixture labels, handoff to Research
+    Plan Preview, handoff from Research Plan Preview to Run Status, and
+    collapsed technical details.
+  - Cross-linked the preview from `docs/ISSUE_11_GUIDED_INTAKE_UX_SPEC.md`,
+    `docs/HANDOFF.md`, `docs/ROADMAP.md`, and this heartbeat/session-log
+    current-state surface.
+- Decisions added:
+  - The preview uses "ready to start research" for the Milton fixture and keeps
+    legal advice, citation verification, and human-review reminders visible.
+  - Optional UI-only context remains labeled as unsupported by the current
+    strict runtime intake payload until a later contract expands it.
+- Decisions not added:
+  - no frontend implementation, React, Next.js, dashboard, app shell, auth,
+    persistence, production API, queues, workers, retries, circuit breakers,
+    notebook behavior, fixtures, cache samples, citation behavior, prompts,
+    schemas, live retrieval, runtime behavior, or dependency changes were
+    added.
+  - `apps/`, `workers/`, and `packages/` remain future-boundary placeholders,
+    not active runtime surfaces.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `430 passed in 20.68s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `430 passed in 35.08s`; verify manifest written under
+    `runs/verify/2026-05-17_main_20260517t023107z.json`.
+  - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3`
+    -> passed; status `completed`, `operator_status=degraded`,
+    `usable_outputs_available=true`, review reasons were present, degraded
+    stages included `citation_verify` and `memo_assembly`, failed stages were
+    empty, and usable outputs included weather, carrier, caselaw, citation
+    verification, memo draft, and audit bundle.
