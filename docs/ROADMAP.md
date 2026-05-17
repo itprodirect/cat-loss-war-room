@@ -1,6 +1,6 @@
 # Roadmap (Simple, Current)
 
-Last updated: May 16, 2026
+Last updated: May 17, 2026
 
 This is the short version. Clean, practical, no drama.
 
@@ -23,7 +23,7 @@ This is the short version. Clean, practical, no drama.
 - The Export History read model now has the same typed `v2alpha1` contract path for export artifact rows, delivery state, disclaimer state, and audit references.
 - The Run Timeline read model now has a typed `v2alpha1` envelope over canonical `Run` and `RunStage` records.
 - A first narrow `#10` orchestration slice now defines shared run states, stage statuses, transition validation, and stage-to-run rollup helpers in `src/war_room/orchestration.py`; issue `#73` adds typed start-run and get-run-status API boundary contracts in `src/war_room/orchestration_api_contracts.py`; the first in-process offline service slice now lives in `src/war_room/orchestration_service.py`; the operator-facing status presentation layer lives in `src/war_room/orchestration_status_view.py`; issue `#78` adds a dependency-free thin transport/request-handler wrapper in `src/war_room/orchestration_transport.py`; the dev-only standard-library HTTP adapter lives in `src/war_room/orchestration_http.py`; production HTTP/API routing, persistence, queues, auth, dashboards, and UI remain future work.
-- A first narrow issue `#11` run-status UX/spec slice now lives in `docs/ISSUE_11_RUN_STATUS_UX_SPEC.md`; it defines how a future user-facing status screen should consume the existing `status_presentation` payload without adding a frontend app. A deterministic Milton degraded preview now lives in `docs/examples/run_status_milton_degraded.md`.
+- First narrow issue `#11` UX/spec slices now live in `docs/ISSUE_11_RUN_STATUS_UX_SPEC.md` and `docs/ISSUE_11_GUIDED_INTAKE_UX_SPEC.md`; they define how a future guided intake surface should collect and validate pre-run matter facts, then hand off to a run-status screen that consumes the existing `status_presentation` payload without adding a frontend app. A deterministic Milton degraded preview now lives in `docs/examples/run_status_milton_degraded.md`.
 - The committed five-scenario offline fixture lane now has a deterministic golden snapshot check for source mix, case counts, citation summaries, output structure, and coverage metadata.
 - The curated scenario registry now has five offline-ready fixture-backed benchmarks: Milton/Pinellas/Citizens, Ian/Lee/Citizens HO-3, Ida/Orleans/Lloyd's, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3.
 - The fixture-seeding process now defines when a scenario can be promoted to offline-ready status and tests guard against fixture-key or bundle drift.
@@ -38,7 +38,7 @@ This is the short version. Clean, practical, no drama.
 - Issue [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) is complete and closed. The five-lane offline fixture baseline now covers Milton, Ida, Ian/Lee/Citizens HO-3, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3 with registry-backed offline-ready scenarios and golden snapshot validation.
 - Issue [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) is complete. The closeout audit in [ISSUE_9_CLOSEOUT_AUDIT.md](ISSUE_9_CLOSEOUT_AUDIT.md) maps the expanded CI quality-gate requirements to workflow jobs, gate categories, tests, artifact evidence, and offline validation.
 - Issue [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) has a first run-state contract slice documented in [ISSUE_10_RUN_STATE_CONTRACT.md](ISSUE_10_RUN_STATE_CONTRACT.md), an issue `#73` API boundary contract slice documented in [ISSUE_10_API_CONTRACTS.md](ISSUE_10_API_CONTRACTS.md), a first in-process offline service slice documented in [ISSUE_10_SERVICE_SLICE.md](ISSUE_10_SERVICE_SLICE.md), an operator-facing status presentation layer documented in [ISSUE_10_STATUS_PRESENTATION.md](ISSUE_10_STATUS_PRESENTATION.md), an issue `#78` thin transport wrapper documented in [ISSUE_78_THIN_TRANSPORT_WRAPPER.md](ISSUE_78_THIN_TRANSPORT_WRAPPER.md), and a dev-only standard-library HTTP adapter documented in [ISSUE_10_DEV_HTTP_WRAPPER.md](ISSUE_10_DEV_HTTP_WRAPPER.md). Production HTTP/API routing, persistence, retries, and circuit-breaker behavior are still pending.
-- Issue [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) has a first run-status UX/spec slice documented in [ISSUE_11_RUN_STATUS_UX_SPEC.md](ISSUE_11_RUN_STATUS_UX_SPEC.md), plus a deterministic Milton degraded preview in [examples/run_status_milton_degraded.md](examples/run_status_milton_degraded.md). Guided web intake, frontend implementation, dashboards, auth, persistence, and production API work remain pending.
+- Issue [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) has first UX/spec slices documented in [ISSUE_11_GUIDED_INTAKE_UX_SPEC.md](ISSUE_11_GUIDED_INTAKE_UX_SPEC.md) and [ISSUE_11_RUN_STATUS_UX_SPEC.md](ISSUE_11_RUN_STATUS_UX_SPEC.md), plus a deterministic Milton degraded preview in [examples/run_status_milton_degraded.md](examples/run_status_milton_degraded.md). Frontend implementation, dashboards, auth, persistence, and production API work remain pending.
 - Placeholder directories under `apps/`, `packages/`, and `workers/` are planned V2 boundaries only. The active runtime remains the notebook plus `src/war_room/`.
 
 ## Delivery layers
@@ -75,7 +75,7 @@ Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#2
   - `#23` and `#24` should be treated as completed definition work; downstream implementation belongs elsewhere.
   - `#6` is complete and should stay scoped to closeout follow-through rather than new runtime work.
   - `#9` is complete for the current CI quality-gate acceptance criteria; future security, pilot, and optional fixture-breadth work belongs in `#18`, `#19`, `#27`, or a newly scoped follow-up rather than reopening `#8`.
-  - `#11` now has a run-status UX/spec slice and deterministic Milton degraded preview over the existing orchestration `status_presentation` payload; future implementation should still follow the workflow defined in `#23`.
+  - `#11` now has guided-intake and run-status UX/spec slices plus a deterministic Milton degraded preview over the existing orchestration `status_presentation` payload; future implementation should still follow the workflow defined in `#23`.
   - `#12` should explicitly implement against the canonical schema defined in `#24`.
 - `#27` should now focus on CI and pilot operationalization of the calibrated rubric rather than inventing the first rubric draft.
   - CI artifact emission, local verify evidence bundles, artifact integrity checks, and dashboard-ready blocking/advisory scorecard categories already landed; the remaining work is broader gate coverage and pilot evidence.
@@ -128,5 +128,6 @@ Goal: trust, polish, and real-world adoption readiness.
 - Issue `#8` readiness and closure audit: [ISSUE_8_READINESS_AUDIT.md](ISSUE_8_READINESS_AUDIT.md)
 - Workflow and IA source of truth: [V2_WORKFLOW_IA.md](V2_WORKFLOW_IA.md)
 - Evidence schema source of truth: [V2_EVIDENCE_SCHEMA.md](V2_EVIDENCE_SCHEMA.md)
+- Guided-intake UX/spec source for issue `#11`: [ISSUE_11_GUIDED_INTAKE_UX_SPEC.md](ISSUE_11_GUIDED_INTAKE_UX_SPEC.md)
 - Run-status UX/spec source for issue `#11`: [ISSUE_11_RUN_STATUS_UX_SPEC.md](ISSUE_11_RUN_STATUS_UX_SPEC.md)
 - Run-status preview example for issue `#11`: [examples/run_status_milton_degraded.md](examples/run_status_milton_degraded.md)

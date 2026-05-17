@@ -11,6 +11,11 @@ Companion deterministic preview: [`examples/run_status_milton_degraded.md`](exam
 shows how a future product surface should present the current Milton degraded
 `status_presentation` payload without adding a frontend.
 
+Companion guided-intake spec:
+[`ISSUE_11_GUIDED_INTAKE_UX_SPEC.md`](ISSUE_11_GUIDED_INTAKE_UX_SPEC.md)
+defines the future intake surface that should precede run creation and hand
+off into this run-status view.
+
 This is a UX/spec/read-model slice only. It does not add React, Next.js, a
 dashboard, auth, persistence, a production API, notebook changes, dependencies,
 fixtures, cache changes, citation changes, or live retrieval changes.
