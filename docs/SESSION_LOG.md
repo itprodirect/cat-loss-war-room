@@ -2414,3 +2414,53 @@ Status: Complete
     stages included `citation_verify` and `memo_assembly`, failed stages were
     empty, and usable outputs included weather, carrier, caselaw, citation
     verification, memo draft, and audit bundle.
+
+## Session 120 - Issue 11 Guided Intake UX Spec
+Date: 2026-05-17
+Status: Complete
+
+- Completed post-merge hygiene from synced `main` and landed a narrow issue
+  `#11` guided-intake UX/spec slice without building a frontend.
+- Post-merge hygiene findings:
+  - `main` was already fast-forwarded to merge commit `173f9b2`.
+  - Worktree was clean before the new branch was created.
+  - `docs/heartbeat.md` still referenced the merged
+    `feat/issue-11-run-status-preview` branch and run-status preview PR as the
+    next task; this was clear drift and was corrected.
+- What changed:
+  - Added `docs/ISSUE_11_GUIDED_INTAKE_UX_SPEC.md` defining guided-intake
+    purpose, user types, intake flow sections, required vs optional UX fields,
+    validation/error-message rules, demo/offline scenario behavior, handoff to
+    run status, copy rules, non-goals, and acceptance checks.
+  - Cross-linked the guided-intake spec from
+    `docs/ISSUE_11_RUN_STATUS_UX_SPEC.md`.
+  - Synced `docs/HANDOFF.md`, `docs/ROADMAP.md`, `docs/heartbeat.md`, and this
+    session log to the new documentation-only issue `#11` slice.
+- Decisions added:
+  - At the UX level, `posture` should be explicitly confirmed before run start
+    even though the current backend can default missing posture to `denial`.
+  - Optional UX context beyond the current strict runtime payload should not be
+    sent to the current intake validator until a later contract expands the
+    payload.
+  - Offline scenario selection is a labeled demo shortcut, not a replacement
+    for guided intake and not evidence of live claim intake or production
+    persistence.
+  - Guided intake should hand off to the existing orchestration run-status
+    contracts and `status_presentation`, not a parallel status system.
+- Decisions not added:
+  - no frontend implementation, React, Next.js, dashboard, app shell, auth,
+    persistence, production API, upload flow, OCR/extraction, notebook changes,
+    dependencies, fixture/cache/citation/live retrieval changes, or runtime
+    behavior changes were added.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `430 passed in 14.04s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `430 passed in 17.26s`; verify manifest written under
+    `runs/verify/2026-05-17_feat-issue-11-guided-intake-spec_20260517t015455z.json`.
+  - `python -m war_room.orchestration_service --smoke --scenario milton_pinellas_citizens_ho3`
+    -> passed; status `completed`, `operator_status=degraded`,
+    `usable_outputs_available=true`, review reasons were present, degraded
+    stages included `citation_verify` and `memo_assembly`, failed stages were
+    empty, and usable outputs included weather, carrier, caselaw, citation
+    verification, memo draft, and audit bundle.
