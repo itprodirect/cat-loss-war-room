@@ -1,13 +1,13 @@
 # Roadmap (Simple, Current)
 
-Last updated: May 17, 2026
+Last updated: May 18, 2026
 
 This is the short version. Clean, practical, no drama.
 
 ## Where we are now
 
 - Demo pipeline is stable.
-- 430 tests are passing on the supported verify path.
+- 432 tests are passing on the supported verify path.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job with golden snapshot validation, an offline e2e demo gate, offline security and dependency hygiene gates, and the `exa-py` compatibility matrix.
 - CI now also emits categorized quality-gate artifacts for unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene failures.
 - CI emits and validates a release-scorecard artifact from the calibrated `#27` workflow, including machine-readable blocking/advisory readiness categories for dashboard consumers.
@@ -32,7 +32,7 @@ This is the short version. Clean, practical, no drama.
 - Issue [#5](https://github.com/itprodirect/cat-loss-war-room/issues/5) is complete and closed.
 - Issue [#22](https://github.com/itprodirect/cat-loss-war-room/issues/22) is complete and closed.
 - Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) are complete and closed as written source-of-truth specs.
-- Issue [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) is still open, but the local and CI release-evidence path now includes explicit demo-ready threshold calibration, blocking/advisory metric categories, run-scoped artifacts, verify manifests, a stable latest pointer in `docs/V2_RELEASE_RUBRIC.md`, and a reviewer guide in [ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md](ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md).
+- Issue [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) is still open, but the local and CI release-evidence path now includes explicit demo-ready threshold calibration, blocking/advisory metric categories, run-scoped artifacts, verify manifests, a stable latest pointer in `docs/V2_RELEASE_RUBRIC.md`, a reviewer guide in [ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md](ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md), and the issue `#88` top-level `reviewer_summary` convenience layer derived from the existing readiness posture.
 - Issue [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) is complete. The closeout audit in [ISSUE_6_CLOSEOUT_AUDIT.md](ISSUE_6_CLOSEOUT_AUDIT.md) maps the contract/cache requirements to code, tests, scope boundaries, and validation evidence.
 - Issue [#7](https://github.com/itprodirect/cat-loss-war-room/issues/7) is complete. The closure sanity audit in [ISSUE_7_CLOSURE_SANITY_AUDIT.md](ISSUE_7_CLOSURE_SANITY_AUDIT.md) documents the PR #56 gap and the follow-up fix for `None` provider-response malformed-contract handling.
 - Issue [#8](https://github.com/itprodirect/cat-loss-war-room/issues/8) is complete and closed. The five-lane offline fixture baseline now covers Milton, Ida, Ian/Lee/Citizens HO-3, Texas hail/Tarrant/Allstate HO-B, and Texas hail/Tarrant/Allstate DP-3 with registry-backed offline-ready scenarios and golden snapshot validation.
@@ -55,8 +55,8 @@ Issue [#3](https://github.com/itprodirect/cat-loss-war-room/issues/3) remains th
 Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) are not ranked here because their written source-of-truth docs already landed and those definition issues are closed. Their downstream implementation work lives in `#10`, `#11`, and `#12`.
 
 1. [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) Broaden CI and pilot operationalization of the calibrated release rubric
-2. [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) API orchestrator with graceful degradation
-3. [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) Guided web intake + run-status UX
+2. [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) Remaining orchestration/API work beyond the landed contracts/service/status/transport/dev-HTTP slices
+3. [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) Future guided-intake/run-status contract seam and UI implementation beyond the landed specs/previews
 4. [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Evidence normalization + provenance implementation
 5. [#13](https://github.com/itprodirect/cat-loss-war-room/issues/13) Caselaw quality v2
 6. [#25](https://github.com/itprodirect/cat-loss-war-room/issues/25) AI guardrails + eval harness
@@ -90,8 +90,8 @@ Goal: finish the remaining definition/foundation work so V2 implementation start
 
 Goal: build the first true product workflow around the research engine.
 
-- [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) API orchestrator with graceful degradation
-- [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) Guided web intake + run status UX
+- [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) Remaining orchestration/API work beyond the landed contracts/service/status/transport/dev-HTTP slices
+- [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) Future guided-intake/run-status contract seam and UI implementation beyond the landed specs/previews
 - [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Evidence normalization + provenance
 - [#13](https://github.com/itprodirect/cat-loss-war-room/issues/13) Caselaw quality v2
 - [#25](https://github.com/itprodirect/cat-loss-war-room/issues/25) AI guardrails + eval harness
