@@ -78,7 +78,7 @@ Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#2
   - `#11` now has guided-intake and run-status UX/spec slices plus deterministic Milton guided-intake and degraded run-status previews; future implementation should still follow the workflow defined in `#23`.
   - `#12` should explicitly implement against the canonical schema defined in `#24`.
 - `#27` should now focus on CI and pilot operationalization of the calibrated rubric rather than inventing the first rubric draft.
-  - CI artifact emission, local verify evidence bundles, artifact integrity checks, dashboard-ready blocking/advisory scorecard categories, and the human release-evidence review guide already landed; the remaining work is broader gate coverage and pilot evidence.
+  - CI artifact emission, local verify evidence bundles, artifact integrity checks, dashboard-ready blocking/advisory scorecard categories, the top-level `reviewer_summary` convenience summary, and the human release-evidence review guide already landed; the remaining work is broader gate coverage and pilot evidence.
 
 ## Now (next 2-3 weeks)
 

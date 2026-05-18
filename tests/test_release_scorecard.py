@@ -115,6 +115,22 @@ def test_build_demo_release_scorecard_uses_fixture_calibration():
     assert scorecard.readiness_posture.blocking_metric_failed_count == 0
     assert scorecard.readiness_posture.advisory_attention_count == 3
     assert scorecard.readiness_posture.blocking_failures == []
+    assert scorecard.reviewer_summary.target_release_level == scorecard.readiness_posture.target_release_level
+    assert scorecard.reviewer_summary.demo_ready is True
+    assert scorecard.reviewer_summary.demo_ready_posture == scorecard.readiness_posture.demo_ready
+    assert scorecard.reviewer_summary.beta_ready == "not claimed"
+    assert scorecard.reviewer_summary.pilot_ready == scorecard.readiness_posture.pilot_ready
+    assert scorecard.reviewer_summary.release_ready == scorecard.readiness_posture.release_ready
+    assert scorecard.reviewer_summary.blocking_failure_count == 0
+    assert scorecard.reviewer_summary.advisory_attention_count == 3
+    assert scorecard.reviewer_summary.top_advisory_gaps == [
+        "Workflow Usability",
+        "Operational Readiness",
+        "Security and Governance",
+    ]
+    assert "Acceptable for narrated demo review" in scorecard.reviewer_summary.recommended_action
+    assert "do not claim Beta-ready, Pilot-ready, or production readiness" in scorecard.reviewer_summary.recommended_action
+    assert "current Demo-ready bundle" in scorecard.reviewer_summary.readiness_warning
     assert all(threshold.readiness_category == "blocking" for threshold in scorecard.calibration_thresholds)
     assert all(gate.readiness_category == "blocking" for gate in scorecard.must_pass_gates)
     assert all(dimension.readiness_category == "advisory" for dimension in scorecard.dimensions)
@@ -146,6 +162,11 @@ def test_build_demo_release_scorecard_uses_fixture_calibration():
     assert "Run id: 20260311T101530Z" in markdown
     assert "codex/local" in markdown
     assert "Preflight artifact: runs/preflight/2026-03-11_codex-local_20260311t101530z.json" in markdown
+    assert "## Reviewer Summary" in markdown
+    assert "Demo-ready: Yes (passes)" in markdown
+    assert "Beta-ready posture: not claimed" in markdown
+    assert "Top advisory gaps:" in markdown
+    assert "Recommended reviewer action: Acceptable for narrated demo review" in markdown
     assert "## Dashboard Readiness Summary" in markdown
     assert "Demo-ready posture: passes" in markdown
     assert "Pilot-ready posture: not claimed" in markdown
@@ -195,6 +216,10 @@ def test_write_release_scorecard_artifacts_writes_json_and_markdown(tmp_path: Pa
     assert '"run_id": "20260311T101530Z"' in payload
     assert '"candidate": "Feature Branch 27"' in payload
     assert '"target_release_level": "Demo-ready"' in payload
+    assert '"reviewer_summary"' in payload
+    assert '"blocking_failure_count": 0' in payload
+    assert '"top_advisory_gaps"' in payload
+    assert '"recommended_action"' in payload
     assert '"readiness_posture"' in payload
     assert '"readiness_category": "blocking"' in payload
     assert '"readiness_category": "advisory"' in payload
@@ -219,6 +244,59 @@ def test_validate_release_scorecard_payload_accepts_demo_ready_artifact():
     assert validate_release_scorecard_payload(asdict(scorecard)) == []
 
 
+def test_reviewer_summary_is_derived_from_readiness_posture():
+    summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+    scorecard = build_demo_release_scorecard(
+        run_id="20260418T120000Z",
+        candidate="codex/local",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+    payload = asdict(scorecard)
+    reviewer_summary = payload["reviewer_summary"]
+    readiness_posture = payload["readiness_posture"]
+
+    assert reviewer_summary["target_release_level"] == readiness_posture["target_release_level"]
+    assert reviewer_summary["demo_ready"] is True
+    assert reviewer_summary["demo_ready_posture"] == readiness_posture["demo_ready"]
+    assert reviewer_summary["pilot_ready"] == readiness_posture["pilot_ready"]
+    assert reviewer_summary["release_ready"] == readiness_posture["release_ready"]
+    assert reviewer_summary["blocking_failure_count"] == readiness_posture["blocking_metric_failed_count"]
+    assert reviewer_summary["advisory_attention_count"] == readiness_posture["advisory_attention_count"]
+    assert reviewer_summary["top_advisory_gaps"] == [
+        gap.split(":", 1)[0] for gap in readiness_posture["advisory_gaps"][:3]
+    ]
+
+    payload["reviewer_summary"]["blocking_failure_count"] = 99
+    failures = validate_release_scorecard_payload(payload)
+
+    assert any("blocking_failure_count" in failure for failure in failures)
+
+
+def test_reviewer_summary_blocks_no_ship_decision_without_blocking_metric_failures():
+    summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+    scorecard = build_demo_release_scorecard(
+        run_id="20260418T120000Z",
+        candidate="codex/local",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        decision="No ship",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+
+    assert scorecard.readiness_posture.blocking_metric_failed_count == 0
+    assert scorecard.readiness_posture.release_ready == "blocked"
+    assert scorecard.reviewer_summary.release_ready == "blocked"
+    assert "Acceptable for narrated demo review" not in scorecard.reviewer_summary.recommended_action
+    assert "Do not accept for narrated demo review" in scorecard.reviewer_summary.recommended_action
+    assert "target release posture is blocked" in scorecard.reviewer_summary.recommended_action
+
+
 def test_validate_release_scorecard_payload_reports_actionable_failures():
     payload = {
         "calibration_thresholds": [
@@ -233,6 +311,7 @@ def test_validate_release_scorecard_payload_reports_actionable_failures():
     failures = validate_release_scorecard_payload(payload)
 
     assert any("dashboard readiness posture" in failure for failure in failures)
+    assert any("reviewer summary" in failure for failure in failures)
     assert any("Fixture scenario count" in failure for failure in failures)
     assert any("Committed fixture coverage meets demo-ready threshold" in failure for failure in failures)
     assert any("No ship" in failure for failure in failures)
@@ -329,6 +408,10 @@ def test_build_demo_release_scorecard_marks_failed_verification_gate():
     assert scorecard.readiness_posture.blocking_metric_failed_count == 2
     assert "Supported test path is green" in scorecard.readiness_posture.blocking_failures
     assert any("Blocked quality dimensions" in failure for failure in scorecard.readiness_posture.blocking_failures)
+    assert scorecard.reviewer_summary.demo_ready is False
+    assert scorecard.reviewer_summary.demo_ready_posture == "blocked"
+    assert scorecard.reviewer_summary.blocking_failure_count == 2
+    assert "Do not accept for narrated demo review" in scorecard.reviewer_summary.recommended_action
 
 
 def test_summarize_preflight_report_captures_failed_scenarios():

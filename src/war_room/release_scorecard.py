@@ -144,6 +144,23 @@ class PreflightSummary:
 
 
 @dataclass(frozen=True)
+class ReviewerSummary:
+    """Concise reviewer-facing summary derived from readiness posture."""
+
+    target_release_level: str
+    demo_ready: bool
+    demo_ready_posture: str
+    beta_ready: str
+    pilot_ready: str
+    release_ready: str
+    blocking_failure_count: int
+    advisory_attention_count: int
+    top_advisory_gaps: list[str]
+    recommended_action: str
+    readiness_warning: str
+
+
+@dataclass(frozen=True)
 class ReleaseScorecard:
     """Structured release scorecard artifact."""
 
@@ -157,6 +174,7 @@ class ReleaseScorecard:
     preflight_summary: PreflightSummary | None
     fixture_coverage: FixtureCoverageSummary | None
     scenario_registry: ScenarioRegistrySummary | None
+    reviewer_summary: ReviewerSummary
     readiness_posture: ReadinessPostureSummary
     calibration_thresholds: list[CalibrationThreshold]
     dimensions: list[ScorecardDimension]
@@ -482,6 +500,7 @@ def build_demo_release_scorecard(
         dimensions=dimensions,
         must_pass_gates=must_pass_gates,
     )
+    reviewer_summary = _build_reviewer_summary(readiness_posture)
 
     return ReleaseScorecard(
         run_id=resolved_run_id,
@@ -494,6 +513,7 @@ def build_demo_release_scorecard(
         preflight_summary=preflight_summary,
         fixture_coverage=fixture_coverage,
         scenario_registry=scenario_registry,
+        reviewer_summary=reviewer_summary,
         readiness_posture=readiness_posture,
         calibration_thresholds=calibration_thresholds,
         dimensions=dimensions,
@@ -523,6 +543,30 @@ def render_release_scorecard_markdown(scorecard: ReleaseScorecard) -> str:
 
     lines.extend(
         [
+            "",
+            "## Reviewer Summary",
+            f"- Target release level: {scorecard.reviewer_summary.target_release_level}",
+            (
+                f"- Demo-ready: {'Yes' if scorecard.reviewer_summary.demo_ready else 'No'} "
+                f"({scorecard.reviewer_summary.demo_ready_posture})"
+            ),
+            f"- Beta-ready posture: {scorecard.reviewer_summary.beta_ready}",
+            f"- Pilot-ready posture: {scorecard.reviewer_summary.pilot_ready}",
+            f"- Release-ready posture: {scorecard.reviewer_summary.release_ready}",
+            f"- Blocking failures: {scorecard.reviewer_summary.blocking_failure_count}",
+            f"- Advisory attention areas: {scorecard.reviewer_summary.advisory_attention_count}",
+            "- Top advisory gaps:",
+        ]
+    )
+    if scorecard.reviewer_summary.top_advisory_gaps:
+        for gap in scorecard.reviewer_summary.top_advisory_gaps:
+            lines.append(f"  - {gap}")
+    else:
+        lines.append("  - None")
+    lines.extend(
+        [
+            f"- Recommended reviewer action: {scorecard.reviewer_summary.recommended_action}",
+            f"- Readiness reminder: {scorecard.reviewer_summary.readiness_warning}",
             "",
             "## Dashboard Readiness Summary",
             f"- Target release level: {scorecard.readiness_posture.target_release_level}",
@@ -694,6 +738,8 @@ def validate_release_scorecard_payload(payload: dict) -> list[str]:
         for required_field in ("demo_ready", "pilot_ready", "release_ready"):
             if not readiness_posture.get(required_field):
                 failures.append(f"Release scorecard readiness posture is missing {required_field}.")
+
+    failures.extend(_validate_reviewer_summary(payload.get("reviewer_summary") or {}, readiness_posture))
 
     thresholds = payload.get("calibration_thresholds") or []
     if not thresholds:
@@ -1008,6 +1054,92 @@ def _build_readiness_posture(
         advisory_gaps=advisory_gaps,
         pilot_readiness_gaps=pilot_readiness_gaps,
     )
+
+
+def _build_reviewer_summary(readiness_posture: ReadinessPostureSummary) -> ReviewerSummary:
+    if readiness_posture.blocking_metric_failed_count:
+        recommended_action = "Do not accept for narrated demo review until blocking failures are resolved."
+    elif readiness_posture.release_ready == "blocked":
+        recommended_action = "Do not accept for narrated demo review while the target release posture is blocked."
+    else:
+        recommended_action = (
+            "Acceptable for narrated demo review; do not claim Beta-ready, Pilot-ready, or production readiness."
+        )
+    return ReviewerSummary(
+        target_release_level=readiness_posture.target_release_level,
+        demo_ready=readiness_posture.demo_ready == "passes",
+        demo_ready_posture=readiness_posture.demo_ready,
+        beta_ready="not claimed",
+        pilot_ready=readiness_posture.pilot_ready,
+        release_ready=readiness_posture.release_ready,
+        blocking_failure_count=readiness_posture.blocking_metric_failed_count,
+        advisory_attention_count=readiness_posture.advisory_attention_count,
+        top_advisory_gaps=_top_advisory_gap_names(readiness_posture.advisory_gaps),
+        recommended_action=recommended_action,
+        readiness_warning=(
+            "Do not claim Beta-ready, Pilot-ready, or production readiness from the current "
+            f"{readiness_posture.target_release_level} bundle."
+        ),
+    )
+
+
+def _top_advisory_gap_names(advisory_gaps: list[str], limit: int = 3) -> list[str]:
+    return [gap.split(":", 1)[0] for gap in advisory_gaps[:limit]]
+
+
+def _validate_reviewer_summary(reviewer_summary: dict, readiness_posture: dict) -> list[str]:
+    if not reviewer_summary:
+        return ["Release scorecard artifact is missing reviewer summary."]
+
+    failures: list[str] = []
+    required_fields = (
+        "target_release_level",
+        "demo_ready",
+        "demo_ready_posture",
+        "beta_ready",
+        "pilot_ready",
+        "release_ready",
+        "blocking_failure_count",
+        "advisory_attention_count",
+        "top_advisory_gaps",
+        "recommended_action",
+        "readiness_warning",
+    )
+    for field_name in required_fields:
+        if field_name not in reviewer_summary:
+            failures.append(f"Release scorecard reviewer summary is missing {field_name}.")
+
+    if not readiness_posture:
+        return failures
+
+    expected_pairs = (
+        ("target_release_level", readiness_posture.get("target_release_level")),
+        ("demo_ready_posture", readiness_posture.get("demo_ready")),
+        ("pilot_ready", readiness_posture.get("pilot_ready")),
+        ("release_ready", readiness_posture.get("release_ready")),
+        ("blocking_failure_count", readiness_posture.get("blocking_metric_failed_count")),
+        ("advisory_attention_count", readiness_posture.get("advisory_attention_count")),
+    )
+    for field_name, expected_value in expected_pairs:
+        if field_name in reviewer_summary and reviewer_summary.get(field_name) != expected_value:
+            failures.append(f"Release scorecard reviewer summary does not match readiness posture {field_name}.")
+
+    if "demo_ready" in reviewer_summary:
+        expected_demo_ready = readiness_posture.get("demo_ready") == "passes"
+        if reviewer_summary.get("demo_ready") is not expected_demo_ready:
+            failures.append("Release scorecard reviewer summary does not match readiness posture demo_ready.")
+
+    if "top_advisory_gaps" in reviewer_summary and not isinstance(
+        reviewer_summary.get("top_advisory_gaps"),
+        list,
+    ):
+        failures.append("Release scorecard reviewer summary top_advisory_gaps must be a list.")
+
+    for field_name in ("recommended_action", "readiness_warning"):
+        if field_name in reviewer_summary and not reviewer_summary.get(field_name):
+            failures.append(f"Release scorecard reviewer summary is missing {field_name}.")
+
+    return failures
 
 
 def _verification_summary_passed(summary: str) -> bool:
