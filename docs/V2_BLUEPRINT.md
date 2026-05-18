@@ -25,9 +25,11 @@ Do **not** rebuild this as a distributed microservice maze. The right V2 is a di
 
 ## 2) Current-State Scorecard
 
+Current-state note (May 18, 2026): this blueprint remains the historical V2 planning document. The repo has moved beyond the original March snapshot: the supported test baseline is now `432` passing tests, issues `#6` through `#9`, `#22`, `#23`, and `#24` are complete, the issue `#10` contract/service/status/transport/dev-HTTP slices have landed, issue `#11` has specs/previews only, and issue `#27` now includes release-evidence artifacts, the reviewer guide, and the issue `#88` `reviewer_summary` convenience layer. The active runtime is still the notebook plus `src/war_room/`; no self-serve web UI, production API, auth, persistence, queues, workers, or production app exists.
+
 | Dimension | Verdict | Why |
 |---|---|---|
-| Demo reliability | Strong | Offline cache lane, committed fixtures, and `168` passing tests make the demo dependable. |
+| Demo reliability | Strong | Offline cache lane, committed fixtures, release-evidence checks, and `432` passing tests make the narrated demo baseline dependable. |
 | End-user usability | Weak | The primary interface is still Jupyter plus environment setup and kernel selection. |
 | Evidence quality | Mixed | Good source gathering intent, but normalization and extraction are still brittle. |
 | Legal trust posture | Promising | Guardrails and disclaimers are strong; provenance and review workflow are not yet product-grade. |
@@ -47,7 +49,7 @@ Do **not** rebuild this as a distributed microservice maze. The right V2 is a di
 - Module boundaries are understandable.
   - Weather, carrier, case law, citation checks, and export are separated in a way a new engineer can follow.
 - Test coverage is respectable for a prototype.
-  - `168` tests is enough to trust refactors more than usual at this stage.
+  - The current supported baseline is `432` passing tests, enough to trust narrow docs and contract slices more than usual at this stage.
 - Documentation is better than the average internal prototype.
   - Handoff, method, safety, demo script, and roadmap docs reduce tribal knowledge.
 
@@ -413,6 +415,8 @@ Exit criteria:
 
 ### Phase 2: Product Core
 
+Current-state note (May 18, 2026): issue `#10` has landed contract, in-process service, status-presentation, transport, and dev-only HTTP slices; issue `#11` has UX specs and deterministic previews only. The items below remain the broader product-core roadmap, not evidence of a shipped production API or web UI.
+
 Goal: turn the prototype engine into a usable product workflow.
 
 - [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) orchestration API
@@ -460,8 +464,9 @@ Exit criteria:
 
 ## 13) Immediate Next Actions
 
-1. Finish the remaining typed-domain work in [#6](https://github.com/itprodirect/cat-loss-war-room/issues/6) with explicit schema-versioning rules.
-2. Use completed [#22](https://github.com/itprodirect/cat-loss-war-room/issues/22) as the bootstrap baseline, then push [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23), [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24), and [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) before major V2 implementation.
-3. Use the current notebook plus fixture lane as the regression harness while API and web surfaces come online.
-4. Only introduce AI into V2 through the guardrailed path defined in [#25](https://github.com/itprodirect/cat-loss-war-room/issues/25).
+Current next actions live in `docs/ROADMAP.md` and `docs/heartbeat.md`; this section reflects the May 18, 2026 sync snapshot.
 
+1. Keep broader `#27` operationalization target-scoped to guided/narrated Demo-ready evidence; the issue `#88` reviewer summary is landed and does not create a second readiness model.
+2. Map remaining `#10` work against the landed contracts/service/status/transport/dev-HTTP stack before adding any production API surface.
+3. Split `#11` into a contract seam and future UI child issues; current `#11` evidence is specs/previews only.
+4. Start `#12` with one canonical evidence adapter, then harden dedupe, provenance, and review workflow in later scoped slices.

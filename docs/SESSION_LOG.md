@@ -2597,3 +2597,31 @@ Status: Complete
     empty, and usable outputs included weather, carrier, caselaw, citation
     verification, memo draft, and audit bundle.
   - `git diff --check` -> passed.
+
+## Session 124 - Current-State Docs Truth-Sync After Issue 88
+Date: 2026-05-18
+Status: Complete
+
+- Synced high-visibility current-state docs after the issue `#88`
+  `reviewer_summary` slice.
+- What changed:
+  - Updated README, Claude guidance, handoff, roadmap, heartbeat, repo brief,
+    V2 blueprint, release rubric, and the release-evidence reviewer guide so
+    they tell one current baseline story.
+  - Reflected the `432`-test supported baseline and the landed top-level
+    release-scorecard `reviewer_summary` convenience layer.
+  - Clarified that issue `#10` has landed contracts, in-process service,
+    status presentation, thin transport, and dev-only standard-library HTTP
+    slices, not a production API.
+  - Clarified that issue `#11` has guided-intake/run-status UX specs and
+    deterministic previews only, not a shipped web UI.
+  - Labeled stale V2 blueprint current-state assumptions as historical/current
+    notes instead of letting the older `168`-test and early-roadmap wording
+    contradict current repo truth.
+- Decisions not added:
+  - no runtime code, dependencies, notebook behavior, fixture/cache/citation
+    behavior, CI workflow, production API, app shell, frontend, auth,
+    persistence, queues, workers, or production-readiness claim was added.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `432 passed in 23.75s`.

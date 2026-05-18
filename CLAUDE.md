@@ -44,7 +44,7 @@ notebooks/          # Jupyter notebooks (the demo surface)
 cache_samples/      # Committed demo fixtures (run without API key)
 cache/              # Runtime cache (gitignored)
 output/             # Generated reports (gitignored)
-tests/              # pytest test suite (423 tests, no network)
+tests/              # pytest test suite (432 tests, no network)
 scripts/            # Seed scripts (manual, not CI)
 docs/               # Project documentation
 apps/               # V2 app placeholders (web/api)
@@ -82,7 +82,7 @@ Prioritize in this order:
 - `fix/` - bug fixes
 
 ## Current phase
-v0-demo shipped, issues #22, #23, #24, #6, #7, #8, and #9 are complete and closed. The issue #10 stack now includes canonical run/stage state, typed API contracts, an in-process offline service, operator-facing status presentation, and a dependency-free thin transport wrapper, without a web app or production API framework. Active V2 execution work remains concentrated in broader #27 CI/pilot operationalization and explicitly scoped #10/#11 follow-ups. Cells 0-7 remain stable and CI runs package-installed tests.
+v0-demo shipped, issues #22, #23, #24, #6, #7, #8, and #9 are complete and closed. The issue #10 stack now includes canonical run/stage state, typed API contracts, an in-process offline service, operator-facing status presentation, a dependency-free thin transport wrapper, and a dev-only standard-library HTTP adapter, without a production API framework or real web app. Issue #11 is currently specs and previews only, not a shipped UI. Issue #27 now includes the release-evidence reviewer guide and issue #88 `reviewer_summary` scorecard convenience layer, while broader CI/pilot operationalization remains open. Active V2 execution work remains concentrated in broader #27 CI/pilot operationalization and explicitly scoped #10/#11 follow-ups. Cells 0-7 remain stable and CI runs package-installed tests.
 
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
