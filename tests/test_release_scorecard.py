@@ -276,6 +276,27 @@ def test_reviewer_summary_is_derived_from_readiness_posture():
     assert any("blocking_failure_count" in failure for failure in failures)
 
 
+def test_reviewer_summary_blocks_no_ship_decision_without_blocking_metric_failures():
+    summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+    scorecard = build_demo_release_scorecard(
+        run_id="20260418T120000Z",
+        candidate="codex/local",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        decision="No ship",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+
+    assert scorecard.readiness_posture.blocking_metric_failed_count == 0
+    assert scorecard.readiness_posture.release_ready == "blocked"
+    assert scorecard.reviewer_summary.release_ready == "blocked"
+    assert "Acceptable for narrated demo review" not in scorecard.reviewer_summary.recommended_action
+    assert "Do not accept for narrated demo review" in scorecard.reviewer_summary.recommended_action
+    assert "target release posture is blocked" in scorecard.reviewer_summary.recommended_action
+
+
 def test_validate_release_scorecard_payload_reports_actionable_failures():
     payload = {
         "calibration_thresholds": [

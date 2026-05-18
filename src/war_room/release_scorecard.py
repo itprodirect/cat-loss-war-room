@@ -1057,11 +1057,14 @@ def _build_readiness_posture(
 
 
 def _build_reviewer_summary(readiness_posture: ReadinessPostureSummary) -> ReviewerSummary:
-    recommended_action = (
-        "Do not accept for narrated demo review until blocking failures are resolved."
-        if readiness_posture.blocking_metric_failed_count
-        else "Acceptable for narrated demo review; do not claim Beta-ready, Pilot-ready, or production readiness."
-    )
+    if readiness_posture.blocking_metric_failed_count:
+        recommended_action = "Do not accept for narrated demo review until blocking failures are resolved."
+    elif readiness_posture.release_ready == "blocked":
+        recommended_action = "Do not accept for narrated demo review while the target release posture is blocked."
+    else:
+        recommended_action = (
+            "Acceptable for narrated demo review; do not claim Beta-ready, Pilot-ready, or production readiness."
+        )
     return ReviewerSummary(
         target_release_level=readiness_posture.target_release_level,
         demo_ready=readiness_posture.demo_ready == "passes",
