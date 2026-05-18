@@ -464,6 +464,8 @@ Exit criteria:
 
 ## 13) Immediate Next Actions
 
+Current next actions live in `docs/ROADMAP.md` and `docs/heartbeat.md`; this section reflects the May 18, 2026 sync snapshot.
+
 1. Keep broader `#27` operationalization target-scoped to guided/narrated Demo-ready evidence; the issue `#88` reviewer summary is landed and does not create a second readiness model.
 2. Map remaining `#10` work against the landed contracts/service/status/transport/dev-HTTP stack before adding any production API surface.
 3. Split `#11` into a contract seam and future UI child issues; current `#11` evidence is specs/previews only.
