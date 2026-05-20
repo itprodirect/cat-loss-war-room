@@ -8,6 +8,7 @@ from war_room.models import (
     CaseIntake,
     QuerySpec,
     adapt_citation_verify_pack,
+    caselaw_pack_to_evidence_items,
     citation_verify_pack_to_payload,
     memo_render_input_from_parts,
     run_audit_snapshot_from_parts,
@@ -120,6 +121,65 @@ def _sample_payloads():
     return intake, weather, carrier, caselaw, citecheck, query_plan
 
 
+def test_caselaw_evidence_adapter_returns_stable_ids_for_repeated_payloads():
+    _, _, _, caselaw, _, _ = _sample_payloads()
+
+    first_ids = [item.evidence_id for item in caselaw_pack_to_evidence_items(caselaw)]
+    second_ids = [item.evidence_id for item in caselaw_pack_to_evidence_items(caselaw)]
+
+    assert first_ids == second_ids
+    assert first_ids[0].startswith("caselaw-case-123-so-3d-456-")
+    assert first_ids[0] != "caselaw-case-1-1"
+
+
+def test_caselaw_evidence_adapter_does_not_collapse_distinct_case_rows():
+    _, _, _, caselaw, _, _ = _sample_payloads()
+    caselaw["issues"][0]["cases"].append(
+        {
+            "name": "Roe v. Ins",
+            "citation": "123 So.3d 456",
+            "court": "Fla. App.",
+            "year": "2023",
+            "one_liner": "Same reporter cite, different authority row.",
+            "url": "https://example.com/roe-case",
+            "badge": "professional",
+        }
+    )
+
+    evidence_ids = [item.evidence_id for item in caselaw_pack_to_evidence_items(caselaw)]
+
+    assert len(evidence_ids) == 2
+    assert len(set(evidence_ids)) == 2
+
+
+def test_caselaw_evidence_adapter_preserves_case_metadata():
+    _, _, _, caselaw, _, _ = _sample_payloads()
+    caselaw["issues"][0]["cases"][0].update(
+        {
+            "badge": "official",
+            "source_class": "court_opinion",
+            "source_tier": "official",
+            "is_primary_authority": True,
+        }
+    )
+
+    item = caselaw_pack_to_evidence_items(caselaw)[0]
+
+    assert item.module == "caselaw"
+    assert item.evidence_type == "case_authority"
+    assert item.title == "Doe v. Ins"
+    assert item.summary == "Coverage upheld"
+    assert item.url == "https://example.com/case"
+    assert item.badge == "official"
+    assert item.source_reason == "Professional source"
+    assert item.source_class == "court_opinion"
+    assert item.source_tier == "official"
+    assert item.is_primary_authority is True
+    assert item.issue == "Coverage"
+    assert item.citation == "123 so. 3d 456"
+    assert item.authority_key == "citation:123 so. 3d 456"
+
+
 def test_citation_verify_pack_adapter_round_trip():
     _, _, _, _, citecheck, _ = _sample_payloads()
 
@@ -177,6 +237,7 @@ def test_memo_render_input_from_parts_accepts_mixed_shapes():
 
 def test_run_audit_snapshot_builds_canonical_entities():
     intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    caselaw_evidence_id = caselaw_pack_to_evidence_items(caselaw)[0].evidence_id
 
     snapshot = run_audit_snapshot_from_parts(
         intake,
@@ -207,9 +268,14 @@ def test_run_audit_snapshot_builds_canonical_entities():
     assert snapshot.export_artifact.section_ids[:3] == ["trust-snapshot", "case-intake", "weather-corroboration"]
     assert payload["schema_version"] == "v2alpha1"
     assert payload["evidence_items"][0]["evidence_id"] == "weather-source-1"
+    assert any(
+        item.evidence_id == caselaw_evidence_id and item.module == "caselaw"
+        for item in snapshot.evidence_items
+    )
     assert payload["evidence_clusters"][0]["cluster_id"] == "cluster-1"
     assert payload["evidence_clusters"][2]["cluster_type"] == "citation"
     assert snapshot.memo_claims[0].cluster_ids == ["cluster-1"]
+    assert caselaw_evidence_id in snapshot.memo_claims[2].evidence_ids
     assert snapshot.memo_claims[2].cluster_ids == ["cluster-3"]
     assert snapshot.quality_snapshot.source_class_counts["government_guidance"] == 1
     assert snapshot.quality_snapshot.grouped_evidence_count == 1

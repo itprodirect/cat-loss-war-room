@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import re
 from typing import Any, Literal, Mapping, Sequence
 from urllib.parse import urlparse
@@ -1051,6 +1052,58 @@ def adapt_run_timeline(
     return RunTimelineReadModel.model_validate(payload)
 
 
+def caselaw_pack_to_evidence_items(
+    payload: Mapping[str, Any] | CaseLawPack,
+) -> list[EvidenceItem]:
+    """Adapt current case-law module output into canonical evidence items."""
+    caselaw = adapt_caselaw_pack(payload)
+    source_reasons = {
+        source.url: source.reason
+        for source in caselaw.sources
+        if source.url
+    }
+    evidence_items: list[EvidenceItem] = []
+    used_evidence_ids: dict[str, int] = {}
+
+    for issue in caselaw.issues:
+        for case in issue.cases:
+            source_profile = score_url(case.url, case.name)
+            normalized_citation = _normalize_citation_value(case.citation)
+            authority_key = _authority_key_from_parts(
+                citation=normalized_citation,
+                title=case.name,
+                court=case.court,
+                year=case.year,
+                url=case.url,
+            )
+            evidence_items.append(
+                EvidenceItem(
+                    evidence_id=_caselaw_evidence_id(
+                        issue_label=issue.issue,
+                        case=case,
+                        normalized_citation=normalized_citation,
+                        authority_key=authority_key,
+                        used_evidence_ids=used_evidence_ids,
+                    ),
+                    module="caselaw",
+                    evidence_type="case_authority",
+                    title=case.name,
+                    summary=case.one_liner,
+                    url=case.url,
+                    badge=case.badge,
+                    source_reason=source_reasons.get(case.url),
+                    source_class=case.source_class or source_profile.get("source_class"),
+                    source_tier=case.source_tier or source_profile.get("tier"),
+                    is_primary_authority=case.is_primary_authority,
+                    authority_key=authority_key,
+                    issue=issue.issue,
+                    citation=normalized_citation,
+                )
+            )
+
+    return evidence_items
+
+
 def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditSnapshot:
     """Build a canonical audit snapshot from normalized memo-render input."""
     weather_payload = weather_brief_to_payload(memo_input.weather)
@@ -1133,43 +1186,11 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         )
         evidence_ids_by_module["carrier"].append(evidence_id)
 
-    caselaw_source_reasons = {
-        source.get("url"): source.get("reason")
-        for source in caselaw_payload.get("sources", [])
-        if source.get("url")
-    }
-    for issue_index, issue in enumerate(caselaw_payload.get("issues", []), 1):
-        for case_index, case in enumerate(issue.get("cases", []), 1):
-            evidence_id = f"caselaw-case-{issue_index}-{case_index}"
-            source_profile = score_url(case.get("url", ""), case.get("name", ""))
-            normalized_citation = _normalize_citation_value(case.get("citation"))
-            evidence_items.append(
-                EvidenceItem(
-                    evidence_id=evidence_id,
-                    module="caselaw",
-                    evidence_type="case_authority",
-                    title=case.get("name", ""),
-                    summary=case.get("one_liner", ""),
-                    url=case.get("url"),
-                    badge=case.get("badge", ""),
-                    source_reason=caselaw_source_reasons.get(case.get("url")),
-                    source_class=case.get("source_class") or source_profile.get("source_class"),
-                    source_tier=case.get("source_tier") or source_profile.get("tier"),
-                    is_primary_authority=bool(
-                        case.get("is_primary_authority", source_profile.get("is_primary_authority"))
-                    ),
-                    authority_key=_authority_key_from_parts(
-                        citation=normalized_citation,
-                        title=case.get("name"),
-                        court=case.get("court"),
-                        year=case.get("year"),
-                        url=case.get("url"),
-                    ),
-                    issue=issue.get("issue"),
-                    citation=normalized_citation,
-                )
-            )
-            evidence_ids_by_module["caselaw"].append(evidence_id)
+    caselaw_evidence_items = caselaw_pack_to_evidence_items(memo_input.caselaw)
+    evidence_items.extend(caselaw_evidence_items)
+    evidence_ids_by_module["caselaw"].extend(
+        item.evidence_id for item in caselaw_evidence_items
+    )
 
     for index, check in enumerate(citecheck_payload.get("checks", []), 1):
         evidence_id = f"citation-check-{index}"
@@ -1727,6 +1748,34 @@ def _normalize_authority_name(value: str | None) -> str:
         return ""
     normalized = re.sub(r"[^a-z0-9]+", " ", value.lower())
     return re.sub(r"\s+", " ", normalized).strip()
+
+
+def _caselaw_evidence_id(
+    *,
+    issue_label: str,
+    case: CaseEntry,
+    normalized_citation: str | None,
+    authority_key: str | None,
+    used_evidence_ids: dict[str, int],
+) -> str:
+    identity_parts = [
+        authority_key or "",
+        normalized_citation or "",
+        _normalize_authority_name(case.name),
+        _normalize_authority_name(case.court),
+        str(case.year or "").strip().lower(),
+        _normalize_cluster_url(case.url),
+        _normalize_authority_name(issue_label),
+    ]
+    digest = hashlib.sha256("\x1f".join(identity_parts).encode("utf-8")).hexdigest()[:10]
+    display_token = _stable_token(normalized_citation or case.name or authority_key or case.url)
+    display_token = display_token[:48].rstrip("-") or "case"
+    base_id = f"caselaw-case-{display_token}-{digest}"
+    collision_count = used_evidence_ids.get(base_id, 0) + 1
+    used_evidence_ids[base_id] = collision_count
+    if collision_count == 1:
+        return base_id
+    return f"{base_id}-{collision_count}"
 
 
 def _cluster_key_for_item(item: EvidenceItem) -> tuple[str, str]:
