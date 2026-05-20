@@ -10,6 +10,9 @@ on:
       - codex/**
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   exa-matrix:
     name: exa-py (${{ matrix.exa_spec }})
@@ -20,11 +23,13 @@ jobs:
         include:
           - exa_spec: "exa-py==2.0.2"
             exa_label: "exa-py-2-0-2"
-          - exa_spec: "exa-py<2"
-            exa_label: "exa-py-lt-2"
+          - exa_spec: "exa-py==1.14.0"
+            exa_label: "exa-py-1-14-0"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Python
         uses: actions/setup-python@v5
