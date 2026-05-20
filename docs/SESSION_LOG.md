@@ -2854,3 +2854,62 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `449 passed in 10.30s`; verify manifest written under
     `runs/verify/2026-05-20_docs-post-adapter-state-sync_20260520t081618z.json`.
+
+## Session 131 - Issue 101 Remaining Issue 12 Scope Review
+Date: 2026-05-20
+Status: Complete
+
+- Completed issue `#101` as a docs-only issue `#12` remaining-scope review
+  after the landed caselaw, carrier, and weather evidence-adapter slices.
+- What changed:
+  - Added `docs/ISSUE_12_REMAINING_SCOPE.md` to document current adapter
+    status, the remaining citation-verify adapter gap, and the next narrow
+    child issue.
+  - Linked the new review from `docs/HANDOFF.md` and updated
+    `docs/heartbeat.md` so future agents find the current boundary before
+    treating issue `#12` as a broad implementation umbrella.
+  - Documented that a separate adapter-status map is not needed before the
+    citation-verify adapter because this review is enough for the single
+    remaining evidence-producing module family without a named adapter.
+- Decisions added:
+  - The next recommended issue `#12` child is a citation-verify evidence
+    adapter over current `CitationVerifyPack` output.
+  - The adapter-status map can wait unless maintainers want to coordinate
+    broader dedupe, persistence, review-workflow, API, or cross-surface
+    provenance work.
+- Decisions not added:
+  - no runtime code, tests, dependencies, notebooks, fixtures, live retrieval,
+    citation-search behavior, citation-verification hardening, database,
+    persistence, full V2 evidence graph, API framework, frontend, dashboard,
+    app shell, auth, queues, workers, AI scoring, generative behavior,
+    provenance-through-edits workflow, readiness-level change, Beta-ready
+    claim, Pilot-ready claim, production-ready claim, or legal-product claim
+    was added.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `449 passed in 11.69s`.
+
+## Session 132 - PR 102 Citation-Verify Metadata Scope Wording
+Date: 2026-05-20
+Status: Complete
+
+- Applied the PR `#102` review cleanup for the issue `#101` / issue `#12`
+  remaining-scope review.
+- What changed:
+  - Clarified `docs/ISSUE_12_REMAINING_SCOPE.md` so the next
+    citation-verify adapter child only carries forward trust metadata the
+    current inline builder already maps onto existing `EvidenceItem` fields:
+    `source_class`, `source_tier`, `is_primary_authority`, `citation`, and
+    `case_name` / `source_url` through `title` / `url`.
+  - Documented that `status_reason`, `trust_explanation`, and `confidence`
+    exist on `CitationCheck` but do not currently have `EvidenceItem` slots and
+    would require a separate explicit schema decision.
+  - Tightened the recommended test wording from generic metadata preservation
+    to existing-field metadata preservation.
+- Decisions not added:
+  - no runtime code, tests, schemas, `EvidenceItem` fields, citation
+    verification behavior, fixtures, notebooks, CI workflows, dependencies,
+    README, handoff, or heartbeat changes were added.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `449 passed in 32.05s`.
