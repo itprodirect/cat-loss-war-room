@@ -74,6 +74,25 @@ def test_security_hygiene_allows_not_set_status_text(tmp_path: Path):
     assert report.passed
 
 
+
+
+def test_security_hygiene_flags_not_set_prefix_with_trailing_secret(tmp_path: Path):
+    tracked_files = _write_compliant_repo(tmp_path)
+    secret_name = "EXA_API" + "_KEY"
+    _write(
+        tmp_path / "notebooks" / "demo.ipynb",
+        f"  {secret_name}: not set exa_live_REAL_SECRET_1234567890\n",
+    )
+    tracked_files.append("notebooks/demo.ipynb")
+
+    report = run_security_hygiene(tmp_path, tracked_files=tracked_files)
+
+    assert not report.passed
+    findings = _check(report, "obvious-secret-patterns").findings
+    assert len(findings) == 1
+    assert findings[0].path == "notebooks/demo.ipynb"
+    assert findings[0].line == 1
+
 def test_security_hygiene_flags_env_template_drift(tmp_path: Path):
     tracked_files = _write_compliant_repo(tmp_path)
     exa_key = "EXA_API" + "_KEY"

@@ -542,7 +542,7 @@ def _looks_like_python_type_annotation(line: str, match: re.Match[str]) -> bool:
 
 def _looks_like_not_set_status(line: str, match: re.Match[str]) -> bool:
     suffix = line[match.start("value") :].strip().strip("'\"")
-    return bool(re.match(r"not\s+set\b", suffix, flags=re.IGNORECASE))
+    return bool(re.fullmatch(r"not\s+set", suffix, flags=re.IGNORECASE))
 
 
 def _normalize_policy_text(text: str) -> str:
