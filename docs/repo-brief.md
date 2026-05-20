@@ -15,7 +15,7 @@ This repo is the current execution surface for attorney-demo research accelerati
 
 ## Current milestone
 
-Preserve the stable V0 notebook demo while issue `#12` evidence/provenance adapter work continues after the landed issue `#92` release-evidence reporting slice and the first caselaw, carrier, and weather adapter seams.
+Preserve the stable V0 notebook demo while issue `#12` evidence/provenance work continues after the landed issue `#92` release-evidence reporting slice and the weather, carrier, caselaw, and citation-verification adapter seams.
 
 ## Non-goals
 
@@ -42,7 +42,7 @@ Preserve the stable V0 notebook demo while issue `#12` evidence/provenance adapt
 - Markdown research memo exports with disclaimers and audit linkage.
 - Preflight and verification results for demo readiness.
 - Run-scoped preflight, scorecard, and verify-manifest artifacts for the supported local release-evidence path, including blocking/advisory readiness categories, the top-level `reviewer_summary` convenience layer for reviewer use, and the issue `#92` `ci_reporting_summary` inventory for CI/reporting consumers.
-- Canonical `EvidenceItem` rows from the current caselaw, carrier, and weather module outputs through the landed issue `#94`, `#96`, and `#98` adapter seams.
+- Canonical `EvidenceItem` rows from the current weather, carrier, caselaw, and citation-verification outputs through the landed issue `#94`, `#96`, `#98`, and `#103` adapter seams.
 - Golden offline fixture snapshots for reviewable scenario/output drift checks.
 - Categorized CI quality-gate artifacts for unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene lanes.
 
@@ -59,14 +59,14 @@ Preserve the stable V0 notebook demo while issue `#12` evidence/provenance adapt
 - The primary UX is still notebook-first, which is less approachable for non-technical users.
 - The issue `#10` run-state contract slice, issue `#73` API boundary contract slice, in-process offline service slice, operator-facing status presentation layer, dependency-free thin transport/request-handler wrapper, and dev-only standard-library HTTP adapter exist, but production API routing, persistence, queues, auth, retries, circuit breakers, dashboards, and UI remain unbuilt.
 - Issue `#11` has guided-intake and run-status UX specs plus deterministic previews only; no web UI has shipped.
-- Issue `#12` now has first narrow caselaw, carrier, and weather evidence adapters, but the full V2 evidence graph, persistence layer, broader dedupe engine, citation-verify adapter, and product review workflow remain unbuilt.
+- Issue `#12` now has named adapters for the current weather, carrier, caselaw, and citation-verification evidence-producing source families, but the full V2 evidence graph, persistence layer, broader dedupe engine, product review workflow, provenance-through-edits, API integration, and UI remain unbuilt.
 - Offline readiness is stronger but still demo-scoped: five committed fixture lanes now have a golden snapshot gate and fixture-backed registry scenarios, and issue `#8` is closed as completed after the five-lane baseline validation.
 - Case-law precision and citation confidence still need ongoing hardening in edge cases.
 - Status can drift quickly because roadmap, handoff, and session history are dense and frequently updated.
 
 ## Next 3 tasks
 
-1. Review remaining issue `#12` scope and either plan a citation-verify evidence adapter or pause for a narrow adapter-status map before continuing.
+1. Review remaining issue `#12` follow-ups after all current evidence-producing source families have named adapters, then choose a narrow next child: deterministic dedupe helper, provenance link hardening, citation-quality fixture regression under `#13` / `#14`, or a docs-only issue-12 closeout/status map.
 2. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
 3. Map the remaining issue `#10` scope against the landed contracts/service/status/transport/dev-HTTP stack, keeping production routing, persistence, queues, auth, retries, circuit breakers, dashboards, and UI out unless explicitly authorized.
 

@@ -13,11 +13,11 @@ worker, dashboard, beta, pilot, or production surface.
 
 Post-audit update (May 20, 2026): issue `#92` / PR `#93` landed the
 release-evidence CI reporting summary, and issue `#94` / PR `#95`, issue
-`#96` / PR `#97`, and issue `#98` / PR `#99` landed the first caselaw,
-carrier, and weather evidence adapter slices. This audit's broad warnings
-still apply: those slices do not make the repo a full V2 evidence graph,
-product platform, production API, dashboard, beta, pilot, or production
-surface.
+`#96` / PR `#97`, issue `#98` / PR `#99`, and issue `#103` / PR `#105`
+landed the first caselaw, carrier, weather, and citation-verification evidence
+adapter slices. This audit's broad warnings still apply: those slices do not
+make the repo a full V2 evidence graph, product platform, production API,
+dashboard, beta, pilot, or production surface.
 
 ## Current Repo Truth Used For This Audit
 
@@ -102,10 +102,11 @@ implementation:
 These are the highest-value issue-creation candidates after this audit. They
 are phrased as narrow child issues to avoid umbrella implementation.
 
-1. `#12` child: Continue evidence/provenance adapter work after the landed
-   caselaw, carrier, and weather slices.
-   - Purpose: either scope a citation-verify adapter or pause for a status map
-     before another adapter.
+1. `#12` child: Decide the next narrow evidence/provenance follow-up after the
+   landed weather, carrier, caselaw, and citation-verification adapter slices.
+   - Purpose: choose between a deterministic dedupe helper, provenance link
+     hardening, citation-quality fixture regression under `#13` / `#14`, or a
+     docs-only issue-12 closeout/status map.
    - Non-goals: no database, no global schema rewrite, no AI scoring, no live
      retrieval, no full evidence-graph completion claim.
 2. `#10` child: Remaining orchestration scope map after landed
@@ -218,14 +219,15 @@ are phrased as narrow child issues to avoid umbrella implementation.
   from `#24`.
 - Current-state mismatch: the repo already has transitional evidence clusters,
   evidence-to-claim links, review events, read models, and first narrow
-  caselaw/carrier/weather adapters into canonical `EvidenceItem` rows, but the
-  full canonical evidence normalization engine from `#12` is not implemented.
-  The issue is directionally valid but still too broad to treat as a single
-  implementation ticket.
+  weather/carrier/caselaw/citation-verification adapters into canonical
+  `EvidenceItem` rows, but the full canonical evidence normalization engine
+  from `#12` is not implemented. The issue is directionally valid but still too
+  broad to treat as a single implementation ticket.
 - Recommended action: split into child issues.
 - Suggested child issues:
-  - Citation-verify adapter or adapter-status map after the landed caselaw,
-    carrier, and weather slices.
+  - Deterministic dedupe helper across current adapter output.
+  - Docs-only issue-12 closeout/status map for the landed adapter seams.
+  - Citation-quality fixture regression under `#13` / `#14`.
   - Durable evidence and cluster ID rules applied consistently across current
     audit output.
   - URL/citation dedupe regression tests over the five fixture lanes.
@@ -467,8 +469,9 @@ are phrased as narrow child issues to avoid umbrella implementation.
    V2 implementation issue.
 2. Turn `#10`, `#11`, and `#27` into explicit umbrellas with linked child
    issues and landed-slice notes.
-3. Keep `#12` as the next narrow product-core implementation lane, starting
-   with one evidence adapter and tests.
+3. Keep `#12` as the next narrow product-core implementation lane, but choose
+   the next child from dedupe, provenance hardening, citation-quality fixtures,
+   or a status map instead of treating the landed adapters as the full graph.
 4. Treat `#13`, `#25`, and `#26` as important but dependent on evidence and
    review contracts.
 5. Park `#16`, `#17`, `#18`, and `#19` until the repo has the product/runtime

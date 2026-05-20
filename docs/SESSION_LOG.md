@@ -2984,3 +2984,40 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `455 passed in 27.98s`; verify manifest written under
     `runs/verify/2026-05-20_codex-issue-103-citation-verify-evidence-adapter_20260520t134426z.json`.
+
+## Session 135 - Post PR 105 Current-State Docs Sync
+Date: 2026-05-20
+Status: Complete
+
+- Synced current-state docs after PR `#105` merged the issue `#103`
+  citation-verify evidence adapter.
+- What changed:
+  - Updated high-visibility status surfaces to state that weather, carrier,
+    caselaw, and citation verification now have named adapter seams into
+    canonical `EvidenceItem` rows.
+  - Marked issue `#103` / PR `#105` as landed where the docs previously
+    treated citation-verify adaptation as pending.
+  - Updated the supported test baseline from `449` to `455` after local
+    validation confirmed the current suite count.
+  - Clarified that issue `#12` remains an umbrella: dedupe, persistence, API,
+    UI, review workflow, provenance-through-edits, live retrieval changes,
+    AI scoring, and the full V2 evidence graph remain future scoped work.
+- Decisions added:
+  - The recommended next issue `#12` decision is to choose one narrow follow-up:
+    deterministic dedupe helper, provenance link hardening, citation-quality
+    fixture regression under `#13` / `#14`, or a docs-only issue-12
+    closeout/status map.
+- Decisions not added:
+  - no runtime code, tests, dependencies, notebooks, fixtures, live retrieval,
+    CI workflows, `EvidenceItem` schema changes, citation verification behavior
+    changes, status vocabulary changes, badge/display semantics changes,
+    dedupe engine, database, persistence, API framework, frontend, dashboard,
+    app shell, auth, queues, workers, AI scoring, full evidence graph claim,
+    Beta-ready claim, Pilot-ready claim, production-ready claim, or
+    legal-product claim was added.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `455 passed in 19.37s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `455 passed in 17.05s`; verify manifest written under
+    `runs/verify/2026-05-20_docs-post-citation-verify-adapter-sync_20260520t140227z.json`.

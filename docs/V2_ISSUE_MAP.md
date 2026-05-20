@@ -36,7 +36,7 @@ Written source-of-truth specs for `#23` and `#24` are complete and those definit
 |---|---|---|
 | API orchestrator service | [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) | Move orchestration out of notebook |
 | Web intake and run status UI | [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) | Non-technical usability, shaped by `#23` |
-| Evidence normalization engine | [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) | Dedupe, confidence, provenance, built on `#24` |
+| Evidence normalization engine | [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) | Weather, carrier, caselaw, and citation-verification adapter seams are landed; dedupe, confidence/provenance hardening, persistence, API/UI, and review workflow remain future scoped work built on `#24` |
 | Caselaw quality and filtering v2 | [#13](https://github.com/itprodirect/cat-loss-war-room/issues/13) | Reduce false positives |
 | AI guardrails and eval harness | [#25](https://github.com/itprodirect/cat-loss-war-room/issues/25) | Evidence-linked generation only |
 | Human review workflow | [#26](https://github.com/itprodirect/cat-loss-war-room/issues/26) | Approvals, revisions, provenance-preserving edits |
