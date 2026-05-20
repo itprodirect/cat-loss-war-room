@@ -12,6 +12,8 @@ The current decision is:
 - do not treat issue `#12` as complete or ready for broad persistence, UI, API, review workflow, or full evidence graph implementation;
 - pause implementation and choose the next issue `#12` child from a provenance-safe dedupe integration plan with `old_id -> retained_id` mapping, deterministic dedupe integration into audit snapshot assembly, provenance link hardening across memo claims / evidence clusters / review events, or citation-quality fixture regression under `#13` / `#14`.
 
+The provenance-safe dedupe integration plan now lives in [ISSUE_12_DEDUPE_INTEGRATION_PLAN.md](ISSUE_12_DEDUPE_INTEGRATION_PLAN.md). Use that spec before wiring `dedupe_evidence_items(...)` into audit snapshot assembly.
+
 ## Current Adapter Status
 
 The canonical source family for issue `#12` adapter work is the set of current module outputs that become `EvidenceItem` rows in `RunAuditSnapshot`.
@@ -55,6 +57,9 @@ Future integration should not simply drop duplicate IDs from the audit path.
 It needs a remapping or equivalent provenance-safe plan so memo claims,
 evidence clusters, review events, and export references do not point at removed
 rows after dedupe.
+
+The first runtime integration should follow the dedicated dedupe integration
+plan and prove ID remapping before changing audit snapshot behavior.
 
 ## Adapter Gap Status
 
