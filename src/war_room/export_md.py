@@ -396,6 +396,10 @@ def _append_quality_snapshot(lines: list[str], quality_snapshot: Any) -> None:
         f"({quality_snapshot.grouped_evidence_count} grouped)"
     )
     lines.append(
+        f"- Evidence retention: {quality_snapshot.raw_evidence_count} raw/pre-dedupe / "
+        f"{quality_snapshot.evidence_item_count} retained/exported"
+    )
+    lines.append(
         f"- Canonical authorities: {quality_snapshot.normalized_authority_count} "
         f"({quality_snapshot.duplicate_authority_count} duplicates collapsed, "
         f"{quality_snapshot.provenance_link_count} provenance links)"

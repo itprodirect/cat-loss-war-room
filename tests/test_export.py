@@ -330,6 +330,21 @@ def test_render_shows_canonical_authority_and_alternate_counts():
     assert "Alternate aligned candidates: 2" in md
 
 
+def test_render_quality_snapshot_surfaces_raw_vs_retained_evidence_counts():
+    intake, weather, carrier, caselaw, citecheck, queries = _sample_data()
+    weather["sources"][0]["url"] = "https://www.weather.gov/r/?utm_source=newsletter"
+    weather["sources"].append(
+        {
+            **weather["sources"][0],
+            "url": "https://weather.gov/r",
+        }
+    )
+
+    md = render_markdown_memo(intake, weather, carrier, caselaw, citecheck, queries)
+
+    assert "- Evidence retention: 5 raw/pre-dedupe / 4 retained/exported" in md
+
+
 def test_render_sanitizes_multiline_export_text_and_backfills_citation_reasoning():
     intake, weather, carrier, caselaw, citecheck, queries = _sample_data()
     weather["key_observations"] = ["Line one\nLine two [Home] | extra"]

@@ -887,6 +887,58 @@ def test_run_audit_snapshot_keeps_caselaw_and_citation_rows_distinct_when_checks
     assert_audit_snapshot_provenance_integrity(snapshot)
 
 
+def test_run_audit_snapshot_rewrites_not_found_duplicate_citation_review_event():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    citecheck["checks"][0]["status"] = "not_found"
+    citecheck["checks"][0]["badge"] = "not_found"
+    citecheck["checks"][0]["note"] = "No matching source found."
+    citecheck["checks"].append(dict(citecheck["checks"][0]))
+    citecheck["summary"] = {"total": 2, "verified": 0, "uncertain": 0, "not_found": 2}
+    caselaw_evidence_id = caselaw_pack_to_evidence_items(caselaw)[0].evidence_id
+    raw_citation_items = citation_verify_pack_to_evidence_items(citecheck)
+    retained_citation_id = raw_citation_items[0].evidence_id
+    removed_citation_id = raw_citation_items[1].evidence_id
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+    markdown = render_markdown_memo(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    evidence_ids = {item.evidence_id for item in snapshot.evidence_items}
+    assert caselaw_evidence_id in evidence_ids
+    assert retained_citation_id in evidence_ids
+    assert removed_citation_id not in evidence_ids
+    shared_cluster = next(
+        cluster
+        for cluster in snapshot.evidence_clusters
+        if caselaw_evidence_id in cluster.evidence_ids
+        and retained_citation_id in cluster.evidence_ids
+    )
+    citation_event = next(
+        event for event in snapshot.review_events if event.event_id == "citation-not-found"
+    )
+    assert shared_cluster.modules == ["caselaw", "citation_verify"]
+    assert citation_event.related_evidence_ids == [retained_citation_id]
+    assert citation_event.related_cluster_ids == [shared_cluster.cluster_id]
+    assert citation_event.detail == "2 citation checks were not found on reviewed sources."
+    assert snapshot.quality_snapshot.raw_evidence_count == 5
+    assert snapshot.quality_snapshot.evidence_item_count == 4
+    assert removed_citation_id not in markdown
+    assert_all_current_provenance_surfaces(snapshot, markdown)
+
+
 def test_citation_verify_summary_validation_rejects_bad_totals():
     _, _, _, _, citecheck, _ = _sample_payloads()
     citecheck["summary"] = {"total": 99, "verified": 1, "uncertain": 0, "not_found": 0}

@@ -3272,3 +3272,39 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `491 passed in 22.10s`; verify manifest written under
     `runs/verify/2026-05-20_codex-12-same-module-audit-dedupe_20260520t220446z.json`.
+
+## Session 143 - Issue 137 Citation Dedupe Visibility Follow-Up
+Date: 2026-05-20
+Status: Complete
+
+- Added the narrow issue `#137` follow-up after PR `#136` merged the
+  same-module audit snapshot dedupe integration.
+- What changed:
+  - Added a focused regression for duplicate `citation_verify` rows with
+    `status="not_found"` collapsing within the same module.
+  - Proved the `citation-not-found` review event rewrites the removed citation
+    evidence ID to the retained citation evidence ID and keeps its related
+    cluster ID resolvable after the rewrite.
+  - Kept caselaw and citation-verification rows distinct across modules while
+    allowing them to share a related evidence cluster.
+  - Added a reviewer-facing Markdown Quality Snapshot line:
+    `Evidence retention: <raw> raw/pre-dedupe / <retained> retained/exported`.
+- Decisions added:
+  - Markdown output now exposes raw/pre-dedupe versus retained/exported
+    evidence counts in the existing Quality Snapshot appendix.
+- Decisions not added:
+  - no cross-module evidence collapse, retained-row duplicate/source metadata
+    schema, persistence, API, UI/dashboard, auth/users/sessions,
+    queues/workers/background runtime, fuzzy/ML clustering, AI scoring, live
+    retrieval change, citation verification behavior change, broad golden
+    snapshot refresh, or claim that the V2 evidence graph is complete was
+    added.
+- Validation:
+  - `python -m pytest tests/test_memo_contracts.py::test_run_audit_snapshot_rewrites_not_found_duplicate_citation_review_event tests/test_export.py::test_render_quality_snapshot_surfaces_raw_vs_retained_evidence_counts -q`
+    -> `2 passed in 18.75s`.
+  - `python -m pytest tests/test_memo_contracts.py tests/test_export.py -q`
+    -> `63 passed in 16.64s`.
+  - `python -m pytest -q` -> `493 passed in 48.96s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `493 passed in 47.93s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-137-not-found-dedupe-visibility_20260520t224832z.json`.
