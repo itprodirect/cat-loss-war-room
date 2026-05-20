@@ -2048,9 +2048,6 @@ Status: Complete
   - no additional Florida fixture seeding was scoped in this docs-only closeout sync.
 - Validation:
   - `git diff --check` -> passed.
-  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
-    `484 passed in 18.45s`; verify manifest written under
-    `runs/verify/2026-05-20_codex-issue-12-dedupe-plan_20260520t204851z.json`.
   - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
   - `python -m war_room --verify --release-candidate issue-8-closed-status-docs-sync` -> passed; embedded `pytest -q` reported `343 passed in 17.15s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-14_issue-8-closed-status-docs-sync_20260514t042129z.json`.
 
@@ -3193,3 +3190,6 @@ Status: Complete
     claim was added.
 - Validation:
   - `git diff --check` -> passed.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `484 passed in 18.45s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-issue-12-dedupe-plan_20260520t204851z.json`.
