@@ -520,6 +520,7 @@ def _extract_case_info(result: dict) -> dict[str, Any]:
 
 def _clean_case_text(value: str) -> str:
     text = html.unescape(str(value or ""))
+    text = html.escape(text, quote=False)
     text = text.replace("\r", " ").replace("\n", " ")
     text = re.sub(r"\s+", " ", text).strip()
     return text
