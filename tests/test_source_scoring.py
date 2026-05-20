@@ -107,3 +107,18 @@ def test_commentary_title_classifies_as_commentary():
     )
     assert result["source_class"] == "commentary"
     assert result["is_primary_authority"] is False
+
+
+def test_lookalike_floir_is_not_official():
+    result = score_url("https://evilfloir.com/fake-order")
+    assert result["tier"] == "unvetted"
+
+
+def test_lookalike_courtlistener_is_not_official():
+    result = score_url("https://evilcourtlistener.com/opinion/123")
+    assert result["tier"] == "unvetted"
+
+
+def test_subdomain_of_official_domain_is_still_official():
+    result = score_url("https://api.floir.com/orders/123")
+    assert result["tier"] == "official"
