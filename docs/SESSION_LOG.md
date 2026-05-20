@@ -2661,3 +2661,73 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `433 passed in 24.28s`; verify manifest written under
     `runs/verify/2026-05-20_codex-issue-92-release-evidence-ci-reporting_20260520t042606z.json`.
+
+## Session 126 - Issue 94 Caselaw Evidence Adapter
+Date: 2026-05-20
+Status: Complete
+
+- Completed issue `#94` as the first narrow issue `#12` product-core
+  evidence/provenance adapter slice over current case-law module output.
+- What changed:
+  - Added `caselaw_pack_to_evidence_items(...)` in `src/war_room/models.py`
+    as a focused adapter seam from current `CaseLawPack` / `CaseIssue` /
+    `CaseEntry` data into canonical `EvidenceItem` records.
+  - Replaced positional case-law evidence IDs like `caselaw-case-1-1` with
+    deterministic IDs derived from stable case attributes and the existing
+    authority-key inputs, while preserving authority-key clustering behavior.
+  - Kept `RunAuditSnapshot` and Evidence Board construction on the existing
+    flow by routing only the case-law evidence-item mapping through the new
+    adapter.
+  - Added focused tests for repeated stable IDs, distinct case-row IDs,
+    case-law metadata preservation, audit-snapshot inclusion, evidence-board
+    rendering, and memo evidence-index output.
+- Decisions added:
+  - Case-law evidence IDs now use citation/name/court/year/URL/issue context
+    plus a short deterministic digest, with only deterministic collision
+    suffixing for duplicate stable IDs within one payload.
+- Decisions not added:
+  - no full issue `#12` evidence graph implementation, global evidence graph
+    rewrite, database, persistence, auth, users, sessions, queues, workers,
+    dashboard, frontend, API framework, production runtime, live retrieval
+    change, fixture/cache/citation provider change, AI scoring, ML dedupe,
+    broad title-similarity dedupe, readiness-level change, release claim,
+    pilot execution, firm memory, notebook behavior change, or docx/pdf export
+    pipeline was added.
+- Validation:
+  - `python -m pytest tests/test_models.py tests/test_evidence_board.py -q`
+    -> `24 passed in 0.43s`.
+  - `python -m pytest tests/test_models.py tests/test_evidence_board.py tests/test_memo_contracts.py tests/test_export.py -q`
+    -> `52 passed in 2.19s`.
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `439 passed in 14.93s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `439 passed in 15.02s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-issue-94-caselaw-evidence-adapter_20260520t055426z.json`.
+
+## Session 127 - PR 95 Primary-Authority Inference Follow-Up
+Date: 2026-05-20
+Status: Complete
+
+- Applied one focused PR `#95` follow-up that makes primary-authority
+  inference effective when `is_primary_authority` is absent, while preserving
+  explicit true/false values in `caselaw_pack_to_evidence_items(...)`.
+- What changed:
+  - The adapter now treats an explicit case-row `is_primary_authority` value
+    as authoritative and falls back to `score_url(...)` only when the field was
+    not provided on the case row.
+  - Added a focused regression test proving a case-law row without explicit
+    `is_primary_authority` can infer primary-authority status from a
+    CourtListener opinion URL, while an explicit `False` value still wins.
+- Decisions not added:
+  - no unrelated adapter refactor, source-scoring change, live retrieval,
+    fixture/cache/provider change, API/runtime work, persistence, frontend,
+    dashboard, AI scoring, readiness claim, or broad issue `#12` behavior was
+    added.
+- Validation:
+  - `python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_export.py -q`
+    -> `36 passed in 1.82s`.
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `440 passed in 16.25s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `440 passed in 16.09s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-issue-94-caselaw-evidence-adapter_20260520t061111z.json`.
