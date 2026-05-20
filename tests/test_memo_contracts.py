@@ -8,6 +8,7 @@ from war_room.models import (
     CaseIntake,
     QuerySpec,
     adapt_citation_verify_pack,
+    carrier_doc_pack_to_evidence_items,
     caselaw_pack_to_evidence_items,
     citation_verify_pack_to_payload,
     memo_render_input_from_parts,
@@ -119,6 +120,90 @@ def _sample_payloads():
     query_plan = [QuerySpec(module="weather", query="test query", category="test")]
 
     return intake, weather, carrier, caselaw, citecheck, query_plan
+
+
+def test_carrier_evidence_adapter_returns_stable_ids_for_repeated_payloads():
+    _, _, carrier, _, _, _ = _sample_payloads()
+
+    first_ids = [item.evidence_id for item in carrier_doc_pack_to_evidence_items(carrier)]
+    second_ids = [item.evidence_id for item in carrier_doc_pack_to_evidence_items(carrier)]
+
+    assert first_ids == second_ids
+    assert first_ids[0].startswith("carrier-document-denial-")
+    assert first_ids[0] != "carrier-document-1"
+
+
+def test_carrier_evidence_adapter_does_not_collapse_distinct_document_rows():
+    _, _, carrier, _, _, _ = _sample_payloads()
+    carrier["document_pack"].append(
+        {
+            "doc_type": "Regulatory Action",
+            "title": "Doc follow-up",
+            "url": "https://example.com/doc",
+            "badge": "professional",
+            "why_it_matters": "Same URL, distinct document row.",
+        }
+    )
+
+    evidence_ids = [item.evidence_id for item in carrier_doc_pack_to_evidence_items(carrier)]
+
+    assert len(evidence_ids) == 2
+    assert len(set(evidence_ids)) == 2
+
+
+def test_carrier_evidence_adapter_preserves_document_metadata():
+    _, _, carrier, _, _, _ = _sample_payloads()
+    document = carrier["document_pack"][0]
+    document.update(
+        {
+            "badge": "official",
+            "source_class": "government_guidance",
+            "source_tier": "official",
+            "is_primary_authority": True,
+        }
+    )
+    carrier["sources"][0]["url"] = document["url"]
+
+    item = carrier_doc_pack_to_evidence_items(carrier)[0]
+
+    assert item.module == "carrier"
+    assert item.evidence_type == "denial"
+    assert item.title == "Doc"
+    assert item.summary == "Relevant"
+    assert item.url == "https://example.com/doc"
+    assert item.badge == "official"
+    assert item.source_reason == "Professional source"
+    assert item.source_class == "government_guidance"
+    assert item.source_tier == "official"
+    assert item.is_primary_authority is True
+    assert item.authority_key == "authority:doc"
+
+
+def test_carrier_evidence_adapter_infers_primary_authority_when_field_missing():
+    _, _, carrier, _, _, _ = _sample_payloads()
+    document = carrier["document_pack"][0]
+    document.update(
+        {
+            "doc_type": "Regulatory Action",
+            "title": "Sebo v. American Home Assurance Co.",
+            "url": "https://www.courtlistener.com/opinion/12345/sebo-v-american-home/",
+            "badge": "official",
+        }
+    )
+
+    assert "is_primary_authority" not in document
+
+    item = carrier_doc_pack_to_evidence_items(carrier)[0]
+
+    assert item.source_class == "court_opinion"
+    assert item.source_tier == "official"
+    assert item.is_primary_authority is True
+
+    document["is_primary_authority"] = False
+
+    explicit_item = carrier_doc_pack_to_evidence_items(carrier)[0]
+
+    assert explicit_item.is_primary_authority is False
 
 
 def test_caselaw_evidence_adapter_returns_stable_ids_for_repeated_payloads():
@@ -263,6 +348,7 @@ def test_memo_render_input_from_parts_accepts_mixed_shapes():
 
 def test_run_audit_snapshot_builds_canonical_entities():
     intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    carrier_evidence_id = carrier_doc_pack_to_evidence_items(carrier)[0].evidence_id
     caselaw_evidence_id = caselaw_pack_to_evidence_items(caselaw)[0].evidence_id
 
     snapshot = run_audit_snapshot_from_parts(
@@ -295,12 +381,17 @@ def test_run_audit_snapshot_builds_canonical_entities():
     assert payload["schema_version"] == "v2alpha1"
     assert payload["evidence_items"][0]["evidence_id"] == "weather-source-1"
     assert any(
+        item.evidence_id == carrier_evidence_id and item.module == "carrier"
+        for item in snapshot.evidence_items
+    )
+    assert any(
         item.evidence_id == caselaw_evidence_id and item.module == "caselaw"
         for item in snapshot.evidence_items
     )
     assert payload["evidence_clusters"][0]["cluster_id"] == "cluster-1"
     assert payload["evidence_clusters"][2]["cluster_type"] == "citation"
     assert snapshot.memo_claims[0].cluster_ids == ["cluster-1"]
+    assert carrier_evidence_id in snapshot.memo_claims[1].evidence_ids
     assert caselaw_evidence_id in snapshot.memo_claims[2].evidence_ids
     assert snapshot.memo_claims[2].cluster_ids == ["cluster-3"]
     assert snapshot.quality_snapshot.source_class_counts["government_guidance"] == 1

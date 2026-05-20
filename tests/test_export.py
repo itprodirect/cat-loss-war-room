@@ -337,7 +337,7 @@ def test_render_includes_canonical_evidence_index_rows():
     md = render_markdown_memo(*_sample_data())
 
     assert "weather-source-1" in md
-    assert "carrier-document-1" in md
+    assert "carrier-document-denial-" in md
     assert "caselaw-case-123-so-3d-456-" in md
     assert "citation-check-1" in md
 

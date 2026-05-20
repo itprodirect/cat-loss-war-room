@@ -2731,3 +2731,50 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `440 passed in 16.09s`; verify manifest written under
     `runs/verify/2026-05-20_codex-issue-94-caselaw-evidence-adapter_20260520t061111z.json`.
+
+## Session 128 - Issue 96 Carrier Evidence Adapter
+Date: 2026-05-20
+Status: Complete
+
+- Completed issue `#96` as the carrier counterpart to the narrow issue `#12`
+  evidence/provenance adapter slice from issue `#94`.
+- What changed:
+  - Added `carrier_doc_pack_to_evidence_items(...)` in
+    `src/war_room/models.py` as a focused adapter seam from current
+    `CarrierDocPack` / `CarrierDocument` data into canonical `EvidenceItem`
+    records.
+  - Replaced positional carrier evidence IDs like `carrier-document-1` with
+    deterministic IDs derived from stable document attributes, the current
+    authority-key inputs, and carrier snapshot context.
+  - Kept `RunAuditSnapshot`, memo claims, evidence clusters, quality snapshot,
+    export rendering, and Evidence Board construction on the existing flow by
+    routing only the carrier evidence-item mapping through the new adapter.
+  - Added focused tests for repeated stable carrier IDs, distinct carrier-row
+    IDs, metadata preservation, audit-snapshot inclusion, evidence-board
+    rendering, memo evidence-index output, and explicit-vs-inferred
+    primary-authority behavior.
+- Decisions added:
+  - Carrier evidence IDs now use document type/title/URL, authority key, and
+    carrier snapshot context plus a short deterministic digest, with only
+    deterministic collision suffixing for duplicate stable IDs within one
+    payload.
+  - Carrier document rows can carry optional explicit `source_class`,
+    `source_tier`, and `is_primary_authority` fields; explicit
+    `is_primary_authority` true/false values win, while omitted values still
+    infer from `score_url(...)`.
+- Decisions not added:
+  - no full issue `#12` evidence graph implementation, global evidence graph
+    rewrite, database, persistence, auth, users, sessions, queues, workers,
+    dashboard, frontend, API framework, production runtime, live retrieval
+    change, fixture/cache/citation provider change, AI scoring, ML dedupe,
+    broad title-similarity dedupe, readiness-level change, release claim,
+    pilot execution, firm memory, notebook behavior change, or docx/pdf export
+    pipeline was added.
+- Validation:
+  - `python -m pytest tests/test_models.py tests/test_evidence_board.py tests/test_memo_contracts.py tests/test_export.py -q`
+    -> `57 passed in 2.55s`.
+  - `python -m pytest -q` -> `444 passed in 17.21s`.
+  - `git diff --check` -> passed.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `444 passed in 18.09s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-issue-96-carrier-evidence-adapter_20260520t070016z.json`.
