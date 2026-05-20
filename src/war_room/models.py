@@ -5,6 +5,7 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import re
+from dataclasses import dataclass
 from typing import Any, Literal, Mapping, Sequence
 from urllib.parse import parse_qsl, urlencode, urlparse
 
@@ -633,6 +634,14 @@ class RunAuditSnapshot(BaseModel):
         return _validate_schema_version(value)
 
 
+@dataclass(frozen=True)
+class _EvidenceDedupeIntegrationResult:
+    retained_items: list[EvidenceItem]
+    old_id_to_retained_id: dict[str, str]
+    removed_duplicate_ids: list[str]
+    retained_id_to_duplicate_ids: dict[str, list[str]]
+
+
 class EvidenceBoardItemPreview(BaseModel):
     """Compact evidence-item preview for board rendering."""
 
@@ -1259,23 +1268,69 @@ def dedupe_evidence_items(evidence_items: Sequence[EvidenceItem]) -> list[Eviden
     earlier retained row when the selected review/provenance compatibility
     fields checked by this helper remain compatible.
     """
+    return _dedupe_evidence_items_with_result(
+        evidence_items,
+        same_module_only=False,
+    ).retained_items
+
+
+def _dedupe_evidence_items_for_audit_snapshot(
+    evidence_items: Sequence[EvidenceItem],
+) -> _EvidenceDedupeIntegrationResult:
+    return _dedupe_evidence_items_with_result(
+        evidence_items,
+        same_module_only=True,
+    )
+
+
+def _dedupe_evidence_items_with_result(
+    evidence_items: Sequence[EvidenceItem],
+    *,
+    same_module_only: bool,
+) -> _EvidenceDedupeIntegrationResult:
     retained_by_key: dict[tuple[str, ...], list[EvidenceItem]] = {}
-    deduped: list[EvidenceItem] = []
+    retained_result_items: list[EvidenceItem] = []
+    old_id_to_retained_id: dict[str, str] = {}
+    removed_duplicate_ids: list[str] = []
+    retained_id_to_duplicate_ids: dict[str, list[str]] = {}
 
     for item in evidence_items:
         key = _dedupe_key_for_evidence_item(item)
         if key is None:
-            deduped.append(item)
+            retained_result_items.append(item)
+            old_id_to_retained_id[item.evidence_id] = item.evidence_id
+            continue
+        if same_module_only:
+            key = (item.module, *key)
+
+        key_retained_items = retained_by_key.setdefault(key, [])
+        retained_match = next(
+            (
+                retained
+                for retained in key_retained_items
+                if _evidence_items_can_collapse(retained, item)
+            ),
+            None,
+        )
+        if retained_match is not None:
+            old_id_to_retained_id[item.evidence_id] = retained_match.evidence_id
+            removed_duplicate_ids.append(item.evidence_id)
+            retained_id_to_duplicate_ids.setdefault(
+                retained_match.evidence_id,
+                [],
+            ).append(item.evidence_id)
             continue
 
-        retained_items = retained_by_key.setdefault(key, [])
-        if any(_evidence_items_can_collapse(retained, item) for retained in retained_items):
-            continue
+        key_retained_items.append(item)
+        retained_result_items.append(item)
+        old_id_to_retained_id[item.evidence_id] = item.evidence_id
 
-        retained_items.append(item)
-        deduped.append(item)
-
-    return deduped
+    return _EvidenceDedupeIntegrationResult(
+        retained_items=retained_result_items,
+        old_id_to_retained_id=old_id_to_retained_id,
+        removed_duplicate_ids=removed_duplicate_ids,
+        retained_id_to_duplicate_ids=retained_id_to_duplicate_ids,
+    )
 
 
 def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditSnapshot:
@@ -1292,7 +1347,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
     )
 
     evidence_items: list[EvidenceItem] = []
-    evidence_ids_by_module = {
+    raw_evidence_ids_by_module = {
         "weather": [],
         "carrier": [],
         "caselaw": [],
@@ -1301,30 +1356,46 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
 
     weather_evidence_items = weather_brief_to_evidence_items(memo_input.weather)
     evidence_items.extend(weather_evidence_items)
-    evidence_ids_by_module["weather"].extend(
+    raw_evidence_ids_by_module["weather"].extend(
         item.evidence_id for item in weather_evidence_items
     )
 
     carrier_evidence_items = carrier_doc_pack_to_evidence_items(memo_input.carrier)
     evidence_items.extend(carrier_evidence_items)
-    evidence_ids_by_module["carrier"].extend(
+    raw_evidence_ids_by_module["carrier"].extend(
         item.evidence_id for item in carrier_evidence_items
     )
 
     caselaw_evidence_items = caselaw_pack_to_evidence_items(memo_input.caselaw)
     evidence_items.extend(caselaw_evidence_items)
-    evidence_ids_by_module["caselaw"].extend(
+    raw_evidence_ids_by_module["caselaw"].extend(
         item.evidence_id for item in caselaw_evidence_items
     )
 
     citation_evidence_items = citation_verify_pack_to_evidence_items(memo_input.citecheck)
     evidence_items.extend(citation_evidence_items)
-    evidence_ids_by_module["citation_verify"].extend(
+    raw_evidence_ids_by_module["citation_verify"].extend(
         item.evidence_id for item in citation_evidence_items
     )
 
+    raw_evidence_count = len(evidence_items)
+    dedupe_result = _dedupe_evidence_items_for_audit_snapshot(evidence_items)
+    evidence_items = dedupe_result.retained_items
+    evidence_ids_by_module = {
+        module: _rewrite_evidence_ids(
+            evidence_ids,
+            dedupe_result.old_id_to_retained_id,
+        )
+        for module, evidence_ids in raw_evidence_ids_by_module.items()
+    }
+
     evidence_clusters = _build_evidence_clusters(evidence_items)
-    quality_snapshot = _build_quality_snapshot(evidence_items, evidence_clusters, citecheck_payload)
+    quality_snapshot = _build_quality_snapshot(
+        evidence_items,
+        evidence_clusters,
+        citecheck_payload,
+        raw_evidence_count=raw_evidence_count,
+    )
 
     evidence_cluster_ids_by_evidence_id = {
         evidence_id: cluster.cluster_id
@@ -1382,24 +1453,30 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
     citation_summary = citecheck_payload.get("summary", {})
     uncertain = citation_summary.get("uncertain", 0)
     not_found = citation_summary.get("not_found", 0)
-    uncertain_evidence_ids = [
-        evidence_id
-        for evidence_id, check in zip(
-            evidence_ids_by_module["citation_verify"],
-            citecheck_payload.get("checks", []),
-            strict=False,
-        )
-        if check.get("status") == "uncertain"
-    ]
-    not_found_evidence_ids = [
-        evidence_id
-        for evidence_id, check in zip(
-            evidence_ids_by_module["citation_verify"],
-            citecheck_payload.get("checks", []),
-            strict=False,
-        )
-        if check.get("status") == "not_found"
-    ]
+    uncertain_evidence_ids = _rewrite_evidence_ids(
+        [
+            evidence_id
+            for evidence_id, check in zip(
+                raw_evidence_ids_by_module["citation_verify"],
+                citecheck_payload.get("checks", []),
+                strict=False,
+            )
+            if check.get("status") == "uncertain"
+        ],
+        dedupe_result.old_id_to_retained_id,
+    )
+    not_found_evidence_ids = _rewrite_evidence_ids(
+        [
+            evidence_id
+            for evidence_id, check in zip(
+                raw_evidence_ids_by_module["citation_verify"],
+                citecheck_payload.get("checks", []),
+                strict=False,
+            )
+            if check.get("status") == "not_found"
+        ],
+        dedupe_result.old_id_to_retained_id,
+    )
     if uncertain:
         related_cluster_ids = _cluster_ids_for_evidence_ids(
             uncertain_evidence_ids,
@@ -1616,6 +1693,8 @@ def _build_quality_snapshot(
     evidence_items: list[EvidenceItem],
     evidence_clusters: list[EvidenceCluster],
     citecheck_payload: Mapping[str, Any],
+    *,
+    raw_evidence_count: int | None = None,
 ) -> QualitySnapshot:
     evidence_items_by_id = {item.evidence_id: item for item in evidence_items}
     source_class_counts: dict[str, int] = {}
@@ -1677,7 +1756,9 @@ def _build_quality_snapshot(
         evidence_item_count=evidence_item_count,
         evidence_cluster_count=evidence_cluster_count,
         grouped_evidence_count=max(0, evidence_item_count - evidence_cluster_count),
-        raw_evidence_count=evidence_item_count,
+        raw_evidence_count=raw_evidence_count
+        if raw_evidence_count is not None
+        else evidence_item_count,
         normalized_authority_count=normalized_authority_count,
         duplicate_authority_count=max(0, evidence_item_count - normalized_authority_count),
         provenance_link_count=provenance_link_count,
@@ -2185,6 +2266,18 @@ def _normalize_cluster_url(url: str) -> str:
     path = re.sub(r"/+", "/", (parsed.path or "").rstrip("/"))
     normalized = f"{hostname}{path}".strip("/")
     return normalized.lower()
+
+
+def _rewrite_evidence_ids(
+    evidence_ids: list[str],
+    old_id_to_retained_id: Mapping[str, str],
+) -> list[str]:
+    rewritten: list[str] = []
+    for evidence_id in evidence_ids:
+        retained_id = old_id_to_retained_id.get(evidence_id, evidence_id)
+        if retained_id and retained_id not in rewritten:
+            rewritten.append(retained_id)
+    return rewritten
 
 
 def _cluster_ids_for_evidence_ids(

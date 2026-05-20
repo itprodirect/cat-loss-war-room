@@ -3229,3 +3229,46 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `487 passed in 16.78s`; verify manifest written under
     `runs/verify/2026-05-20_codex-134-provenance-integrity-harness_20260520t214235z.json`.
+
+## Session 142 - Issue 12 Same-Module Audit Snapshot Dedupe
+Date: 2026-05-20
+Status: Complete
+
+- Wired deterministic same-module evidence dedupe into audit snapshot assembly
+  behind an explicit runtime-local `old_id -> retained_id` remapping contract.
+- What changed:
+  - Added an internal dedupe integration result in `src/war_room/models.py`
+    with retained items, old-to-retained ID mapping, removed duplicate IDs, and
+    retained-to-duplicate ID mapping.
+  - Applied dedupe only after weather, carrier, caselaw, and citation-verify
+    adapters emit current `EvidenceItem` rows, and only with same-module keys.
+  - Rebuilt module evidence ID lists, evidence clusters, memo claims, citation
+    review-event links, and quality counts from retained IDs so removed
+    duplicate IDs do not leak into downstream surfaces.
+  - Added focused tests for deterministic retained IDs, same-module collapse,
+    cross-module non-collapse, citation-review remapping, markdown/read-model
+    provenance integrity, and raw-vs-retained evidence counts.
+- Decisions added:
+  - Audit snapshot dedupe is same-module only; caselaw and citation-verification
+    rows that share a URL or citation remain separate evidence rows and may
+    still share a cluster.
+  - `raw_evidence_count` tracks pre-dedupe adapter rows while
+    `evidence_item_count` tracks retained exported evidence rows.
+- Decisions not added:
+  - no persistence, API, UI/dashboard, auth/users/sessions, queues/workers,
+    schema expansion, fuzzy/ML clustering, AI scoring, live retrieval changes,
+    citation verification behavior change, golden snapshot refresh, or claim
+    that the V2 evidence graph is complete was added.
+- Counts:
+  - Focused synthetic duplicate tests now show `raw_evidence_count=5` and
+    `evidence_item_count=4` after same-module collapse.
+  - Current committed fixture lanes showed no same-module duplicate collapse:
+    raw and retained evidence counts were equal across all five fixture cases.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_issue_workspace.py tests/test_memo_composer.py tests/test_export.py tests/test_preflight.py -q`
+    -> `87 passed in 6.29s`.
+  - `python -m pytest -q` -> `491 passed in 21.40s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `491 passed in 22.10s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-12-same-module-audit-dedupe_20260520t220446z.json`.
