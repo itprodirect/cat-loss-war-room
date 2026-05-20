@@ -70,8 +70,16 @@ def build_issue_workspace(
             for cluster_id in cluster_ids
             for event in events_by_cluster.get(cluster_id, [])
         )
-        review_required = bool(review_event_ids) or not candidates or any(
+        has_unverified_outcomes = any(
             outcome.status != "verified" for outcome in citation_outcomes
+        )
+        has_unchecked_candidates = len(candidates) > len(citation_outcomes)
+        review_required = (
+            bool(review_event_ids)
+            or not candidates
+            or not citation_outcomes
+            or has_unchecked_candidates
+            or has_unverified_outcomes
         )
         status = "review_required" if review_required else "ready"
         cards.append(

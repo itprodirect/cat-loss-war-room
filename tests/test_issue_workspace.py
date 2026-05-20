@@ -236,3 +236,56 @@ def test_format_issue_workspace_surfaces_issue_status_and_authorities():
     assert "[ready] scope of repair" in rendered
     assert "Strongest authorities:" in rendered
     assert "Citation outcomes:" in rendered
+
+
+def test_build_issue_workspace_requires_review_when_no_citation_outcomes():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_parts()
+    citecheck["checks"] = []
+    citecheck["summary"] = {"total": 0, "verified": 0, "uncertain": 0, "not_found": 0}
+
+    workspace = build_issue_workspace_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    assert workspace.review_required_issue_count == 2
+    assert all(card.review_required for card in workspace.issue_cards)
+
+
+def test_build_issue_workspace_requires_review_when_citation_outcomes_are_partial():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_parts()
+    citecheck["checks"] = [
+        {
+            "badge": "verified",
+            "case_name": "Doe v. Ins",
+            "citation": "123 So.3d 456",
+            "status": "verified",
+            "note": "Found on reviewed source",
+            "source_url": "https://example.com/case",
+        }
+    ]
+    citecheck["summary"] = {"total": 1, "verified": 1, "uncertain": 0, "not_found": 0}
+
+    workspace = build_issue_workspace_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    cards_by_issue = {card.issue_label: card for card in workspace.issue_cards}
+
+    assert workspace.review_required_issue_count == 1
+    assert cards_by_issue["scope of repair"].review_required is True
+    assert cards_by_issue["scope of repair"].citation_outcomes == []
+    assert cards_by_issue["wind vs water causation"].review_required is False
+    assert [
+        outcome.status
+        for outcome in cards_by_issue["wind vs water causation"].citation_outcomes
+    ] == ["verified"]
