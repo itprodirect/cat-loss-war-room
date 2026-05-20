@@ -3193,3 +3193,39 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `484 passed in 18.45s`; verify manifest written under
     `runs/verify/2026-05-20_codex-issue-12-dedupe-plan_20260520t204851z.json`.
+
+## Session 141 - Issue 134 Provenance Integrity Harness
+Date: 2026-05-20
+Status: Complete
+
+- Added a test-only provenance-integrity harness before any audit-snapshot
+  dedupe wiring.
+- What changed:
+  - Added shared test helpers that assert audit snapshots have no dangling
+    evidence IDs in clusters, memo claims, or review events, and no dangling
+    cluster IDs in memo claims or review events.
+  - Extended Evidence Board, Issue Workspace, Memo Composer, Markdown export,
+    and committed fixture preflight tests so current read-model/export
+    references resolve back to the fixture-backed audit snapshot.
+  - Added a cross-module caselaw/citation-verification regression shape where
+    both rows reference the same authority/URL, remain distinct evidence rows,
+    and the harness catches an orphaned citation-verification row.
+- Decisions added:
+  - Provenance-integrity checks should land before runtime dedupe integration
+    and should treat current cross-module caselaw/citation-verification rows as
+    related by cluster but not collapsed into one evidence row.
+- Decisions not added:
+  - no runtime behavior change, dedupe integration,
+    `old_id -> retained_id` remapping, schema change, golden snapshot refresh,
+    persistence, API, UI, dashboard, auth, queues, workers, fuzzy/ML
+    clustering, AI scoring, citation-search behavior change, or
+    citation-verification behavior change was added.
+- Validation:
+  - `python -m pytest tests/test_memo_contracts.py::test_provenance_harness_preserves_distinct_cross_module_authority_rows tests/test_preflight.py::test_committed_fixture_preflight_surfaces_keep_provenance_integrity tests/test_export.py::test_rendered_markdown_provenance_references_resolve_to_snapshot -q`
+    -> `3 passed in 2.11s`.
+  - `python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_issue_workspace.py tests/test_memo_composer.py tests/test_export.py tests/test_preflight.py -q`
+    -> `83 passed in 3.93s`.
+  - `git diff --check` -> passed.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `487 passed in 16.78s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-134-provenance-integrity-harness_20260520t214235z.json`.

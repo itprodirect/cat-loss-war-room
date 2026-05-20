@@ -12,9 +12,11 @@ from war_room.models import (
     QuerySpec,
     ReviewEvent,
     citation_verify_pack_to_evidence_items,
+    run_audit_snapshot_from_parts,
 )
 from war_room.query_plan import generate_query_plan
 from war_room.weather_module import build_weather_brief
+from tests.provenance_integrity import assert_markdown_provenance_integrity
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -370,6 +372,14 @@ def test_render_includes_canonical_evidence_index_rows():
     assert "caselaw-case-123-so-3d-456-" in md
     assert citation_evidence_id in md
     assert "| citation-check-1 |" not in md
+
+
+def test_rendered_markdown_provenance_references_resolve_to_snapshot():
+    sample_data = _sample_data()
+    snapshot = run_audit_snapshot_from_parts(*sample_data)
+    md = render_markdown_memo(*sample_data)
+
+    assert_markdown_provenance_integrity(md, snapshot)
 
 
 def test_render_sanitizes_evidence_index_review_log_and_unsafe_urls():

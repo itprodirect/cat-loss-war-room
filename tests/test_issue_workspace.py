@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
+from tests.provenance_integrity import assert_issue_workspace_provenance_integrity
 from war_room.issue_workspace import (
     build_issue_workspace,
     build_issue_workspace_from_parts,
@@ -174,6 +175,7 @@ def test_build_issue_workspace_links_clusters_claims_and_citation_outcomes():
     assert second_card.issue_label == "scope of repair"
     assert second_card.review_required is False
     assert second_card.citation_outcomes[0].status == "verified"
+    assert_issue_workspace_provenance_integrity(workspace, snapshot)
 
 
 def test_build_issue_workspace_from_parts_matches_snapshot_builder():
