@@ -3,17 +3,23 @@
 from __future__ import annotations
 
 import json
+import socket
 from pathlib import Path
 from threading import Thread
 from typing import Any
 from urllib.error import HTTPError
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
 import pytest
 
 from war_room.models import CaseIntake
 from war_room.orchestration_api_contracts import StartRunRequest, start_run_request_to_payload
-from war_room.orchestration_http import MAX_REQUEST_BODY_BYTES, create_dev_http_server
+from war_room.orchestration_http import (
+    MAX_REQUEST_BODY_BYTES,
+    _is_loopback_host,
+    create_dev_http_server,
+)
 from war_room.orchestration_service import InMemoryOrchestrationService
 from war_room.scenarios import load_scenario
 
@@ -91,6 +97,44 @@ def _request(
         return exc.code, json.loads(exc.read().decode("utf-8"))
 
 
+def _raw_post_declaring_body_length(
+    base_url: str,
+    path: str,
+    content_length: int,
+) -> tuple[int, dict[str, Any]]:
+    parsed = urlparse(base_url)
+    if parsed.hostname is None or parsed.port is None:
+        raise AssertionError(f"Unexpected test server URL: {base_url}")
+
+    request = (
+        f"POST {path} HTTP/1.1\r\n"
+        f"Host: {parsed.hostname}:{parsed.port}\r\n"
+        "Content-Type: application/json\r\n"
+        f"Content-Length: {content_length}\r\n"
+        "Connection: close\r\n"
+        "\r\n"
+    ).encode("ascii")
+
+    chunks = []
+    with socket.create_connection((parsed.hostname, parsed.port), timeout=10) as client:
+        client.settimeout(10)
+        client.sendall(request)
+        try:
+            client.shutdown(socket.SHUT_WR)
+        except OSError:
+            pass
+        while True:
+            chunk = client.recv(65536)
+            if not chunk:
+                break
+            chunks.append(chunk)
+
+    raw_response = b"".join(chunks)
+    header_bytes, _, body = raw_response.partition(b"\r\n\r\n")
+    status_line = header_bytes.splitlines()[0].decode("ascii")
+    return int(status_line.split()[1]), json.loads(body.decode("utf-8"))
+
+
 def test_health_route_returns_dev_only_json_envelope(http_base_url):
     status, body = _request(http_base_url, "GET", "/healthz")
 
@@ -161,26 +205,33 @@ def test_invalid_json_returns_http_error_with_transport_style_envelope(http_base
     assert body["status_presentation"] is None
 
 
-
-
 def test_request_body_too_large_returns_clear_json_error(http_base_url):
-    oversized = b"{" + (b" " * MAX_REQUEST_BODY_BYTES) + b"}"
-    status, body = _request(
+    status, body = _raw_post_declaring_body_length(
         http_base_url,
-        "POST",
         "/runs",
-        raw_body=oversized,
+        MAX_REQUEST_BODY_BYTES + 1,
     )
 
     assert status == 400
     assert body["ok"] is False
     assert body["operation"] == "start_run"
+    assert body["payload"]["status"] == "error"
     assert body["payload"]["error"]["code"] == "request_too_large"
+    assert body["status_presentation"] is None
+
+
+def test_loopback_host_policy_accepts_common_loopback_forms():
+    assert _is_loopback_host("LOCALHOST") is True
+    assert _is_loopback_host("localhost.") is True
+    assert _is_loopback_host("127.1") is True
+    assert _is_loopback_host("::1") is True
+    assert _is_loopback_host("0.0.0.0") is False
 
 
 def test_create_server_rejects_non_loopback_host_by_default():
     with pytest.raises(ValueError, match="loopback hosts"):
         create_dev_http_server(("0.0.0.0", 0), service=_service(), scenario_id=MILTON_SCENARIO_ID)
+
 
 def test_invalid_start_payload_returns_transport_error_over_http(http_base_url):
     status, body = _request(

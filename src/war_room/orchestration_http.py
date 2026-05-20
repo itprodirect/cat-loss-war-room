@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import ipaddress
 import json
+import socket
 from collections.abc import Mapping
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -314,13 +315,17 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _is_loopback_host(host: str) -> bool:
-    if host == "localhost":
+    normalized = host.strip().lower().rstrip(".")
+    if normalized == "localhost":
         return True
     try:
-        return ipaddress.ip_address(host).is_loopback
+        return ipaddress.ip_address(normalized).is_loopback
     except ValueError:
+        pass
+    try:
+        return ipaddress.ip_address(socket.inet_aton(normalized)).is_loopback
+    except OSError:
         return False
-
 
 
 def _path_segments(path: str) -> list[str]:
