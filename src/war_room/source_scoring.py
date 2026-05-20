@@ -140,7 +140,11 @@ def _classify_domain(hostname: str) -> str:
 
     # Check official
     for domain in OFFICIAL_DOMAINS:
-        if hostname.endswith(domain):
+        if domain.startswith("."):
+            if hostname.endswith(domain):
+                return "official"
+            continue
+        if hostname == domain or hostname.endswith("." + domain):
             return "official"
 
     # Check professional
