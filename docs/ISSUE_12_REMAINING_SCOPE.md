@@ -4,13 +4,13 @@ Date: 2026-05-20
 
 ## Purpose
 
-Issue [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) is still the umbrella for evidence normalization, dedupe, provenance, confidence annotations, and canonical evidence behavior. This review narrows the next implementation step after the landed issue `#94`, `#96`, and `#98` evidence-adapter slices.
+Issue [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) is still the umbrella for evidence normalization, dedupe, provenance, confidence annotations, and canonical evidence behavior. This review now reflects the landed issue `#94`, `#96`, `#98`, and `#103` evidence-adapter slices, including PR `#105`.
 
 The current decision is:
 
-- continue with one narrow citation-verify evidence adapter child issue next;
-- do not treat issue `#12` as ready for a broad dedupe, persistence, UI, or full evidence graph implementation;
-- do not create a separate adapter-status map before the citation-verify slice unless maintainers want to plan multiple adapter families at once.
+- treat weather, carrier, caselaw, and citation verification as the current named adapter seams;
+- do not treat issue `#12` as complete or ready for broad persistence, UI, API, review workflow, or full evidence graph implementation;
+- choose the next issue `#12` child from a narrow deterministic dedupe helper, provenance link hardening, citation-quality fixture regression under `#13` / `#14`, or a docs-only issue-12 closeout/status map.
 
 ## Current Adapter Status
 
@@ -21,39 +21,44 @@ The canonical source family for issue `#12` adapter work is the set of current m
 | Weather corroboration | Landed | `weather_brief_to_evidence_items(...)` in `src/war_room/models.py` | Maps current `WeatherBrief` / `SourceReference` rows to deterministic provenance-oriented `EvidenceItem` IDs. |
 | Carrier intelligence | Landed | `carrier_doc_pack_to_evidence_items(...)` in `src/war_room/models.py` | Maps current `CarrierDocPack` / `CarrierDocument` rows to deterministic provenance-oriented `EvidenceItem` IDs. |
 | Case law | Landed | `caselaw_pack_to_evidence_items(...)` in `src/war_room/models.py` | Maps current `CaseLawPack` / `CaseIssue` / `CaseEntry` rows to deterministic provenance-oriented `EvidenceItem` IDs. |
-| Citation verification | Partially present, adapter not landed | Current `run_audit_snapshot_from_memo_input(...)` builds `citation_verify` evidence rows inline from `CitationVerifyPack` checks | Needs a named adapter seam and stable provenance-oriented IDs before broader issue `#12` work continues. |
+| Citation verification | Landed in issue `#103` / PR `#105` | `citation_verify_pack_to_evidence_items(...)` in `src/war_room/models.py` | Maps current `CitationVerifyPack` / `CitationCheck` rows to deterministic provenance-oriented `EvidenceItem` IDs without changing citation verification behavior. |
 
-The landed weather, carrier, and caselaw adapters are narrow seams over current notebook-era module output. They preserve `RunAuditSnapshot`, Evidence Board, memo/export behavior, fixture-backed tests, and the current offline validation lane. They are not a full V2 evidence graph, storage layer, dedupe engine, dashboard, or API integration.
+The landed weather, carrier, caselaw, and citation-verification adapters are narrow seams over current notebook-era module output. They preserve `RunAuditSnapshot`, Evidence Board, memo/export behavior, fixture-backed tests, and the current offline validation lane. They are not a full V2 evidence graph, storage layer, dedupe engine, dashboard, API integration, persistence layer, or review workflow.
 
-## Source Families Still Lacking Adapters
+## Adapter Gap Status
 
-Only the citation-verify source family still lacks a dedicated canonical evidence adapter among today's evidence-producing module outputs.
+All current evidence-producing source families now have named evidence adapter seams.
 
-The current code already has typed citation verification contracts through `CitationVerifyPack`, `CitationCheck`, `CitationSummary`, `adapt_citation_verify_pack(...)`, and `citation_verify_pack_to_payload(...)`. It also already emits `citation_verify` `EvidenceItem` rows inside `run_audit_snapshot_from_memo_input(...)`. The missing piece is a named adapter equivalent to the landed source-family adapters, for example `citation_verify_pack_to_evidence_items(...)`.
+PR `#105` added `citation_verify_pack_to_evidence_items(...)` over the existing `CitationVerifyPack` / `CitationCheck` output and routed `run_audit_snapshot_from_memo_input(...)` through that adapter. Citation evidence rows now follow the same named-adapter pattern as weather, carrier, and caselaw output.
 
-That adapter should only translate existing citation-check output into canonical `EvidenceItem` rows. It should not change citation search behavior, add live retrieval, harden ambiguity logic, change badge/status vocabulary, or claim legal verification.
+That landed adapter only translates existing citation-check output into canonical `EvidenceItem` rows. It does not change citation search behavior, add live retrieval, harden ambiguity logic, change badge/status vocabulary, change badge/display semantics, expand `EvidenceItem`, or claim legal verification.
 
 Current non-adapter surfaces should stay out of this child issue:
 
 - `RetrievalTask` and `RunEvent` are canonical runtime/audit entities, not evidence source-family adapters.
-- `MemoClaim`, `ReviewEvent`, `EvidenceCluster`, and export artifacts are provenance and review-linkage surfaces, not the next adapter target.
+- `MemoClaim`, `ReviewEvent`, `EvidenceCluster`, and export artifacts are provenance and review-linkage surfaces, not additional source-family adapter targets.
 - Intake, research-plan, memo-assembly, and export stages should not become evidence adapters just to fill a table.
 
 ## Recommended Next Child Issue
 
-Create the next child as:
+The prior recommended child landed as issue `#103` / PR `#105`:
 
 **Issue #12 child: Add citation-verify evidence adapter over current `CitationVerifyPack` output.**
 
-Narrow implementation intent:
+What landed:
 
-- Add a named adapter from current `CitationVerifyPack` / `CitationCheck` output into canonical `EvidenceItem` rows.
-- Replace current positional citation evidence IDs such as `citation-check-1` with deterministic provenance-oriented IDs.
-- Preserve citation status semantics: `verified`, `uncertain`, and `not_found` remain confidence signals requiring attorney review as appropriate.
-- Carry forward the trust metadata the current inline builder already maps onto `EvidenceItem`: `source_class`, `source_tier`, `is_primary_authority`, `citation`, and `case_name`/`source_url` via `title`/`url`.
-- `status_reason`, `trust_explanation`, and `confidence` exist on `CitationCheck` but have no `EvidenceItem` slot today and are not carried by the current builder. Carrying them requires an `EvidenceItem` field addition — treat that as an explicit, separate scoping decision, not part of this seam-extraction slice.
-- Route `run_audit_snapshot_from_memo_input(...)` through the new adapter while preserving existing Evidence Board, Issue Workspace, Memo Composer, Export History, release-scorecard, and offline fixture behavior.
-- Add focused tests for stable IDs, duplicate-row suffixing, existing-field metadata preservation, audit-snapshot inclusion, Evidence Board rendering, memo/export evidence-index behavior, and sparse citation metadata.
+- `citation_verify_pack_to_evidence_items(...)` maps current `CitationVerifyPack` / `CitationCheck` output into canonical `EvidenceItem` rows.
+- Citation evidence IDs are deterministic and provenance-oriented instead of positional IDs such as `citation-check-1`.
+- Citation status semantics, live retrieval behavior, badge/display semantics, and the `EvidenceItem` schema stayed unchanged.
+- `run_audit_snapshot_from_memo_input(...)` now routes citation evidence rows through the named adapter while preserving current downstream surfaces.
+- Focused tests cover stable IDs, duplicate-row suffixing, existing-field metadata preservation, audit-snapshot inclusion, Evidence Board rendering, export evidence-index behavior, and sparse citation metadata.
+
+Recommended next decision:
+
+- choose a deterministic dedupe helper,
+- harden provenance links across current audit output,
+- add citation-quality fixture regression under issue `#13` / `#14`, or
+- write a docs-only issue-12 closeout/status map that separates landed adapter seams from the still-open full evidence graph.
 
 Validation should stay local and fixture-backed:
 
@@ -64,7 +69,7 @@ python -m pytest -q
 
 ## Adapter-Status Map Decision
 
-A separate adapter-status map is not needed before the citation-verify adapter. This review is enough status mapping for the next child because there is only one remaining evidence-producing module family without a named adapter.
+A separate adapter-status map is no longer needed before the citation-verify adapter because that adapter landed in PR `#105`. A docs-only closeout/status map may still be useful if maintainers want a concise issue `#12` view that separates landed adapter seams from the broader open graph, dedupe, persistence, API, and review-workflow work.
 
 Add a dedicated adapter-status map later only if maintainers want to coordinate more than one of these broader tracks:
 
@@ -76,11 +81,11 @@ Add a dedicated adapter-status map later only if maintainers want to coordinate 
 
 ## Explicitly Deferred Work
 
-These items remain outside the next adapter slice and outside this docs-only review:
+These items remain outside the landed adapter slices and outside this docs-only review:
 
 - broad dedupe by URL, content fingerprint, title similarity, or ML scoring;
 - a database, persistence layer, storage migration, or full canonical graph store;
-- dashboard, frontend, app shell, auth, queues, workers, sessions, or production API routing;
+- dashboard, frontend, UI, app shell, auth, queues, workers, sessions, or production API routing;
 - live retrieval changes, new providers, provider ranking changes, or citation-search behavior changes;
 - AI scoring, generative evidence synthesis, or replacement of deterministic source scoring;
 - provenance-through-edits, approvals, revisions, or broader human-review workflow design;
@@ -88,6 +93,6 @@ These items remain outside the next adapter slice and outside this docs-only rev
 
 ## How Future Codex Work Should Use This
 
-For the next child issue, Codex should start from `src/war_room/models.py` and the existing tests in `tests/test_memo_contracts.py`, `tests/test_evidence_board.py`, `tests/test_export.py`, and `tests/test_issue_workspace.py`. The implementation should mirror the landed weather, carrier, and caselaw adapter pattern and keep the citation-verify change to adapter extraction plus deterministic ID behavior.
+For the next child issue, Codex should start by deciding which narrow follow-up is actually being requested. If the child is dedupe or provenance hardening, use the landed adapter output and current audit-snapshot tests as fixtures rather than broadening into storage or UI. If the child is citation-quality regression, keep it under issue `#13` / `#14` and do not change live retrieval or badge semantics without explicit scope.
 
-Do not turn issue `#12` into a broad implementation umbrella. The next useful code slice is the citation-verify adapter only.
+Do not turn issue `#12` into a broad implementation umbrella. The citation-verify adapter is landed; the next useful slice should be a narrow dedupe, provenance, citation-quality, or status-map follow-up.

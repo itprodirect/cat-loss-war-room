@@ -21,7 +21,7 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 449 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 455 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + offline e2e gate + offline security and dependency hygiene gates + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install and categorized quality-gate artifacts |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -35,7 +35,7 @@ This is research acceleration, not legal advice.
 | Quality rubric (`#27`) | First-pass rubric plus local and CI artifact workflows landed in `docs/V2_RELEASE_RUBRIC.md`; demo-ready threshold calibration, blocking/advisory metric categories, live preflight evidence, run-scoped verify artifacts, verify manifests, a stable latest pointer, the human reviewer guide in `docs/ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md`, the issue `#88` top-level `reviewer_summary` convenience layer, and the issue `#92` / PR `#93` `ci_reporting_summary` inventory are now explicit, while broader CI and pilot operationalization remain open |
 | Orchestration API (`#10`) | First narrow run-state contract slice is implemented in `src/war_room/orchestration.py` and documented in `docs/ISSUE_10_RUN_STATE_CONTRACT.md`; issue `#73` adds typed start-run and get-run-status API boundary contracts in `src/war_room/orchestration_api_contracts.py` and `docs/ISSUE_10_API_CONTRACTS.md`; the first in-process offline service slice is implemented in `src/war_room/orchestration_service.py` and documented in `docs/ISSUE_10_SERVICE_SLICE.md`; the operator-facing status presentation layer is implemented in `src/war_room/orchestration_status_view.py` and documented in `docs/ISSUE_10_STATUS_PRESENTATION.md`; issue `#78` adds the dependency-free thin transport/request-handler wrapper in `src/war_room/orchestration_transport.py` and `docs/ISSUE_78_THIN_TRANSPORT_WRAPPER.md`; the dev-only standard-library HTTP adapter lives in `src/war_room/orchestration_http.py` and `docs/ISSUE_10_DEV_HTTP_WRAPPER.md`; production API routing, queues, persistence, retries, circuit breakers, auth, dashboards, and UI remain future work |
 | Guided intake and run-status UX specs (`#11`) | First narrow run-status UX/spec slice is documented in `docs/ISSUE_11_RUN_STATUS_UX_SPEC.md`, with a deterministic Milton degraded preview in `docs/examples/run_status_milton_degraded.md`; a companion guided-intake UX/spec slice is documented in `docs/ISSUE_11_GUIDED_INTAKE_UX_SPEC.md`, with the deterministic Milton guided-intake preview in `docs/examples/guided_intake_milton_preview.md`; future user-facing status screens should consume the existing transport/HTTP `status_presentation` payload and must not infer operator status independently when the presentation payload already provides it; frontend implementation, dashboards, auth, persistence, and production API work remain future work |
-| Evidence/provenance adapters (`#12`) | First narrow adapter seams have landed for current caselaw, carrier, and weather module output: issue `#94` / PR `#95` added `caselaw_pack_to_evidence_items(...)`, issue `#96` / PR `#97` added `carrier_doc_pack_to_evidence_items(...)`, and issue `#98` / PR `#99` added `weather_brief_to_evidence_items(...)`; these replace positional evidence IDs in those lanes with deterministic provenance-oriented IDs while keeping the notebook-era audit snapshot flow, not a full V2 evidence graph, database, dashboard, or product runtime |
+| Evidence/provenance adapters (`#12`) | First narrow adapter seams have landed for current weather, carrier, caselaw, and citation-verification module output: issue `#94` / PR `#95` added `caselaw_pack_to_evidence_items(...)`, issue `#96` / PR `#97` added `carrier_doc_pack_to_evidence_items(...)`, issue `#98` / PR `#99` added `weather_brief_to_evidence_items(...)`, and issue `#103` / PR `#105` added `citation_verify_pack_to_evidence_items(...)`; these replace positional evidence IDs in those lanes with deterministic provenance-oriented IDs while keeping the notebook-era audit snapshot flow, not a full V2 evidence graph, database, dashboard, API, review workflow, or product runtime |
 | Cache samples | Milton/Citizens/Pinellas + Ian/Citizens/Lee + TX hail/Allstate/Tarrant + TX hail matching/Allstate Texas Lloyds/Tarrant DP-3 + Ida/Lloyd's/Orleans committed |
 
 ## 3) What changed recently
@@ -72,6 +72,7 @@ This is research acceleration, not legal advice.
 - The issue `#94` caselaw evidence adapter now maps current case-law output into canonical `EvidenceItem` rows with deterministic provenance-oriented IDs while preserving the current audit snapshot flow.
 - The issue `#96` carrier evidence adapter now maps current carrier document output into canonical `EvidenceItem` rows with deterministic provenance-oriented IDs and explicit-vs-inferred source metadata handling.
 - The issue `#98` weather evidence adapter now maps current weather source output into canonical `EvidenceItem` rows with deterministic provenance-oriented IDs and explicit-vs-inferred primary-authority handling.
+- The issue `#103` / PR `#105` citation-verify evidence adapter now maps current `CitationVerifyPack` output into canonical `EvidenceItem` rows through `citation_verify_pack_to_evidence_items(...)`, replacing positional citation evidence IDs with deterministic provenance-oriented IDs without changing citation verification behavior, status vocabulary, badge semantics, live retrieval, or the `EvidenceItem` schema.
 - The notebook and preflight surfaces now expose a workflow-oriented research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run timeline, so grouped support, issue-level review, section readiness, export posture, and review-required state are visible before the memo is treated as complete.
 - The Milton benchmark fixture lane now normalizes cached citation trust metadata, carrier/case-law runtime quality, and markdown/export readability without changing the scenario registry or overall notebook-era runtime flow.
 - The Milton rendered-memo path now has an export readability guard that blocks obvious mojibake, scraped navigation text, generic weather pages, Casetext boilerplate, and broken markdown-table rows from reappearing in demo output.
@@ -125,7 +126,7 @@ Core implementation lives in `src/war_room/`.
 ## 7) Roadmap summary
 
 ### Now
-- #12 evidence/provenance adapter lane after the landed caselaw, carrier, and weather adapter slices
+- #12 remaining-scope review after named adapters landed for weather, carrier, caselaw, and citation verification
 
 ### Next
 - #27 broader CI and pilot operationalization of the release scorecard
@@ -154,7 +155,7 @@ Core implementation lives in `src/war_room/`.
 - [examples/guided_intake_milton_preview.md](examples/guided_intake_milton_preview.md): deterministic issue `#11` Milton guided-intake preview for the future pre-run intake surface
 - [ISSUE_11_RUN_STATUS_UX_SPEC.md](ISSUE_11_RUN_STATUS_UX_SPEC.md): narrow issue `#11` run-status UX/spec slice over the existing `status_presentation` payload
 - [examples/run_status_milton_degraded.md](examples/run_status_milton_degraded.md): deterministic issue `#11` Milton degraded run-status preview derived from the existing transport/status payload
-- [ISSUE_12_REMAINING_SCOPE.md](ISSUE_12_REMAINING_SCOPE.md): docs-only issue `#12` remaining-scope review after the landed caselaw, carrier, and weather evidence adapters
+- [ISSUE_12_REMAINING_SCOPE.md](ISSUE_12_REMAINING_SCOPE.md): docs-only issue `#12` remaining-scope review, now updated after the landed citation-verify evidence adapter
 - [ROADMAP.md](ROADMAP.md): plain-language roadmap and active execution order
 - [V2_WORKFLOW_IA.md](V2_WORKFLOW_IA.md): canonical V2 workflow, IA, and design-system rules
 - [V2_EVIDENCE_SCHEMA.md](V2_EVIDENCE_SCHEMA.md): canonical V2 evidence graph, audit schema, and versioning rules
