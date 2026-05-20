@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import html
+import re
 from typing import Any, Mapping
 
 from war_room.models import (
@@ -20,6 +21,23 @@ from war_room.models import (
     adapt_run_audit_snapshot,
     run_audit_snapshot_from_parts,
 )
+
+
+
+_ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+
+
+def _sanitize_text(value: str | None, *, max_len: int | None = None) -> str:
+    """Normalize untrusted text for plain-text evidence board rendering."""
+
+    text = value or ""
+    text = _ANSI_ESCAPE_RE.sub("", text)
+    text = text.replace("\r", " ").replace("\n", " ")
+    text = "".join(ch if ch.isprintable() else " " for ch in text)
+    text = " ".join(text.split())
+    if max_len is not None:
+        return text[:max_len]
+    return text
 
 
 def build_evidence_board(
@@ -184,7 +202,7 @@ def format_evidence_board(board: Mapping[str, Any] | EvidenceBoardReadModel) -> 
         lines.append("  Clustering unavailable. Falling back to item view.")
         for item in board.ungrouped_items:
             lines.append(
-                f"  - {item.evidence_id} | {item.module} | {item.source_tier} | {item.title[:60]}"
+                f"  - {_sanitize_text(item.evidence_id)} | {_sanitize_text(item.module)} | {_sanitize_text(item.source_tier)} | {_sanitize_text(item.title, max_len=60)}"
             )
         lines.append("=" * 60)
         return "\n".join(lines)
@@ -192,24 +210,33 @@ def format_evidence_board(board: Mapping[str, Any] | EvidenceBoardReadModel) -> 
     for card in board.cluster_cards:
         state = "review_required" if card.review_required else "ready"
         lines.append(
-            f"  [{state}] {card.cluster_id} | {card.cluster_type} | {card.member_count} items"
+            f"  [{state}] {_sanitize_text(card.cluster_id)} | {_sanitize_text(card.cluster_type)} | {card.member_count} items"
         )
-        lines.append(f"    Label: {card.label}")
-        lines.append(f"    Modules: {', '.join(card.modules) or 'none'}")
-        lines.append(f"    Source tiers: {card.source_tier_summary or 'unknown'}")
+        lines.append(f"    Label: {_sanitize_text(card.label)}")
+        lines.append(
+            f"    Modules: {', '.join(_sanitize_text(module) for module in card.modules) or 'none'}"
+        )
+        lines.append(f"    Source tiers: {_sanitize_text(card.source_tier_summary or 'unknown')}")
         if card.issue_labels:
-            lines.append(f"    Issues: {', '.join(card.issue_labels)}")
+            lines.append(
+                f"    Issues: {', '.join(_sanitize_text(label) for label in card.issue_labels)}"
+            )
         if card.claim_ids:
-            lines.append(f"    Claims: {', '.join(card.claim_ids)}")
+            lines.append(
+                f"    Claims: {', '.join(_sanitize_text(claim_id) for claim_id in card.claim_ids)}"
+            )
         if card.review_event_ids:
-            lines.append(f"    Review events: {', '.join(card.review_event_ids)}")
+            lines.append(
+                "    Review events: "
+                f"{', '.join(_sanitize_text(event_id) for event_id in card.review_event_ids)}"
+            )
         if card.provenance_urls:
             lines.append(f"    Provenance URLs: {len(card.provenance_urls)}")
         lines.append("    Evidence:")
         for item in card.evidence_previews:
-            title = item.title[:56]
+            title = _sanitize_text(item.title, max_len=56)
             lines.append(
-                f"      - {item.evidence_id} | {item.module} | {item.source_tier} | {title}"
+                f"      - {_sanitize_text(item.evidence_id)} | {_sanitize_text(item.module)} | {_sanitize_text(item.source_tier)} | {title}"
             )
         lines.append("")
 

@@ -255,6 +255,25 @@ def test_render_evidence_board_html_surfaces_review_cues_and_escapes_content():
     assert "javascript:alert" not in rendered
 
 
+def test_format_evidence_board_sanitizes_control_chars_and_newlines():
+    board = build_evidence_board_from_parts(*_sample_parts())
+    payload = evidence_board_to_payload(board)
+    payload["cluster_cards"][0]["label"] = "NOAA\n[ready] forged | url | 99 items"
+    payload["cluster_cards"][0]["issue_labels"] = [
+        "coverage\r\nClaims: forged_claim",
+    ]
+    payload["cluster_cards"][0]["evidence_previews"][0]["title"] = (
+        "Report\x1b[31mRED\x1b[0m\n- fake-ev | weather | primary | forged"
+    )
+
+    rendered = format_evidence_board(payload)
+
+    assert "forged | url | 99 items" in rendered
+    assert "\n[ready] forged | url | 99 items" not in rendered
+    assert "Claims: forged_claim" in rendered
+    assert "\x1b" not in rendered
+
+
 def test_build_evidence_board_keeps_verified_citation_cluster_ready_when_only_peer_citations_are_uncertain():
     intake, weather, carrier, caselaw, _, query_plan = _sample_parts()
     weather.pop("warnings")
