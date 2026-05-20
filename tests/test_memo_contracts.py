@@ -1,5 +1,7 @@
 """Tests for typed citation/export contracts (issue #6 slice 3)."""
 
+import copy
+
 import pytest
 from pydantic import ValidationError
 
@@ -427,6 +429,19 @@ def test_citation_verify_evidence_adapter_returns_stable_provenance_ids():
     assert first_ids == second_ids
     assert first_ids[0].startswith("citation-check-123-so-3d-456-")
     assert first_ids[0] != "citation-check-1"
+
+
+def test_citation_verify_evidence_adapter_ids_ignore_note_copy_edits():
+    _, _, _, _, citecheck, _ = _sample_payloads()
+    edited_citecheck = copy.deepcopy(citecheck)
+    edited_citecheck["checks"][0]["note"] = (
+        "Found on official source; attorney should verify before relying on it."
+    )
+
+    original_id = citation_verify_pack_to_evidence_items(citecheck)[0].evidence_id
+    edited_id = citation_verify_pack_to_evidence_items(edited_citecheck)[0].evidence_id
+
+    assert edited_id == original_id
 
 
 def test_citation_verify_evidence_adapter_does_not_collapse_distinct_check_rows():

@@ -1935,7 +1935,6 @@ def _citation_check_evidence_id(
         _normalize_authority_name(check.source_class),
         _normalize_authority_name(check.source_tier),
         "primary" if check.is_primary_authority else "secondary",
-        _normalize_authority_name(check.note),
     ]
     digest = hashlib.sha256("\x1f".join(identity_parts).encode("utf-8")).hexdigest()[
         :10

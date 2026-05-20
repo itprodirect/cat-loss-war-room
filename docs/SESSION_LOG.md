@@ -2927,8 +2927,9 @@ Status: Complete
     citation-verify adapter instead of building citation evidence rows inline.
   - Replaced positional citation evidence IDs such as `citation-check-1` with
     deterministic provenance-oriented IDs based on citation, authority,
-    source URL, status, badge, trust metadata, primary-authority signal, and a
-    short digest, with deterministic suffixing for duplicate check rows.
+    source URL, status, badge, existing `EvidenceItem` trust fields,
+    primary-authority signal, and a short digest, with deterministic suffixing
+    for duplicate check rows.
   - Added focused tests for stable IDs, duplicate suffixing, distinct rows,
     existing-field metadata preservation, sparse metadata, audit-snapshot
     inclusion, Evidence Board rendering, and export evidence-index output.
@@ -2951,3 +2952,35 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `454 passed in 32.16s`; verify manifest written under
     `runs/verify/2026-05-20_codex-issue-103-citation-verify-evidence-adapter_20260520t131837z.json`.
+
+## Session 134 - PR 105 Citation Evidence ID Hardening Follow-Up
+Date: 2026-05-20
+Status: Complete
+
+- Applied the final PR `#105` ID-hardening follow-up for the issue `#103`
+  citation-verify evidence adapter.
+- What changed:
+  - Removed citation-check `note` prose from the
+    `_citation_check_evidence_id(...)` digest inputs in
+    `src/war_room/models.py`.
+  - Added a focused regression test proving citation evidence IDs stay stable
+    when only `CitationCheck.note` copy changes.
+  - Tightened the prior session-log wording so it names existing
+    `EvidenceItem` trust fields rather than implying free-text trust prose is
+    part of the ID basis.
+- Decisions added:
+  - Citation evidence IDs are no longer sensitive to citation-check note
+    wording.
+- Decisions not added:
+  - no `EvidenceItem` schema fields, citation verification behavior, status
+    vocabulary, live retrieval, badge/display semantics, adapter scope,
+    dependencies, full evidence graph, persistence, API framework, dashboard,
+    frontend, or readiness claim was added.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_export.py tests/test_issue_workspace.py -q`
+    -> `56 passed in 7.95s`.
+  - `python -m pytest -q` -> `455 passed in 27.21s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `455 passed in 27.98s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-issue-103-citation-verify-evidence-adapter_20260520t134426z.json`.
