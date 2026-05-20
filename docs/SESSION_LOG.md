@@ -2888,3 +2888,28 @@ Status: Complete
 - Validation:
   - `git diff --check` -> passed.
   - `python -m pytest -q` -> `449 passed in 11.69s`.
+
+## Session 132 - PR 102 Citation-Verify Metadata Scope Wording
+Date: 2026-05-20
+Status: Complete
+
+- Applied the PR `#102` review cleanup for the issue `#101` / issue `#12`
+  remaining-scope review.
+- What changed:
+  - Clarified `docs/ISSUE_12_REMAINING_SCOPE.md` so the next
+    citation-verify adapter child only carries forward trust metadata the
+    current inline builder already maps onto existing `EvidenceItem` fields:
+    `source_class`, `source_tier`, `is_primary_authority`, `citation`, and
+    `case_name` / `source_url` through `title` / `url`.
+  - Documented that `status_reason`, `trust_explanation`, and `confidence`
+    exist on `CitationCheck` but do not currently have `EvidenceItem` slots and
+    would require a separate explicit schema decision.
+  - Tightened the recommended test wording from generic metadata preservation
+    to existing-field metadata preservation.
+- Decisions not added:
+  - no runtime code, tests, schemas, `EvidenceItem` fields, citation
+    verification behavior, fixtures, notebooks, CI workflows, dependencies,
+    README, handoff, or heartbeat changes were added.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `449 passed in 32.05s`.

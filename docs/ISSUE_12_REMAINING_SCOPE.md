@@ -50,9 +50,10 @@ Narrow implementation intent:
 - Add a named adapter from current `CitationVerifyPack` / `CitationCheck` output into canonical `EvidenceItem` rows.
 - Replace current positional citation evidence IDs such as `citation-check-1` with deterministic provenance-oriented IDs.
 - Preserve citation status semantics: `verified`, `uncertain`, and `not_found` remain confidence signals requiring attorney review as appropriate.
-- Preserve trust metadata already produced by citation verification, including `status_reason`, `trust_explanation`, `source_tier`, `source_class`, `is_primary_authority`, `confidence`, `citation`, `case_name`, and `source_url` where present.
+- Carry forward the trust metadata the current inline builder already maps onto `EvidenceItem`: `source_class`, `source_tier`, `is_primary_authority`, `citation`, and `case_name`/`source_url` via `title`/`url`.
+- `status_reason`, `trust_explanation`, and `confidence` exist on `CitationCheck` but have no `EvidenceItem` slot today and are not carried by the current builder. Carrying them requires an `EvidenceItem` field addition — treat that as an explicit, separate scoping decision, not part of this seam-extraction slice.
 - Route `run_audit_snapshot_from_memo_input(...)` through the new adapter while preserving existing Evidence Board, Issue Workspace, Memo Composer, Export History, release-scorecard, and offline fixture behavior.
-- Add focused tests for stable IDs, duplicate-row suffixing, metadata preservation, audit-snapshot inclusion, Evidence Board rendering, memo/export evidence-index behavior, and sparse citation metadata.
+- Add focused tests for stable IDs, duplicate-row suffixing, existing-field metadata preservation, audit-snapshot inclusion, Evidence Board rendering, memo/export evidence-index behavior, and sparse citation metadata.
 
 Validation should stay local and fixture-backed:
 
