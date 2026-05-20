@@ -263,7 +263,7 @@ def _check_secret_patterns(tracked: Sequence[_TrackedFile]) -> SecurityHygieneCh
             if _line_has_allowlist_marker(line):
                 continue
             for match in SECRET_ASSIGNMENT_PATTERN.finditer(line):
-                if _looks_like_python_type_annotation(line, match):
+                if _looks_like_python_type_annotation(tracked_file.path, line, match):
                     continue
                 if _looks_like_not_set_status(line, match):
                     continue
@@ -536,8 +536,12 @@ def _line_has_allowlist_marker(line: str) -> bool:
     return any(marker in lowered for marker in ALLOWLIST_MARKERS)
 
 
-def _looks_like_python_type_annotation(line: str, match: re.Match[str]) -> bool:
-    return match.group("sep") == ":" and "=" in line[match.end() :]
+def _looks_like_python_type_annotation(path: str, line: str, match: re.Match[str]) -> bool:
+    if match.group("sep") != ":":
+        return False
+    if Path(path).suffix != ".py":
+        return False
+    return bool(re.match(r"\s*[A-Za-z_][A-Za-z0-9_\[\],| .]*\s*=", line[match.start("value") :]))
 
 
 def _looks_like_not_set_status(line: str, match: re.Match[str]) -> bool:

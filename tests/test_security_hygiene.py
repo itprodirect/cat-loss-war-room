@@ -87,6 +87,32 @@ def test_security_hygiene_flags_env_template_drift(tmp_path: Path):
     assert "missing expected setting RUNS_DIR" in messages
 
 
+
+def test_security_hygiene_flags_colon_secret_with_later_equals_in_non_python_file(tmp_path: Path):
+    tracked_files = _write_compliant_repo(tmp_path)
+    secret_name = "EXA_API" + "_KEY"
+    secret_value = "live_secret_value_123456"
+    _write(tmp_path / "leak.yml", f"{secret_name}: {secret_value} other=value\n")
+    tracked_files.append("leak.yml")
+
+    report = run_security_hygiene(tmp_path, tracked_files=tracked_files)
+
+    assert not report.passed
+    findings = _check(report, "obvious-secret-patterns").findings
+    assert len(findings) == 1
+    assert findings[0].path == "leak.yml"
+
+
+def test_security_hygiene_allows_python_type_annotation_with_placeholder_assignment(tmp_path: Path):
+    tracked_files = _write_compliant_repo(tmp_path)
+    secret_name = "EXA_API" + "_KEY"
+    _write(tmp_path / "src" / "settings.py", f"{secret_name}: str = 'not set'\n")
+    tracked_files.append("src/settings.py")
+
+    report = run_security_hygiene(tmp_path, tracked_files=tracked_files)
+
+    assert report.passed
+
 def _write_compliant_repo(root: Path) -> list[str]:
     _write(root / ".env.example", "\n".join(f"{key}=" for key in EXPECTED_ENV_EXAMPLE_KEYS))
     _write(root / ".gitignore", "\n".join([".env", "cache/", "output/", "runs/", ".exa_cache_live/"]))
