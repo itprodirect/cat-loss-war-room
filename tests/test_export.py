@@ -275,6 +275,18 @@ def test_render_surfaces_review_flags_when_present():
     assert "Evidence clusters: cluster-3" in md
 
 
+def test_render_escapes_markdown_in_review_flags_and_source_reasons():
+    intake, weather, carrier, caselaw, citecheck, queries = _sample_data()
+    weather["warnings"] = ["## Injected heading <script>alert(1)</script> [click](https://evil)"]
+    weather["sources"][0]["reason"] = "![img](x) <img src=x onerror=alert(1)>"
+
+    md = render_markdown_memo(intake, weather, carrier, caselaw, citecheck, queries)
+
+    assert "\\#\\# Injected heading \\<script\\>alert\\(1\\)\\</script\\>" in md
+    assert "\\[click\\]\\(https://evil\\)" in md
+    assert "\\!\\[img\\]\\(x\\) \\<img src=x onerror=alert\\(1\\)\\>" in md
+
+
 def test_render_includes_evidence_clusters():
     md = render_markdown_memo(*_sample_data())
 

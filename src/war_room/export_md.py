@@ -90,7 +90,7 @@ def render_markdown_memo(
         lines.append("### Review Required")
         lines.append("")
         for flag in review_flags:
-            lines.append(f"- {flag}")
+            lines.append(f"- {_markdown_safe_text(flag, limit=220)}")
         lines.append("")
 
     lines.append("---")
@@ -442,7 +442,7 @@ def _append_sources(lines: list[str], sources: list[dict[str, Any]], label: str)
         lines.append(
             f"- {src.get('badge', '')} "
             f"[{_clean_inline_text(src.get('title', ''), limit=60)}]({src.get('url', '')})"
-            f" - {_clean_inline_text(src.get('reason', ''), limit=120)}"
+            f" - {_markdown_safe_text(src.get('reason', ''), limit=120)}"
         )
     lines.append("")
 
@@ -454,7 +454,7 @@ def _append_warnings(lines: list[str], warnings: list[str] | None, heading: str)
     lines.append(f"### {heading}")
     lines.append("")
     for warning in warnings:
-        lines.append(f"- {_clean_inline_text(warning, limit=180)}")
+        lines.append(f"- {_markdown_safe_text(warning, limit=180)}")
     lines.append("")
 
 
@@ -593,6 +593,16 @@ def _clean_inline_text(
         text = text.replace("|", "/")
     if limit is not None and len(text) > limit:
         return text[: max(0, limit - 3)].rstrip() + "..."
+    return text
+
+
+def _markdown_safe_text(value: Any, *, limit: int | None = None) -> str:
+    """Normalize and neutralize markdown/HTML control characters for inline prose."""
+    text = _clean_inline_text(value, limit=limit)
+    text = text.replace("\\", "\\\\")
+    text = text.replace("<", "\\<").replace(">", "\\>")
+    for token in ("#", "*", "_", "`", "[", "]", "(", ")", "!", "|"):
+        text = text.replace(token, f"\\{token}")
     return text
 
 
