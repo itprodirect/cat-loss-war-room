@@ -2778,3 +2778,48 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `444 passed in 18.09s`; verify manifest written under
     `runs/verify/2026-05-20_codex-issue-96-carrier-evidence-adapter_20260520t070016z.json`.
+
+## Session 129 - Issue 98 Weather Evidence Adapter
+Date: 2026-05-20
+Status: Complete
+
+- Completed issue `#98` as the weather counterpart to the narrow issue `#12`
+  evidence/provenance adapter slices from issues `#94` and `#96`.
+- What changed:
+  - Added `weather_brief_to_evidence_items(...)` in `src/war_room/models.py`
+    as a focused adapter seam from current `WeatherBrief` / `SourceReference`
+    data into canonical `EvidenceItem` records.
+  - Replaced positional weather evidence IDs like `weather-source-1` with
+    deterministic IDs derived from stable weather source attributes, the
+    observation/event-summary fallback, and the current authority-key inputs.
+  - Kept `RunAuditSnapshot`, memo claims, evidence clusters, quality snapshot,
+    export rendering, and Evidence Board construction on the existing flow by
+    routing only the weather evidence-item mapping through the new adapter.
+  - Added focused tests for repeated stable weather IDs, distinct source-row
+    IDs, metadata preservation, audit-snapshot inclusion, evidence-board
+    rendering, memo evidence-index output, and explicit-vs-inferred
+    primary-authority behavior.
+- Decisions added:
+  - Weather evidence IDs now use source title/URL/badge/reason/source class,
+    explicit primary-authority value when present, summary fallback context,
+    event summary, authority key, and a short deterministic digest, with only
+    deterministic collision suffixing for duplicate stable IDs within one
+    payload.
+  - Weather source rows preserve explicit `is_primary_authority` true/false
+    values and fall back to `score_url(...)` only when the field is omitted.
+- Decisions not added:
+  - no full issue `#12` evidence graph implementation, global evidence graph
+    rewrite, database, persistence, auth, users, sessions, queues, workers,
+    dashboard, frontend, API framework, production runtime, live retrieval
+    change, fixture/cache/citation provider change, AI scoring, ML dedupe,
+    broad title-similarity dedupe, readiness-level change, release claim,
+    pilot execution, firm memory, notebook behavior change, or docx/pdf export
+    pipeline was added.
+- Validation:
+  - `python -m pytest tests/test_models.py tests/test_evidence_board.py tests/test_memo_contracts.py tests/test_export.py -q`
+    -> `61 passed in 3.53s`.
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `448 passed in 14.67s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `448 passed in 13.51s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-issue-98-weather-evidence-adapter_20260520t073832z.json`.
