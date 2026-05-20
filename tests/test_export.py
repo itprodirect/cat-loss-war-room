@@ -347,6 +347,23 @@ def test_render_includes_canonical_evidence_index_rows():
     assert "| citation-check-1 |" not in md
 
 
+def test_render_sanitizes_evidence_index_and_review_log_untrusted_fields():
+    intake, weather, carrier, caselaw, citecheck, queries = _sample_data()
+    citecheck["checks"][0]["case_name"] = "Legit <img src=x onerror=alert(1)>"
+    citecheck["checks"][0]["badge"] = "verified|<script>alert(1)</script>"
+    citecheck["checks"][0]["source_url"] = "javascript:alert(1)"
+    weather["warnings"] = ["<img src=x onerror=alert('review')>"]
+    citecheck["summary"] = {"total": 1, "verified": 0, "uncertain": 1, "not_found": 0}
+    citecheck["checks"][0]["status"] = "uncertain"
+
+    md = render_markdown_memo(intake, weather, carrier, caselaw, citecheck, queries)
+
+    assert "<img" not in md
+    assert "<script>" not in md
+    assert "javascript:alert(1)" not in md
+    assert "verified/&lt;script&gt;alert(1)&lt;/script&gt;" in md
+
+
 def test_render_accepts_dict_intake_and_query_specs():
     intake, weather, carrier, caselaw, citecheck, queries = _sample_data()
 

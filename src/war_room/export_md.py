@@ -10,6 +10,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping
+from urllib.parse import urlparse
 
 from war_room.models import (
     CaseIntake,
@@ -416,7 +417,9 @@ def _append_evidence_index(lines: list[str], evidence_items: list[Any]) -> None:
         url = item.url or ""
         lines.append(
             f"| {item.evidence_id} | {item.module} | {item.evidence_type} | "
-            f"{_clean_inline_text(title, limit=50, table_safe=True)} | {item.badge} | {url} |"
+            f"{_clean_markdown_field(title, limit=50, table_safe=True)} | "
+            f"{_clean_markdown_field(item.badge, limit=24, table_safe=True)} | "
+            f"{_safe_markdown_url(url)} |"
         )
     lines.append("")
 
@@ -426,7 +429,8 @@ def _append_review_log(lines: list[str], review_events: list[Any]) -> None:
     for event in review_events:
         cluster_ids = ", ".join(event.related_cluster_ids) if event.related_cluster_ids else "none"
         lines.append(
-            f"- **{_clean_inline_text(event.label, limit=80)}:** {_clean_inline_text(event.detail, limit=180)} "
+            f"- **{_clean_markdown_field(event.label, limit=80)}:** "
+            f"{_clean_markdown_field(event.detail, limit=180)} "
             f"| Evidence clusters: {cluster_ids}"
         )
     lines.append("")
@@ -593,6 +597,28 @@ def _clean_inline_text(
     if limit is not None and len(text) > limit:
         return text[: max(0, limit - 3)].rstrip() + "..."
     return text
+
+
+def _clean_markdown_field(
+    value: Any,
+    *,
+    limit: int | None = None,
+    table_safe: bool = False,
+) -> str:
+    """Clean untrusted text for markdown output and escape raw HTML."""
+    cleaned = _clean_inline_text(value, limit=limit, table_safe=table_safe)
+    return html.escape(cleaned, quote=False)
+
+
+def _safe_markdown_url(value: Any) -> str:
+    """Return only safe URL schemes for markdown output."""
+    url = _clean_inline_text(value, limit=300, table_safe=True)
+    if not url:
+        return ""
+    parsed = urlparse(url)
+    if parsed.scheme.lower() not in {"http", "https"}:
+        return ""
+    return html.escape(url, quote=False)
 
 
 def _humanize_token(value: str) -> str:
