@@ -93,6 +93,29 @@ def test_dependency_hygiene_flags_duplicate_entries_and_pyproject_drift(tmp_path
     assert any("dependency is present in pyproject.toml but not requirements.txt: pydantic" in message for message in drift_messages)
 
 
+def test_dependency_hygiene_flags_direct_url_dependency_in_pyproject(tmp_path: Path):
+    tracked_files = _write_compliant_repo(tmp_path)
+    _write(
+        tmp_path / "pyproject.toml",
+        _pyproject_dependencies(
+            [
+                *DEPENDENCIES,
+                "evil @ git+https://example.invalid/evil.git",
+            ]
+        ),
+    )
+
+    report = run_dependency_hygiene(tmp_path, tracked_files=tracked_files)
+
+    assert not report.passed
+    source_findings = _check(report, "unsupported-requirement-sources").findings
+    assert any(
+        finding.path == "pyproject.toml"
+        and finding.message == "direct URL or git requirements are not supported in committed dependency manifests"
+        for finding in source_findings
+    )
+
+
 def test_dependency_hygiene_flags_unsupported_dependency_file_and_doc_drift(tmp_path: Path):
     tracked_files = _write_compliant_repo(tmp_path)
     _write(tmp_path / "requirements-dev.txt", "pytest==8.3.4\n")

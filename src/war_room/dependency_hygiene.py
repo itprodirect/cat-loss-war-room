@@ -114,7 +114,7 @@ def run_dependency_hygiene(
     pyproject_entries, pyproject_findings = _read_pyproject_dependency_entries(resolved_root / PYPROJECT_PATH)
     checks = [
         _check_requirements_pinned(resolved_root, requirements_entries),
-        _check_unsupported_requirement_sources(requirements_entries),
+        _check_unsupported_requirement_sources(requirements_entries + pyproject_entries),
         _check_duplicate_dependencies(requirements_entries + pyproject_entries),
         _check_pyproject_dependency_drift(
             resolved_root,
@@ -251,7 +251,7 @@ def _check_unsupported_requirement_sources(
         check_id="unsupported-requirement-sources",
         name="Unsupported Requirement Sources",
         findings=findings,
-        passed_summary="requirements.txt has no editable, local path, direct URL, git, include, or installer-option entries",
+        passed_summary="dependency manifests have no editable, local path, direct URL, git, include, or installer-option entries",
     )
 
 
