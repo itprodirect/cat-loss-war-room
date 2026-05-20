@@ -247,7 +247,7 @@ def test_carrier_evidence_adapter_does_not_collapse_distinct_document_rows():
     assert len(set(evidence_ids)) == 2
 
 
-def test_carrier_evidence_adapter_preserves_document_metadata():
+def test_carrier_evidence_adapter_uses_scored_source_profile_over_document_metadata():
     _, _, carrier, _, _, _ = _sample_payloads()
     document = carrier["document_pack"][0]
     document.update(
@@ -259,6 +259,7 @@ def test_carrier_evidence_adapter_preserves_document_metadata():
         }
     )
     carrier["sources"][0]["url"] = document["url"]
+    carrier["sources"][0]["source_class"] = "professional"
 
     item = carrier_doc_pack_to_evidence_items(carrier)[0]
 
@@ -269,13 +270,13 @@ def test_carrier_evidence_adapter_preserves_document_metadata():
     assert item.url == "https://example.com/doc"
     assert item.badge == "official"
     assert item.source_reason == "Professional source"
-    assert item.source_class == "government_guidance"
-    assert item.source_tier == "official"
-    assert item.is_primary_authority is True
+    assert item.source_class == "professional"
+    assert item.source_tier == "unvetted"
+    assert item.is_primary_authority is False
     assert item.authority_key == "authority:doc"
 
 
-def test_carrier_evidence_adapter_infers_primary_authority_when_field_missing():
+def test_carrier_evidence_adapter_ignores_explicit_primary_authority_override():
     _, _, carrier, _, _, _ = _sample_payloads()
     document = carrier["document_pack"][0]
     document.update(
@@ -287,19 +288,15 @@ def test_carrier_evidence_adapter_infers_primary_authority_when_field_missing():
         }
     )
 
-    assert "is_primary_authority" not in document
-
-    item = carrier_doc_pack_to_evidence_items(carrier)[0]
-
-    assert item.source_class == "court_opinion"
-    assert item.source_tier == "official"
-    assert item.is_primary_authority is True
-
+    # The spoofed false flag must not demote deterministic primary authority
+    # from a CourtListener opinion URL.
     document["is_primary_authority"] = False
 
     explicit_item = carrier_doc_pack_to_evidence_items(carrier)[0]
 
-    assert explicit_item.is_primary_authority is False
+    assert explicit_item.source_class == "court_opinion"
+    assert explicit_item.source_tier == "official"
+    assert explicit_item.is_primary_authority is True
 
 
 def test_caselaw_evidence_adapter_returns_stable_ids_for_repeated_payloads():

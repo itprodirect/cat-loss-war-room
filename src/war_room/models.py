@@ -1139,13 +1139,11 @@ def carrier_doc_pack_to_evidence_items(
                 badge=document.badge,
                 source_reason=source.reason if source else None,
                 source_class=(
-                    document.source_class
-                    or (source.source_class if source else None)
+                    (source.source_class if source else None)
                     or source_profile.get("source_class")
                 ),
-                source_tier=document.source_tier or source_profile.get("tier"),
+                source_tier=source_profile.get("tier"),
                 is_primary_authority=_carrier_document_is_primary_authority(
-                    document,
                     source_profile,
                 ),
                 authority_key=authority_key,
@@ -1873,11 +1871,8 @@ def _carrier_evidence_id(
 
 
 def _carrier_document_is_primary_authority(
-    document: CarrierDocument,
     source_profile: Mapping[str, Any],
 ) -> bool:
-    if document.is_primary_authority is not None:
-        return bool(document.is_primary_authority)
     return bool(source_profile.get("is_primary_authority"))
 
 
