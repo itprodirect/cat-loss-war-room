@@ -3021,3 +3021,35 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `455 passed in 17.05s`; verify manifest written under
     `runs/verify/2026-05-20_docs-post-citation-verify-adapter-sync_20260520t140227z.json`.
+
+## Session 136 - PR 108 Deterministic Evidence Dedupe Helper Follow-Up
+Date: 2026-05-20
+Status: Complete
+
+- Applied the PR `#108` pre-merge review cleanup for the issue `#107`
+  deterministic evidence dedupe helper.
+- What changed:
+  - Added this session-log entry for the helper-only issue `#107` slice.
+  - Tightened the `dedupe_evidence_items(...)` docstring and internal helper
+    naming so the helper only claims selected review/provenance compatibility
+    fields checked by this helper, not all provenance fields.
+  - Made the same-key summary policy explicit in the URL-dedupe regression
+    test: when two rows collapse by a strong normalized URL key and differ
+    only in `summary`, the retained first row wins and the candidate summary
+    is not merged into it.
+- Decisions added:
+  - Current helper-only dedupe keeps the retained `EvidenceItem` row unchanged;
+    it does not merge candidate summary text into the retained row.
+- Decisions not added:
+  - no audit snapshot assembly integration, old-id to retained-id remapping,
+    `EvidenceItem` schema expansion, persistence, UI, API, dashboard,
+    runtime behavior change, live retrieval, fuzzy/ML clustering, AI scoring,
+    readiness claim, or broad issue `#12` dedupe engine was added.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest tests/test_memo_contracts.py -q`
+    -> `37 passed in 1.17s`.
+  - `python -m pytest -q` -> `462 passed in 27.70s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `462 passed in 23.81s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-issue-107-deterministic-evidence-dedupe_20260520t150120z.json`.
