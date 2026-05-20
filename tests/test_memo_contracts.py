@@ -180,6 +180,32 @@ def test_caselaw_evidence_adapter_preserves_case_metadata():
     assert item.authority_key == "citation:123 so. 3d 456"
 
 
+def test_caselaw_evidence_adapter_infers_primary_authority_when_field_missing():
+    _, _, _, caselaw, _, _ = _sample_payloads()
+    case = caselaw["issues"][0]["cases"][0]
+    case.update(
+        {
+            "name": "Sebo v. American Home Assurance Co.",
+            "url": "https://www.courtlistener.com/opinion/12345/sebo-v-american-home/",
+            "badge": "official",
+        }
+    )
+
+    assert "is_primary_authority" not in case
+
+    item = caselaw_pack_to_evidence_items(caselaw)[0]
+
+    assert item.source_class == "court_opinion"
+    assert item.source_tier == "official"
+    assert item.is_primary_authority is True
+
+    case["is_primary_authority"] = False
+
+    explicit_item = caselaw_pack_to_evidence_items(caselaw)[0]
+
+    assert explicit_item.is_primary_authority is False
+
+
 def test_citation_verify_pack_adapter_round_trip():
     _, _, _, _, citecheck, _ = _sample_payloads()
 

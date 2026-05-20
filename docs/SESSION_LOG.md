@@ -2703,3 +2703,30 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `439 passed in 15.02s`; verify manifest written under
     `runs/verify/2026-05-20_codex-issue-94-caselaw-evidence-adapter_20260520t055426z.json`.
+
+## Session 127 - PR 95 Primary-Authority Inference Follow-Up
+Date: 2026-05-20
+Status: Complete
+
+- Applied one focused PR `#95` follow-up to preserve previous case-law
+  primary-authority inference in `caselaw_pack_to_evidence_items(...)`.
+- What changed:
+  - The adapter now treats an explicit case-row `is_primary_authority` value
+    as authoritative and falls back to `score_url(...)` only when the field was
+    not provided on the case row.
+  - Added a focused regression test proving a case-law row without explicit
+    `is_primary_authority` can infer primary-authority status from a
+    CourtListener opinion URL, while an explicit `False` value still wins.
+- Decisions not added:
+  - no unrelated adapter refactor, source-scoring change, live retrieval,
+    fixture/cache/provider change, API/runtime work, persistence, frontend,
+    dashboard, AI scoring, readiness claim, or broad issue `#12` behavior was
+    added.
+- Validation:
+  - `python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_export.py -q`
+    -> `36 passed in 1.82s`.
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `440 passed in 16.25s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `440 passed in 16.09s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-issue-94-caselaw-evidence-adapter_20260520t061111z.json`.

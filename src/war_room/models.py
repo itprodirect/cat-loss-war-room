@@ -1094,7 +1094,10 @@ def caselaw_pack_to_evidence_items(
                     source_reason=source_reasons.get(case.url),
                     source_class=case.source_class or source_profile.get("source_class"),
                     source_tier=case.source_tier or source_profile.get("tier"),
-                    is_primary_authority=case.is_primary_authority,
+                    is_primary_authority=_case_is_primary_authority(
+                        case,
+                        source_profile,
+                    ),
                     authority_key=authority_key,
                     issue=issue.issue,
                     citation=normalized_citation,
@@ -1776,6 +1779,15 @@ def _caselaw_evidence_id(
     if collision_count == 1:
         return base_id
     return f"{base_id}-{collision_count}"
+
+
+def _case_is_primary_authority(
+    case: CaseEntry,
+    source_profile: Mapping[str, Any],
+) -> bool:
+    if "is_primary_authority" in case.model_fields_set:
+        return bool(case.is_primary_authority)
+    return bool(source_profile.get("is_primary_authority"))
 
 
 def _cluster_key_for_item(item: EvidenceItem) -> tuple[str, str]:
