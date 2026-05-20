@@ -74,6 +74,38 @@ def test_security_hygiene_allows_not_set_status_text(tmp_path: Path):
     assert report.passed
 
 
+def test_security_hygiene_flags_not_set_prefix_with_trailing_secret(tmp_path: Path):
+    tracked_files = _write_compliant_repo(tmp_path)
+    secret_name = "EXA_API" + "_KEY"
+    _write(
+        tmp_path / "notebooks" / "demo.ipynb",
+        f"  {secret_name}: not set exa_live_REAL_SECRET_1234567890\n",
+    )
+    tracked_files.append("notebooks/demo.ipynb")
+
+    report = run_security_hygiene(tmp_path, tracked_files=tracked_files)
+
+    assert not report.passed
+    findings = _check(report, "obvious-secret-patterns").findings
+    assert len(findings) == 1
+    assert findings[0].path == "notebooks/demo.ipynb"
+    assert findings[0].line == 1
+
+
+def test_security_hygiene_allows_markdown_inline_not_set_status_text(tmp_path: Path):
+    tracked_files = _write_compliant_repo(tmp_path)
+    secret_name = "EXA_API" + "_KEY"
+    _write(
+        tmp_path / "docs" / "notes.md",
+        f"Notebook output text `{secret_name}: not set` was treated as status text.\n",
+    )
+    tracked_files.append("docs/notes.md")
+
+    report = run_security_hygiene(tmp_path, tracked_files=tracked_files)
+
+    assert report.passed
+
+
 def test_security_hygiene_flags_env_template_drift(tmp_path: Path):
     tracked_files = _write_compliant_repo(tmp_path)
     exa_key = "EXA_API" + "_KEY"
@@ -85,6 +117,32 @@ def test_security_hygiene_flags_env_template_drift(tmp_path: Path):
     messages = [finding.message for finding in _check(report, "env-example-expectations").findings]
     assert "missing expected setting WAR_ROOM_ENV" in messages
     assert "missing expected setting RUNS_DIR" in messages
+
+
+def test_security_hygiene_flags_colon_secret_with_later_equals_in_non_python_file(tmp_path: Path):
+    tracked_files = _write_compliant_repo(tmp_path)
+    secret_name = "EXA_API" + "_KEY"
+    secret_value = "live_secret_value_123456"
+    _write(tmp_path / "leak.yml", f"{secret_name}: {secret_value} other=value\n")
+    tracked_files.append("leak.yml")
+
+    report = run_security_hygiene(tmp_path, tracked_files=tracked_files)
+
+    assert not report.passed
+    findings = _check(report, "obvious-secret-patterns").findings
+    assert len(findings) == 1
+    assert findings[0].path == "leak.yml"
+
+
+def test_security_hygiene_allows_python_type_annotation_with_placeholder_assignment(tmp_path: Path):
+    tracked_files = _write_compliant_repo(tmp_path)
+    secret_name = "EXA_API" + "_KEY"
+    _write(tmp_path / "src" / "settings.py", f"{secret_name}: str = 'not set'\n")
+    tracked_files.append("src/settings.py")
+
+    report = run_security_hygiene(tmp_path, tracked_files=tracked_files)
+
+    assert report.passed
 
 
 def _write_compliant_repo(root: Path) -> list[str]:
