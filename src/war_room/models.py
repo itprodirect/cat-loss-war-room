@@ -332,6 +332,9 @@ class CarrierDocument(BaseModel):
     url: str = Field(min_length=1)
     badge: str = Field(min_length=1)
     why_it_matters: str = Field(min_length=1)
+    source_class: str | None = None
+    source_tier: str | None = None
+    is_primary_authority: bool | None = None
 
 
 class CarrierDocPack(BaseModel):
@@ -1052,6 +1055,60 @@ def adapt_run_timeline(
     return RunTimelineReadModel.model_validate(payload)
 
 
+def carrier_doc_pack_to_evidence_items(
+    payload: Mapping[str, Any] | CarrierDocPack,
+) -> list[EvidenceItem]:
+    """Adapt current carrier module output into canonical evidence items."""
+    carrier = adapt_carrier_doc_pack(payload)
+    sources_by_url = {
+        source.url: source
+        for source in carrier.sources
+        if source.url
+    }
+    evidence_items: list[EvidenceItem] = []
+    used_evidence_ids: dict[str, int] = {}
+
+    for document in carrier.document_pack:
+        source_profile = score_url(document.url, document.title)
+        source = sources_by_url.get(document.url)
+        evidence_type = document.doc_type.lower().replace(" ", "_")
+        authority_key = _authority_key_from_parts(
+            url=document.url,
+            title=document.title,
+        )
+        evidence_items.append(
+            EvidenceItem(
+                evidence_id=_carrier_evidence_id(
+                    carrier_snapshot=carrier.carrier_snapshot,
+                    document=document,
+                    evidence_type=evidence_type,
+                    authority_key=authority_key,
+                    used_evidence_ids=used_evidence_ids,
+                ),
+                module="carrier",
+                evidence_type=evidence_type,
+                title=document.title,
+                summary=document.why_it_matters,
+                url=document.url,
+                badge=document.badge,
+                source_reason=source.reason if source else None,
+                source_class=(
+                    document.source_class
+                    or (source.source_class if source else None)
+                    or source_profile.get("source_class")
+                ),
+                source_tier=document.source_tier or source_profile.get("tier"),
+                is_primary_authority=_carrier_document_is_primary_authority(
+                    document,
+                    source_profile,
+                ),
+                authority_key=authority_key,
+            )
+        )
+
+    return evidence_items
+
+
 def caselaw_pack_to_evidence_items(
     payload: Mapping[str, Any] | CaseLawPack,
 ) -> list[EvidenceItem]:
@@ -1160,34 +1217,11 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         )
         evidence_ids_by_module["weather"].append(evidence_id)
 
-    carrier_source_reasons = {
-        source.get("url"): source.get("reason")
-        for source in carrier_payload.get("sources", [])
-        if source.get("url")
-    }
-    for index, document in enumerate(carrier_payload.get("document_pack", []), 1):
-        evidence_id = f"carrier-document-{index}"
-        source_profile = score_url(document.get("url", ""), document.get("title", ""))
-        evidence_items.append(
-            EvidenceItem(
-                evidence_id=evidence_id,
-                module="carrier",
-                evidence_type=document.get("doc_type", "carrier_document").lower().replace(" ", "_"),
-                title=document.get("title", ""),
-                summary=document.get("why_it_matters", ""),
-                url=document.get("url"),
-                badge=document.get("badge", ""),
-                source_reason=carrier_source_reasons.get(document.get("url")),
-                source_class=source_profile.get("source_class"),
-                source_tier=source_profile.get("tier"),
-                is_primary_authority=bool(source_profile.get("is_primary_authority")),
-                authority_key=_authority_key_from_parts(
-                    url=document.get("url"),
-                    title=document.get("title"),
-                ),
-            )
-        )
-        evidence_ids_by_module["carrier"].append(evidence_id)
+    carrier_evidence_items = carrier_doc_pack_to_evidence_items(memo_input.carrier)
+    evidence_items.extend(carrier_evidence_items)
+    evidence_ids_by_module["carrier"].extend(
+        item.evidence_id for item in carrier_evidence_items
+    )
 
     caselaw_evidence_items = caselaw_pack_to_evidence_items(memo_input.caselaw)
     evidence_items.extend(caselaw_evidence_items)
@@ -1751,6 +1785,45 @@ def _normalize_authority_name(value: str | None) -> str:
         return ""
     normalized = re.sub(r"[^a-z0-9]+", " ", value.lower())
     return re.sub(r"\s+", " ", normalized).strip()
+
+
+def _carrier_evidence_id(
+    *,
+    carrier_snapshot: CarrierSnapshot,
+    document: CarrierDocument,
+    evidence_type: str,
+    authority_key: str | None,
+    used_evidence_ids: dict[str, int],
+) -> str:
+    identity_parts = [
+        authority_key or "",
+        evidence_type,
+        _normalize_authority_name(document.doc_type),
+        _normalize_authority_name(document.title),
+        _normalize_cluster_url(document.url),
+        _normalize_authority_name(carrier_snapshot.name),
+        _normalize_authority_name(carrier_snapshot.state),
+        _normalize_authority_name(carrier_snapshot.event),
+        _normalize_authority_name(carrier_snapshot.policy_type),
+    ]
+    digest = hashlib.sha256("\x1f".join(identity_parts).encode("utf-8")).hexdigest()[:10]
+    display_token = _stable_token(document.doc_type or document.title or authority_key or document.url)
+    display_token = display_token[:48].rstrip("-") or "document"
+    base_id = f"carrier-document-{display_token}-{digest}"
+    collision_count = used_evidence_ids.get(base_id, 0) + 1
+    used_evidence_ids[base_id] = collision_count
+    if collision_count == 1:
+        return base_id
+    return f"{base_id}-{collision_count}"
+
+
+def _carrier_document_is_primary_authority(
+    document: CarrierDocument,
+    source_profile: Mapping[str, Any],
+) -> bool:
+    if document.is_primary_authority is not None:
+        return bool(document.is_primary_authority)
+    return bool(source_profile.get("is_primary_authority"))
 
 
 def _caselaw_evidence_id(
