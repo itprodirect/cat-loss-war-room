@@ -1,6 +1,6 @@
 # Issue 27 Release-Evidence Review Guide
 
-Last updated: May 17, 2026
+Last updated: May 20, 2026
 
 This guide explains how a human reviewer should read the release-evidence
 bundle produced by:

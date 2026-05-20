@@ -14,6 +14,8 @@ from war_room.preflight import DemoPreflightReport
 from war_room.scenarios import default_scenario_id as get_default_scenario_id, list_scenarios
 
 DEFAULT_VERIFICATION_COMMAND = "pytest -q"
+CI_REPORTING_SCHEMA_VERSION = "release-evidence-ci-reporting.v1"
+VERIFY_BUNDLE_ENTRYPOINT = "runs/verify/latest.json"
 _FIXTURE_FILE_NAMES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
 READINESS_BLOCKING = "blocking"
 READINESS_ADVISORY = "advisory"
@@ -1055,12 +1057,12 @@ def _build_ci_reporting_summary() -> CIReportingSummary:
     """Describe existing release-evidence artifacts and fields for CI/reporting consumers."""
 
     return CIReportingSummary(
-        schema_version="release-evidence-ci-reporting.v1",
-        verify_bundle_entrypoint="runs/verify/latest.json",
+        schema_version=CI_REPORTING_SCHEMA_VERSION,
+        verify_bundle_entrypoint=VERIFY_BUNDLE_ENTRYPOINT,
         artifact_map=[
             CIReportingArtifactMapping(
                 name="verify_latest_pointer",
-                location="runs/verify/latest.json",
+                location=VERIFY_BUNDLE_ENTRYPOINT,
                 role="Discovery pointer to the newest successful verify manifest.",
             ),
             CIReportingArtifactMapping(
@@ -1219,9 +1221,9 @@ def _validate_ci_reporting_summary(ci_reporting_summary: dict) -> list[str]:
         return ["Release scorecard artifact is missing CI reporting summary."]
 
     failures: list[str] = []
-    if ci_reporting_summary.get("schema_version") != "release-evidence-ci-reporting.v1":
+    if ci_reporting_summary.get("schema_version") != CI_REPORTING_SCHEMA_VERSION:
         failures.append("Release scorecard CI reporting summary has unexpected schema version.")
-    if ci_reporting_summary.get("verify_bundle_entrypoint") != "runs/verify/latest.json":
+    if ci_reporting_summary.get("verify_bundle_entrypoint") != VERIFY_BUNDLE_ENTRYPOINT:
         failures.append("Release scorecard CI reporting summary has unexpected verify bundle entrypoint.")
 
     artifact_map = ci_reporting_summary.get("artifact_map") or []

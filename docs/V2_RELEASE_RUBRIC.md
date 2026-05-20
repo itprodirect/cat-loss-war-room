@@ -1,6 +1,6 @@
 # V2 Quality Rubric and Release Scorecard
 
-Last updated: May 18, 2026
+Last updated: May 20, 2026
 
 This document is the first-pass output of issue `#27`.
 
