@@ -1,6 +1,6 @@
 # V2 Quality Rubric and Release Scorecard
 
-Last updated: May 18, 2026
+Last updated: May 20, 2026
 
 This document is the first-pass output of issue `#27`.
 
@@ -429,6 +429,7 @@ What this does now:
 - runs the deterministic offline preflight and the supported `pytest -q` path
 - writes Markdown and JSON scorecard artifacts into `runs/release_scorecards/`
 - writes the underlying machine-readable offline preflight payload into `runs/preflight/`
+- writes a `ci_reporting_summary` inventory in the scorecard JSON/Markdown so CI/reporting consumers can find the verify pointer, verify manifest, preflight artifact, scorecard JSON, scorecard Markdown, `reviewer_summary`, and blocking/advisory readiness fields without creating a second readiness model
 - writes a top-level `reviewer_summary` convenience summary over the existing `readiness_posture`, rubric dimensions, and blocking/advisory counts; this is not a new scoring framework
 - writes a machine-readable `readiness_posture` summary with blocking/advisory counts, demo-ready status, pilot-ready status, release-ready status, blocking failures, advisory gaps, and pilot-readiness gaps
 - renders a matching `Reviewer Summary` section before the deeper dashboard readiness details in the Markdown scorecard

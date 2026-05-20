@@ -17,6 +17,7 @@ from war_room.bootstrap import (
 )
 from war_room.preflight import preflight_run_id, run_demo_preflight, write_preflight_artifact
 from war_room.release_scorecard import (
+    VERIFY_BUNDLE_ENTRYPOINT,
     build_demo_release_scorecard,
     collect_fixture_coverage,
     collect_scenario_registry_coverage,
@@ -312,6 +313,18 @@ def test_write_verify_manifest_links_existing_artifacts_with_shared_run_id(tmp_p
     assert preflight_payload["run_id"] == run_id
     assert scorecard_payload["run_id"] == run_id
     assert scorecard_payload["preflight_artifact_path"] == manifest_payload["preflight_artifact_path"]
+    assert scorecard_payload["ci_reporting_summary"]["verify_bundle_entrypoint"] == VERIFY_BUNDLE_ENTRYPOINT
+    artifact_names = {
+        mapping["name"]
+        for mapping in scorecard_payload["ci_reporting_summary"]["artifact_map"]
+    }
+    assert {
+        "verify_manifest",
+        "preflight_artifact",
+        "release_scorecard_json",
+        "release_scorecard_markdown",
+        "reviewer_summary",
+    } <= artifact_names
 
 
 def test_resolve_release_candidate_uses_git_branch(monkeypatch):

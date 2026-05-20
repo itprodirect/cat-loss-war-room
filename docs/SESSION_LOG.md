@@ -2625,3 +2625,39 @@ Status: Complete
 - Validation:
   - `git diff --check` -> passed.
   - `python -m pytest -q` -> `432 passed in 23.75s`.
+
+## Session 125 - Issue 92 Release-Evidence CI Reporting Map
+Date: 2026-05-20
+Status: Complete
+
+- Completed issue `#92` as a narrow issue `#27` reporting-consumption slice
+  over the existing verify bundle and release-scorecard artifacts.
+- What changed:
+  - Added a top-level `ci_reporting_summary` inventory to release-scorecard
+    JSON, derived from the existing verify bundle, scorecard, readiness
+    posture, and reviewer-summary fields.
+  - Added a matching `## CI Reporting Summary` section to release-scorecard
+    Markdown output.
+  - The inventory maps `runs/verify/latest.json`, the run-specific verify
+    manifest, preflight artifact, release-scorecard JSON, release-scorecard
+    Markdown, `reviewer_summary`, and the blocking/advisory readiness fields.
+  - Expanded release-scorecard and bootstrap tests to cover the new artifact
+    shape and verify-bundle mapping.
+  - Updated `docs/V2_RELEASE_RUBRIC.md` and
+    `docs/ISSUE_27_RELEASE_EVIDENCE_REVIEW_GUIDE.md` with the CI/reporting
+    consumption map.
+- Decisions not added:
+  - no second readiness model, renamed release levels, readiness-threshold
+    changes, CI workflow changes, dashboard, frontend, app shell, runtime
+    orchestration changes, production API, auth, persistence, queues, workers,
+    fixture/cache/citation/live retrieval changes, prompt/schema changes,
+    notebook behavior changes, dependency changes, pilot study execution, or
+    Beta-ready/Pilot-ready/production-readiness claim was added.
+- Validation:
+  - `python -m pytest tests\test_release_scorecard.py tests\test_bootstrap.py -q`
+    -> `27 passed in 7.14s`.
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `433 passed in 25.59s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `433 passed in 24.28s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-issue-92-release-evidence-ci-reporting_20260520t042606z.json`.

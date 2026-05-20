@@ -14,6 +14,8 @@ from war_room.preflight import DemoPreflightReport
 from war_room.scenarios import default_scenario_id as get_default_scenario_id, list_scenarios
 
 DEFAULT_VERIFICATION_COMMAND = "pytest -q"
+CI_REPORTING_SCHEMA_VERSION = "release-evidence-ci-reporting.v1"
+VERIFY_BUNDLE_ENTRYPOINT = "runs/verify/latest.json"
 _FIXTURE_FILE_NAMES = ("weather.json", "carrier.json", "caselaw.json", "citation_verify.json")
 READINESS_BLOCKING = "blocking"
 READINESS_ADVISORY = "advisory"
@@ -161,6 +163,28 @@ class ReviewerSummary:
 
 
 @dataclass(frozen=True)
+class CIReportingArtifactMapping:
+    """One release-evidence artifact or field path exposed for CI/reporting use."""
+
+    name: str
+    location: str
+    role: str
+
+
+@dataclass(frozen=True)
+class CIReportingSummary:
+    """Derived inventory of existing release-evidence fields for CI/reporting consumers."""
+
+    schema_version: str
+    verify_bundle_entrypoint: str
+    artifact_map: list[CIReportingArtifactMapping]
+    run_identity_fields: list[str]
+    reviewer_summary_fields: list[str]
+    blocking_readiness_fields: list[str]
+    advisory_readiness_fields: list[str]
+
+
+@dataclass(frozen=True)
 class ReleaseScorecard:
     """Structured release scorecard artifact."""
 
@@ -174,6 +198,7 @@ class ReleaseScorecard:
     preflight_summary: PreflightSummary | None
     fixture_coverage: FixtureCoverageSummary | None
     scenario_registry: ScenarioRegistrySummary | None
+    ci_reporting_summary: CIReportingSummary
     reviewer_summary: ReviewerSummary
     readiness_posture: ReadinessPostureSummary
     calibration_thresholds: list[CalibrationThreshold]
@@ -500,6 +525,7 @@ def build_demo_release_scorecard(
         dimensions=dimensions,
         must_pass_gates=must_pass_gates,
     )
+    ci_reporting_summary = _build_ci_reporting_summary()
     reviewer_summary = _build_reviewer_summary(readiness_posture)
 
     return ReleaseScorecard(
@@ -513,6 +539,7 @@ def build_demo_release_scorecard(
         preflight_summary=preflight_summary,
         fixture_coverage=fixture_coverage,
         scenario_registry=scenario_registry,
+        ci_reporting_summary=ci_reporting_summary,
         reviewer_summary=reviewer_summary,
         readiness_posture=readiness_posture,
         calibration_thresholds=calibration_thresholds,
@@ -543,6 +570,34 @@ def render_release_scorecard_markdown(scorecard: ReleaseScorecard) -> str:
 
     lines.extend(
         [
+            "",
+            "## CI Reporting Summary",
+            f"- Schema version: {scorecard.ci_reporting_summary.schema_version}",
+            f"- Verify bundle entrypoint: {scorecard.ci_reporting_summary.verify_bundle_entrypoint}",
+            "",
+            "| Artifact or field | Location | Role |",
+            "|---|---|---|",
+        ]
+    )
+    for mapping in scorecard.ci_reporting_summary.artifact_map:
+        lines.append(f"| {mapping.name} | `{mapping.location}` | {mapping.role} |")
+    lines.extend(
+        [
+            "",
+            "- Run identity fields: "
+            + ", ".join(f"`{field_name}`" for field_name in scorecard.ci_reporting_summary.run_identity_fields),
+            "- Reviewer summary fields: "
+            + ", ".join(
+                f"`{field_name}`" for field_name in scorecard.ci_reporting_summary.reviewer_summary_fields
+            ),
+            "- Blocking readiness fields: "
+            + ", ".join(
+                f"`{field_name}`" for field_name in scorecard.ci_reporting_summary.blocking_readiness_fields
+            ),
+            "- Advisory readiness fields: "
+            + ", ".join(
+                f"`{field_name}`" for field_name in scorecard.ci_reporting_summary.advisory_readiness_fields
+            ),
             "",
             "## Reviewer Summary",
             f"- Target release level: {scorecard.reviewer_summary.target_release_level}",
@@ -739,6 +794,7 @@ def validate_release_scorecard_payload(payload: dict) -> list[str]:
             if not readiness_posture.get(required_field):
                 failures.append(f"Release scorecard readiness posture is missing {required_field}.")
 
+    failures.extend(_validate_ci_reporting_summary(payload.get("ci_reporting_summary") or {}))
     failures.extend(_validate_reviewer_summary(payload.get("reviewer_summary") or {}, readiness_posture))
 
     thresholds = payload.get("calibration_thresholds") or []
@@ -997,6 +1053,79 @@ def _dimension_floor_evidence(dimensions: list[ScorecardDimension]) -> str:
     return "No quality dimension is scored 0/3."
 
 
+def _build_ci_reporting_summary() -> CIReportingSummary:
+    """Describe existing release-evidence artifacts and fields for CI/reporting consumers."""
+
+    return CIReportingSummary(
+        schema_version=CI_REPORTING_SCHEMA_VERSION,
+        verify_bundle_entrypoint=VERIFY_BUNDLE_ENTRYPOINT,
+        artifact_map=[
+            CIReportingArtifactMapping(
+                name="verify_latest_pointer",
+                location=VERIFY_BUNDLE_ENTRYPOINT,
+                role="Discovery pointer to the newest successful verify manifest.",
+            ),
+            CIReportingArtifactMapping(
+                name="verify_manifest",
+                location="verify_manifest_path",
+                role="Run-specific hub linking run identity, verification summary, preflight, and scorecard artifacts.",
+            ),
+            CIReportingArtifactMapping(
+                name="preflight_artifact",
+                location="preflight_artifact_path",
+                role="Offline demo preflight payload for the same run.",
+            ),
+            CIReportingArtifactMapping(
+                name="release_scorecard_json",
+                location="release_scorecard_json_path",
+                role="Machine-readable scorecard with reviewer, blocking, and advisory readiness fields.",
+            ),
+            CIReportingArtifactMapping(
+                name="release_scorecard_markdown",
+                location="release_scorecard_markdown_path",
+                role="Human-readable rendering of the same release scorecard.",
+            ),
+            CIReportingArtifactMapping(
+                name="reviewer_summary",
+                location="release_scorecard_json_path#reviewer_summary",
+                role="Convenience summary derived from readiness_posture for human review.",
+            ),
+        ],
+        run_identity_fields=[
+            "run_id",
+            "date",
+            "candidate",
+            "target_release_level",
+        ],
+        reviewer_summary_fields=[
+            "reviewer_summary.target_release_level",
+            "reviewer_summary.demo_ready",
+            "reviewer_summary.beta_ready",
+            "reviewer_summary.pilot_ready",
+            "reviewer_summary.release_ready",
+            "reviewer_summary.blocking_failure_count",
+            "reviewer_summary.advisory_attention_count",
+            "reviewer_summary.recommended_action",
+            "reviewer_summary.readiness_warning",
+        ],
+        blocking_readiness_fields=[
+            "readiness_posture.blocking_metric_count",
+            "readiness_posture.blocking_metric_failed_count",
+            "readiness_posture.blocking_failures",
+            "must_pass_gates[].readiness_category",
+            "calibration_thresholds[].readiness_category",
+            "blocking_gaps",
+        ],
+        advisory_readiness_fields=[
+            "readiness_posture.advisory_metric_count",
+            "readiness_posture.advisory_attention_count",
+            "readiness_posture.advisory_gaps",
+            "readiness_posture.pilot_readiness_gaps",
+            "dimensions[].readiness_category",
+        ],
+    )
+
+
 def _build_readiness_posture(
     *,
     target_release_level: str,
@@ -1085,6 +1214,51 @@ def _build_reviewer_summary(readiness_posture: ReadinessPostureSummary) -> Revie
 
 def _top_advisory_gap_names(advisory_gaps: list[str], limit: int = 3) -> list[str]:
     return [gap.split(":", 1)[0] for gap in advisory_gaps[:limit]]
+
+
+def _validate_ci_reporting_summary(ci_reporting_summary: dict) -> list[str]:
+    if not ci_reporting_summary:
+        return ["Release scorecard artifact is missing CI reporting summary."]
+
+    failures: list[str] = []
+    if ci_reporting_summary.get("schema_version") != CI_REPORTING_SCHEMA_VERSION:
+        failures.append("Release scorecard CI reporting summary has unexpected schema version.")
+    if ci_reporting_summary.get("verify_bundle_entrypoint") != VERIFY_BUNDLE_ENTRYPOINT:
+        failures.append("Release scorecard CI reporting summary has unexpected verify bundle entrypoint.")
+
+    artifact_map = ci_reporting_summary.get("artifact_map") or []
+    expected_artifacts = {
+        "verify_latest_pointer",
+        "verify_manifest",
+        "preflight_artifact",
+        "release_scorecard_json",
+        "release_scorecard_markdown",
+        "reviewer_summary",
+    }
+    artifact_names = {item.get("name") for item in artifact_map if isinstance(item, dict)}
+    missing_artifacts = sorted(expected_artifacts - artifact_names)
+    if missing_artifacts:
+        failures.append(
+            "Release scorecard CI reporting summary is missing artifact mappings: "
+            + ", ".join(missing_artifacts)
+        )
+    for item in artifact_map:
+        if not isinstance(item, dict) or not item.get("name") or not item.get("location") or not item.get("role"):
+            failures.append("Release scorecard CI reporting summary has an incomplete artifact mapping.")
+            break
+
+    required_field_groups = (
+        "run_identity_fields",
+        "reviewer_summary_fields",
+        "blocking_readiness_fields",
+        "advisory_readiness_fields",
+    )
+    for field_group in required_field_groups:
+        values = ci_reporting_summary.get(field_group)
+        if not values or not isinstance(values, list):
+            failures.append(f"Release scorecard CI reporting summary is missing {field_group}.")
+
+    return failures
 
 
 def _validate_reviewer_summary(reviewer_summary: dict, readiness_posture: dict) -> list[str]:

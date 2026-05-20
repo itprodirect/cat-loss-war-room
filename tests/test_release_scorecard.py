@@ -7,7 +7,9 @@ from pathlib import Path
 from war_room.bootstrap import bootstrap_runtime
 from war_room.preflight import DemoPreflightReport, PreflightCheck, PreflightScenarioReport, run_demo_preflight
 from war_room.release_scorecard import (
+    CI_REPORTING_SCHEMA_VERSION,
     DEFAULT_VERIFICATION_COMMAND,
+    VERIFY_BUNDLE_ENTRYPOINT,
     build_demo_release_scorecard,
     collect_fixture_coverage,
     collect_scenario_registry_coverage,
@@ -156,12 +158,31 @@ def test_build_demo_release_scorecard_uses_fixture_calibration():
     assert scorecard.scenario_registry.offline_ready_count == 5
     assert scorecard.scenario_registry.fixture_ready_count == 5
     assert any("Scenario registry:" in entry for entry in scorecard.evidence_bundle)
+    assert scorecard.ci_reporting_summary.schema_version == CI_REPORTING_SCHEMA_VERSION
+    assert scorecard.ci_reporting_summary.verify_bundle_entrypoint == VERIFY_BUNDLE_ENTRYPOINT
+    artifact_map = {mapping.name: mapping for mapping in scorecard.ci_reporting_summary.artifact_map}
+    assert artifact_map["verify_manifest"].location == "verify_manifest_path"
+    assert artifact_map["preflight_artifact"].location == "preflight_artifact_path"
+    assert artifact_map["release_scorecard_json"].location == "release_scorecard_json_path"
+    assert artifact_map["release_scorecard_markdown"].location == "release_scorecard_markdown_path"
+    assert artifact_map["reviewer_summary"].location == "release_scorecard_json_path#reviewer_summary"
+    assert "run_id" in scorecard.ci_reporting_summary.run_identity_fields
+    assert "reviewer_summary.release_ready" in scorecard.ci_reporting_summary.reviewer_summary_fields
+    assert (
+        "readiness_posture.blocking_metric_failed_count"
+        in scorecard.ci_reporting_summary.blocking_readiness_fields
+    )
+    assert "dimensions[].readiness_category" in scorecard.ci_reporting_summary.advisory_readiness_fields
 
     markdown = render_release_scorecard_markdown(scorecard)
     assert "# Release Scorecard" in markdown
     assert "Run id: 20260311T101530Z" in markdown
     assert "codex/local" in markdown
     assert "Preflight artifact: runs/preflight/2026-03-11_codex-local_20260311t101530z.json" in markdown
+    assert "## CI Reporting Summary" in markdown
+    assert "release_scorecard_json_path#reviewer_summary" in markdown
+    assert "`readiness_posture.blocking_metric_failed_count`" in markdown
+    assert "`dimensions[].readiness_category`" in markdown
     assert "## Reviewer Summary" in markdown
     assert "Demo-ready: Yes (passes)" in markdown
     assert "Beta-ready posture: not claimed" in markdown
@@ -216,6 +237,9 @@ def test_write_release_scorecard_artifacts_writes_json_and_markdown(tmp_path: Pa
     assert '"run_id": "20260311T101530Z"' in payload
     assert '"candidate": "Feature Branch 27"' in payload
     assert '"target_release_level": "Demo-ready"' in payload
+    assert '"ci_reporting_summary"' in payload
+    assert f'"schema_version": "{CI_REPORTING_SCHEMA_VERSION}"' in payload
+    assert '"release_scorecard_json_path#reviewer_summary"' in payload
     assert '"reviewer_summary"' in payload
     assert '"blocking_failure_count": 0' in payload
     assert '"top_advisory_gaps"' in payload
@@ -311,6 +335,7 @@ def test_validate_release_scorecard_payload_reports_actionable_failures():
     failures = validate_release_scorecard_payload(payload)
 
     assert any("dashboard readiness posture" in failure for failure in failures)
+    assert any("CI reporting summary" in failure for failure in failures)
     assert any("reviewer summary" in failure for failure in failures)
     assert any("Fixture scenario count" in failure for failure in failures)
     assert any("Committed fixture coverage meets demo-ready threshold" in failure for failure in failures)
@@ -338,6 +363,86 @@ def test_validate_release_scorecard_payload_requires_dashboard_categories():
     assert any("thresholds are missing readiness categories" in failure for failure in failures)
     assert any("gates are missing readiness categories" in failure for failure in failures)
     assert any("dimensions are missing readiness categories" in failure for failure in failures)
+
+
+def test_validate_release_scorecard_payload_requires_ci_reporting_inventory():
+    summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+    scorecard = build_demo_release_scorecard(
+        run_id="20260418T120000Z",
+        candidate="codex/local",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+    payload = asdict(scorecard)
+    payload["ci_reporting_summary"]["artifact_map"] = [
+        item for item in payload["ci_reporting_summary"]["artifact_map"] if item["name"] != "reviewer_summary"
+    ]
+    payload["ci_reporting_summary"]["blocking_readiness_fields"] = []
+
+    failures = validate_release_scorecard_payload(payload)
+
+    assert any("reviewer_summary" in failure for failure in failures)
+    assert any("blocking_readiness_fields" in failure for failure in failures)
+
+
+def test_validate_release_scorecard_payload_rejects_unexpected_ci_reporting_schema_version():
+    summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+    scorecard = build_demo_release_scorecard(
+        run_id="20260418T120000Z",
+        candidate="codex/local",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+    payload = asdict(scorecard)
+    payload["ci_reporting_summary"]["schema_version"] = "release-evidence-ci-reporting.v2"
+
+    failures = validate_release_scorecard_payload(payload)
+
+    assert any("unexpected schema version" in failure for failure in failures)
+
+
+def test_validate_release_scorecard_payload_rejects_unexpected_verify_bundle_entrypoint():
+    summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+    scorecard = build_demo_release_scorecard(
+        run_id="20260418T120000Z",
+        candidate="codex/local",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+    payload = asdict(scorecard)
+    payload["ci_reporting_summary"]["verify_bundle_entrypoint"] = "runs/verify/not-latest.json"
+
+    failures = validate_release_scorecard_payload(payload)
+
+    assert any("unexpected verify bundle entrypoint" in failure for failure in failures)
+
+
+def test_validate_release_scorecard_payload_rejects_incomplete_ci_reporting_artifact_mapping():
+    summary = collect_fixture_coverage(CACHE_SAMPLES_DIR)
+    registry = collect_scenario_registry_coverage(ROOT, CACHE_SAMPLES_DIR)
+    scorecard = build_demo_release_scorecard(
+        run_id="20260418T120000Z",
+        candidate="codex/local",
+        verification_summary="179 passed",
+        artifact_date="2026-04-18",
+        fixture_coverage=summary,
+        scenario_registry=registry,
+    )
+    payload = asdict(scorecard)
+    payload["ci_reporting_summary"]["artifact_map"][0].pop("role")
+
+    failures = validate_release_scorecard_payload(payload)
+
+    assert any("incomplete artifact mapping" in failure for failure in failures)
 
 
 def test_validate_latest_release_scorecard_artifact_reads_newest_json(tmp_path: Path):
