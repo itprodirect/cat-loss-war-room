@@ -6,8 +6,13 @@ from pathlib import Path
 from war_room.carrier_module import build_carrier_doc_pack
 from war_room.caselaw_module import build_caselaw_pack
 from war_room.citation_verify import spot_check_citations
-from war_room.export_md import render_markdown_memo, write_markdown
-from war_room.models import CaseIntake, QuerySpec, citation_verify_pack_to_evidence_items
+from war_room.export_md import _append_review_log, render_markdown_memo, write_markdown
+from war_room.models import (
+    CaseIntake,
+    QuerySpec,
+    ReviewEvent,
+    citation_verify_pack_to_evidence_items,
+)
 from war_room.query_plan import generate_query_plan
 from war_room.weather_module import build_weather_brief
 
@@ -275,6 +280,26 @@ def test_render_surfaces_review_flags_when_present():
     assert "Evidence clusters: cluster-3" in md
 
 
+def test_render_escapes_markdown_in_review_flags_warnings_and_source_reasons():
+    intake, weather, carrier, caselaw, citecheck, queries = _sample_data()
+    weather["warnings"] = ["## Injected heading <script>alert(1)</script> [click](https://evil)"]
+    weather["sources"][0]["reason"] = "![img](x) <img src=x onerror=alert(1)>"
+
+    md = render_markdown_memo(intake, weather, carrier, caselaw, citecheck, queries)
+
+    assert (
+        "- Weather: \\#\\# Injected heading &lt;script&gt;alert\\(1\\)&lt;/script&gt; "
+        "click\\(https://evil\\)"
+    ) in md
+    assert (
+        "- \\#\\# Injected heading &lt;script&gt;alert\\(1\\)&lt;/script&gt; "
+        "click\\(https://evil\\)"
+    ) in md
+    assert "\\!img\\(x\\) &lt;img src=x onerror=alert\\(1\\)&gt;" in md
+    assert "<script>" not in md
+    assert "<img src=x onerror=alert(1)>" not in md
+
+
 def test_render_includes_evidence_clusters():
     md = render_markdown_memo(*_sample_data())
 
@@ -345,6 +370,58 @@ def test_render_includes_canonical_evidence_index_rows():
     assert "caselaw-case-123-so-3d-456-" in md
     assert citation_evidence_id in md
     assert "| citation-check-1 |" not in md
+
+
+def test_render_sanitizes_evidence_index_review_log_and_unsafe_urls():
+    intake, weather, carrier, caselaw, citecheck, queries = _sample_data()
+    weather["warnings"] = ["## Needs review [link](javascript:alert(2)) <b>"]
+    citecheck["checks"][0]["case_name"] = "Legit *Case* <b>"
+    citecheck["checks"][0]["badge"] = "verified|<script>"
+    citecheck["checks"][0]["source_url"] = "javascript:alert(1)"
+    citecheck["checks"][0]["status"] = "uncertain"
+    citecheck["summary"] = {"total": 1, "verified": 0, "uncertain": 1, "not_found": 0}
+    citation_evidence_id = citation_verify_pack_to_evidence_items(citecheck)[0].evidence_id
+
+    md = render_markdown_memo(intake, weather, carrier, caselaw, citecheck, queries)
+    evidence_index = md.split("## Appendix: Evidence Index", 1)[1].split(
+        "## Appendix: Review Log", 1
+    )[0]
+
+    assert (
+        f"| {citation_evidence_id} | citation_verify | citation_check | "
+        "Legit \\*Case\\* &lt;b&gt; | verified/&lt;script&gt; |  |"
+    ) in evidence_index
+    assert (
+        "**Weather review required:** \\#\\# Needs review "
+        "link\\(javascript:alert\\(2\\)\\) &lt;b&gt;"
+    ) in md
+    assert "javascript:alert(1)" not in evidence_index
+    assert "<script>" not in evidence_index
+    assert "<b>" not in md
+
+
+def test_append_review_log_escapes_label_and_detail_fields():
+    lines: list[str] = []
+    _append_review_log(
+        lines,
+        [
+            ReviewEvent(
+                event_id="review-injection",
+                event_type="warning",
+                label="**Injected** <b>",
+                detail="[link](javascript:alert(1)) <img>",
+                related_cluster_ids=["cluster-1"],
+            )
+        ],
+    )
+
+    rendered = "\n".join(lines)
+
+    assert (
+        "- **\\*\\*Injected\\*\\* &lt;b&gt;:** "
+        "link\\(javascript:alert\\(1\\)\\) &lt;img&gt; "
+        "| Evidence clusters: cluster-1"
+    ) in rendered
 
 
 def test_render_accepts_dict_intake_and_query_specs():
