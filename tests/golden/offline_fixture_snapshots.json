@@ -256,9 +256,9 @@
       "review_required_issue_count": 4,
       "review_required_memo_section_count": 1,
       "source_badge_counts": {
-        "official": 6,
+        "official": 1,
         "professional": 6,
-        "unvetted": 4
+        "unvetted": 9
       },
       "state": "TX",
       "weather_source_count": 3,
