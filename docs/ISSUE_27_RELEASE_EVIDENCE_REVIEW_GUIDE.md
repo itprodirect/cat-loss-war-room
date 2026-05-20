@@ -114,7 +114,7 @@ Expected fields:
 - `candidate`: branch or release-candidate label.
 - `verification_command`: currently `pytest -q`.
 - `verification_summary`: final pytest summary, for example
-  `432 passed in <duration>s`.
+  `449 passed in <duration>s`.
 - `repo_root`: checkout used for the run.
 - `preflight_artifact_path`: linked preflight JSON.
 - `release_scorecard_json_path`: linked scorecard JSON.

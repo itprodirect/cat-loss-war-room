@@ -11,6 +11,14 @@ create issues, change runtime code, change CI, add dependencies, or expand the
 repo into a production API, web app, auth system, persistence layer, queue,
 worker, dashboard, beta, pilot, or production surface.
 
+Post-audit update (May 20, 2026): issue `#92` / PR `#93` landed the
+release-evidence CI reporting summary, and issue `#94` / PR `#95`, issue
+`#96` / PR `#97`, and issue `#98` / PR `#99` landed the first caselaw,
+carrier, and weather evidence adapter slices. This audit's broad warnings
+still apply: those slices do not make the repo a full V2 evidence graph,
+product platform, production API, dashboard, beta, pilot, or production
+surface.
+
 ## Current Repo Truth Used For This Audit
 
 - Active runtime is still `notebooks/01_case_war_room.ipynb` plus
@@ -85,20 +93,21 @@ implementation:
   dashboard exists.
 - `#18`: includes access control and enforceable retention. Current security
   work is offline repo hygiene, not product security.
-- `#27`: has been partially updated, but should now mention the issue `#88`
-  `reviewer_summary` layer and keep the remaining scope to broader CI/pilot
-  operationalization.
+- `#27`: has been partially updated, and the issue `#92` reporting-consumption
+  slice has landed. Keep remaining scope to broader CI/pilot operationalization
+  without adding a second readiness model or dashboard claim.
 
 ## Recommended Next 5 Child Issues
 
 These are the highest-value issue-creation candidates after this audit. They
 are phrased as narrow child issues to avoid umbrella implementation.
 
-1. `#27` child: Broaden release-evidence CI reporting from the existing verify
-   bundle without changing readiness levels.
-   - Purpose: map the current local/CI artifacts to the next reportable CI
-     evidence slice.
-   - Non-goals: no pilot claim, no dashboard, no new rubric, no runtime change.
+1. `#12` child: Continue evidence/provenance adapter work after the landed
+   caselaw, carrier, and weather slices.
+   - Purpose: either scope a citation-verify adapter or pause for a status map
+     before another adapter.
+   - Non-goals: no database, no global schema rewrite, no AI scoring, no live
+     retrieval, no full evidence-graph completion claim.
 2. `#10` child: Remaining orchestration scope map after landed
    contracts/service/status/transport/dev-HTTP slices.
    - Purpose: update issue `#10` with what is landed, what remains, and what
@@ -111,12 +120,11 @@ are phrased as narrow child issues to avoid umbrella implementation.
      the contract seam before any frontend work.
    - Non-goals: no React, Next.js, dashboard, app shell, auth, persistence, or
      production API.
-4. `#12` child: Implement one canonical evidence adapter over existing module
-   output with durable provenance IDs.
-   - Purpose: start evidence normalization from one narrow existing payload
-     path and tests.
-   - Non-goals: no database, no global schema rewrite, no AI scoring, no live
-     retrieval.
+4. `#27` child: Broaden CI/pilot release evidence beyond the landed
+   `ci_reporting_summary` inventory.
+   - Purpose: identify the next reportable evidence gap using the current
+     rubric and verify bundle.
+   - Non-goals: no pilot claim, no dashboard, no new rubric, no runtime change.
 5. `#13` or `#14` child: Add a fixture-backed false-positive and ambiguity
    regression set for case-law and citation quality.
    - Purpose: make noisy authority and ambiguous citation behavior measurable
@@ -209,14 +217,17 @@ are phrased as narrow child issues to avoid umbrella implementation.
   confidence annotations, and rationale fields on top of the evidence schema
   from `#24`.
 - Current-state mismatch: the repo already has transitional evidence clusters,
-  evidence-to-claim links, review events, and read models, but the full
-  canonical evidence normalization engine from `#12` is not implemented.
-  The issue is directionally valid but too broad as a first implementation
-  ticket.
+  evidence-to-claim links, review events, read models, and first narrow
+  caselaw/carrier/weather adapters into canonical `EvidenceItem` rows, but the
+  full canonical evidence normalization engine from `#12` is not implemented.
+  The issue is directionally valid but still too broad to treat as a single
+  implementation ticket.
 - Recommended action: split into child issues.
 - Suggested child issues:
-  - One canonical adapter for one existing module output.
-  - Durable evidence and cluster ID rules applied to current audit output.
+  - Citation-verify adapter or adapter-status map after the landed caselaw,
+    carrier, and weather slices.
+  - Durable evidence and cluster ID rules applied consistently across current
+    audit output.
   - URL/citation dedupe regression tests over the five fixture lanes.
   - Provenance links from memo claims to evidence clusters in one export path.
 - Recommended priority: `P1`, first true product-core implementation after

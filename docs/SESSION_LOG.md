@@ -2823,3 +2823,34 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `448 passed in 13.51s`; verify manifest written under
     `runs/verify/2026-05-20_codex-issue-98-weather-evidence-adapter_20260520t073832z.json`.
+
+## Session 130 - Current-State Docs Sync After Adapter Slices
+Date: 2026-05-20
+Status: Complete
+
+- Synced high-visibility current-state docs after the merged issue `#92`
+  release-evidence reporting slice and issue `#94`, `#96`, and `#98`
+  evidence-adapter slices.
+- What changed:
+  - Updated heartbeat, handoff, repo brief, roadmap, README, Claude guidance,
+    V2 blueprint, V2 open-issue audit, V2 evidence schema, V2 release rubric,
+    and the release-evidence reviewer guide so they no longer present issue
+    `#92` as the active branch/focus or `432`/`433` as the current baseline.
+  - Reflected the current `449`-test supported baseline.
+  - Documented that issue `#92` / PR `#93` landed the
+    `ci_reporting_summary` inventory over the existing verify bundle.
+  - Documented that issue `#94` / PR `#95`, issue `#96` / PR `#97`, and issue
+    `#98` / PR `#99` landed caselaw, carrier, and weather evidence adapters
+    with deterministic provenance-oriented `EvidenceItem` IDs.
+- Decisions not added:
+  - no runtime code, tests, dependencies, notebooks, fixtures, live retrieval,
+    CI workflow changes, citation-verify adapter, API framework, frontend,
+    dashboard, auth, persistence, queues, workers, broader issue `#12`
+    implementation, readiness-level change, Beta-ready claim, Pilot-ready
+    claim, production-ready claim, or legal-product claim was added.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `449 passed in 11.59s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `449 passed in 10.30s`; verify manifest written under
+    `runs/verify/2026-05-20_docs-post-adapter-state-sync_20260520t081618z.json`.

@@ -44,7 +44,7 @@ notebooks/          # Jupyter notebooks (the demo surface)
 cache_samples/      # Committed demo fixtures (run without API key)
 cache/              # Runtime cache (gitignored)
 output/             # Generated reports (gitignored)
-tests/              # pytest test suite (432 tests, no network)
+tests/              # pytest test suite (449 tests, no network)
 scripts/            # Seed scripts (manual, not CI)
 docs/               # Project documentation
 apps/               # V2 app placeholders (web/api)
@@ -82,9 +82,9 @@ Prioritize in this order:
 - `fix/` - bug fixes
 
 ## Current phase
-v0-demo shipped, issues #22, #23, #24, #6, #7, #8, and #9 are complete and closed. The issue #10 stack now includes canonical run/stage state, typed API contracts, an in-process offline service, operator-facing status presentation, a dependency-free thin transport wrapper, and a dev-only standard-library HTTP adapter, without a production API framework or real web app. Issue #11 is currently specs and previews only, not a shipped UI. Issue #27 now includes the release-evidence reviewer guide and issue #88 `reviewer_summary` scorecard convenience layer, while broader CI/pilot operationalization remains open. Active V2 execution work remains concentrated in broader #27 CI/pilot operationalization and explicitly scoped #10/#11 follow-ups. Cells 0-7 remain stable and CI runs package-installed tests.
+v0-demo shipped, issues #22, #23, #24, #6, #7, #8, and #9 are complete and closed. The issue #10 stack now includes canonical run/stage state, typed API contracts, an in-process offline service, operator-facing status presentation, a dependency-free thin transport wrapper, and a dev-only standard-library HTTP adapter, without a production API framework or real web app. Issue #11 is currently specs and previews only, not a shipped UI. Issue #27 now includes the release-evidence reviewer guide, issue #88 `reviewer_summary`, and issue #92 `ci_reporting_summary` scorecard convenience layers, while broader CI/pilot operationalization remains open. Issue #12 now has narrow caselaw, carrier, and weather evidence adapters over current module output, but the full V2 evidence graph, persistence, API integration, dashboard, and product runtime remain future work. Cells 0-7 remain stable and CI runs package-installed tests.
 
 ## Next session focus
 See [`docs/HANDOFF.md`](docs/HANDOFF.md) for full orientation and status.
 Execution roadmap lives in [`docs/ROADMAP.md`](docs/ROADMAP.md) and [`docs/V2_ISSUE_MAP.md`](docs/V2_ISSUE_MAP.md).
-Next priority: continue broader #27 scorecard/rubric operationalization, or scope the next #10/#11 slice against the existing offline orchestration stack. Issues #64 and #65 are closed hygiene follow-ups.
+Next priority: review remaining issue #12 evidence/provenance scope and either add a citation-verify adapter as the next narrow slice or pause for a status map; broader #27 scorecard/rubric operationalization and explicitly scoped #10/#11 follow-ups remain available after that. Issues #64 and #65 are closed hygiene follow-ups.

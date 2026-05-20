@@ -750,6 +750,14 @@ These are still transitional read models over the current v0 audit snapshot and 
 
 The first narrow issue `#10` run-state slice now centralizes the run/status vocabulary, transition validation, and stage rollup helpers in `src/war_room/orchestration.py`. Issue `#73` adds typed API boundary contracts for future start-run and get-run-status responses in `src/war_room/orchestration_api_contracts.py`. The canonical `Run` and `RunStage` models use the shared vocabulary, but the full API service, persistence layer, retries, and circuit breakers remain future work.
 
+The first narrow issue `#12` adapter slices now map current caselaw, carrier,
+and weather module outputs into canonical `EvidenceItem` rows through
+`caselaw_pack_to_evidence_items(...)`, `carrier_doc_pack_to_evidence_items(...)`,
+and `weather_brief_to_evidence_items(...)`. Those adapters replace positional
+evidence IDs in those lanes with deterministic provenance-oriented IDs while
+preserving the current notebook-era audit snapshot flow. They are not a full
+V2 evidence graph, storage layer, dedupe engine, dashboard, or API integration.
+
 ## 10) Mapping From Current Typed Models
 
 This is the intended mapping from today’s code to the V2 schema.
@@ -761,6 +769,7 @@ This is the intended mapping from today’s code to the V2 schema.
 - `MemoClaim`
 - `ReviewEvent`
 - `ExportArtifact`
+- current module-to-evidence adapters for caselaw, carrier, and weather output
 
 ### Keep as transitional input shapes
 

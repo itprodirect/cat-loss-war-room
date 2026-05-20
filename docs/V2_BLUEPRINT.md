@@ -25,13 +25,13 @@ Do **not** rebuild this as a distributed microservice maze. The right V2 is a di
 
 ## 2) Current-State Scorecard
 
-Current-state note (May 18, 2026): this blueprint remains the historical V2 planning document. The repo has moved beyond the original March snapshot: the supported test baseline is now `432` passing tests, issues `#6` through `#9`, `#22`, `#23`, and `#24` are complete, the issue `#10` contract/service/status/transport/dev-HTTP slices have landed, issue `#11` has specs/previews only, and issue `#27` now includes release-evidence artifacts, the reviewer guide, and the issue `#88` `reviewer_summary` convenience layer. The active runtime is still the notebook plus `src/war_room/`; no self-serve web UI, production API, auth, persistence, queues, workers, or production app exists.
+Current-state note (May 20, 2026): this blueprint remains the historical V2 planning document. The repo has moved beyond the original March snapshot: the supported test baseline is now `449` passing tests, issues `#6` through `#9`, `#22`, `#23`, and `#24` are complete, the issue `#10` contract/service/status/transport/dev-HTTP slices have landed, issue `#11` has specs/previews only, issue `#27` now includes release-evidence artifacts, the reviewer guide, the issue `#88` `reviewer_summary`, and the issue `#92` `ci_reporting_summary` inventory, and issue `#12` has first caselaw, carrier, and weather evidence adapters. The active runtime is still the notebook plus `src/war_room/`; no self-serve web UI, production API, auth, persistence, queues, workers, dashboard, or production app exists.
 
 | Dimension | Verdict | Why |
 |---|---|---|
-| Demo reliability | Strong | Offline cache lane, committed fixtures, release-evidence checks, and `432` passing tests make the narrated demo baseline dependable. |
+| Demo reliability | Strong | Offline cache lane, committed fixtures, release-evidence checks, and `449` passing tests make the narrated demo baseline dependable. |
 | End-user usability | Weak | The primary interface is still Jupyter plus environment setup and kernel selection. |
-| Evidence quality | Mixed | Good source gathering intent, but normalization and extraction are still brittle. |
+| Evidence quality | Mixed | The first caselaw, carrier, and weather evidence adapters now reduce positional provenance drift, but citation-verify adaptation, broader dedupe, and product-grade extraction are still pending. |
 | Legal trust posture | Promising | Guardrails and disclaimers are strong; provenance and review workflow are not yet product-grade. |
 | Architecture | Good prototype | Modules are understandable, but orchestration, contracts, storage, and runtime boundaries are still early. |
 | Security and operations | Early | Repo hygiene is fine; product controls, auditability, and observability are mostly roadmap work. |
@@ -49,7 +49,7 @@ Current-state note (May 18, 2026): this blueprint remains the historical V2 plan
 - Module boundaries are understandable.
   - Weather, carrier, case law, citation checks, and export are separated in a way a new engineer can follow.
 - Test coverage is respectable for a prototype.
-  - The current supported baseline is `432` passing tests, enough to trust narrow docs and contract slices more than usual at this stage.
+  - The current supported baseline is `449` passing tests, enough to trust narrow docs and contract slices more than usual at this stage.
 - Documentation is better than the average internal prototype.
   - Handoff, method, safety, demo script, and roadmap docs reduce tribal knowledge.
 
