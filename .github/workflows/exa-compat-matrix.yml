@@ -10,6 +10,9 @@ on:
       - codex/**
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   exa-matrix:
     name: exa-py (${{ matrix.exa_spec }})
@@ -25,6 +28,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Python
         uses: actions/setup-python@v5
