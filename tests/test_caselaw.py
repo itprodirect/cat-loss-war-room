@@ -420,3 +420,19 @@ def test_build_caselaw_pack_without_client_returns_structured_fallback() -> None
     assert pack["sources"] == []
     assert "warnings" in pack
     assert any("No Exa client available" in warning for warning in pack["warnings"])
+
+
+def test_normalize_case_entry_escapes_entity_decoded_html() -> None:
+    entry = _normalize_case_entry(
+        {
+            "name": "&lt;img src=x onerror=alert(1)&gt;",
+            "citation": "&lt;b&gt;123 So. 3d 1&lt;/b&gt;",
+            "court": "Fla. App.",
+            "year": "2020",
+            "one_liner": "&lt;script&gt;boom()&lt;/script&gt;",
+            "url": "https://example.com/case",
+        }
+    )
+    assert entry["name"] == "&lt;img src=x onerror=alert(1)&gt;"
+    assert entry["citation"] == "&lt;b&gt;123 So. 3d 1&lt;/b&gt;"
+    assert "<script>" not in entry["one_liner"]

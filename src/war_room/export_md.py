@@ -585,6 +585,7 @@ def _clean_inline_text(
     table_safe: bool = False,
 ) -> str:
     text = html.unescape(str(value or ""))
+    text = html.escape(text, quote=False)
     text = text.replace("\r", " ").replace("\n", " ")
     text = re.sub(r"\[([^\]]+)\]", r"\1", text)
     text = re.sub(r"\s+", " ", text).strip()

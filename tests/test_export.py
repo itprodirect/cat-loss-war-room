@@ -363,6 +363,19 @@ def test_render_accepts_dict_intake_and_query_specs():
     assert "Total queries: 1" in md
 
 
+def test_render_escapes_entity_decoded_html_payloads():
+    intake, weather, carrier, caselaw, citecheck, queries = _sample_data()
+    payload = "&lt;img src=x onerror=alert(1)&gt;"
+    weather["sources"][0]["title"] = payload
+    carrier["document_pack"][0]["title"] = payload
+    caselaw["issues"][0]["cases"][0]["name"] = payload
+
+    md = render_markdown_memo(intake, weather, carrier, caselaw, citecheck, queries)
+
+    assert "&lt;img src=x onerror=alert(1)&gt;" in md
+    assert "<img src=x onerror=alert(1)>" not in md
+
+
 def test_write_markdown_creates_file():
     with tempfile.TemporaryDirectory() as tmpdir:
         path = write_markdown(tmpdir, "test_case", "# Test Memo\nContent here")
