@@ -5,11 +5,15 @@ import copy
 import pytest
 from pydantic import ValidationError
 
-from tests.provenance_integrity import assert_audit_snapshot_provenance_integrity
+from tests.provenance_integrity import (
+    assert_all_current_provenance_surfaces,
+    assert_audit_snapshot_provenance_integrity,
+)
 from war_room.export_md import render_markdown_memo
 from war_room.models import (
     CaseIntake,
     QuerySpec,
+    _dedupe_evidence_items_for_audit_snapshot,
     adapt_citation_verify_pack,
     carrier_doc_pack_to_evidence_items,
     caselaw_pack_to_evidence_items,
@@ -126,6 +130,19 @@ def _sample_payloads():
     query_plan = [QuerySpec(module="weather", query="test query", category="test")]
 
     return intake, weather, carrier, caselaw, citecheck, query_plan
+
+
+def _add_duplicate_weather_source(weather: dict) -> None:
+    weather["sources"][0]["url"] = "https://www.weather.gov/r/?utm_source=newsletter"
+    weather["sources"].append(
+        {
+            **weather["sources"][0],
+            "url": "https://weather.gov/r",
+        }
+    )
+    weather["key_observations"].append(
+        "Candidate-only summary should not be merged into the retained row."
+    )
 
 
 def test_weather_evidence_adapter_returns_stable_ids_for_repeated_payloads():
@@ -727,6 +744,147 @@ def test_dedupe_evidence_items_keeps_distinct_urls_and_review_conflicts():
         "carrier-doc-id-2",
         "carrier-doc-review-required",
     ]
+
+
+def test_audit_snapshot_dedupe_result_maps_same_module_duplicates():
+    _, weather, _, _, _, _ = _sample_payloads()
+    _add_duplicate_weather_source(weather)
+    items = weather_brief_to_evidence_items(weather)
+    retained_id = items[0].evidence_id
+    duplicate_id = items[1].evidence_id
+
+    result = _dedupe_evidence_items_for_audit_snapshot(items)
+
+    assert [item.evidence_id for item in result.retained_items] == [retained_id]
+    assert result.old_id_to_retained_id == {
+        retained_id: retained_id,
+        duplicate_id: retained_id,
+    }
+    assert result.removed_duplicate_ids == [duplicate_id]
+    assert result.retained_id_to_duplicate_ids == {retained_id: [duplicate_id]}
+
+
+def test_audit_snapshot_dedupe_result_forbids_cross_module_url_citation_collapse():
+    _, _, _, caselaw, citecheck, _ = _sample_payloads()
+    case_item = caselaw_pack_to_evidence_items(caselaw)[0].model_copy(
+        update={
+            "url": "https://www.flcourts.gov/case/123?utm_source=alert",
+            "badge": "official",
+            "source_reason": "official source",
+            "source_class": "court_opinion",
+            "source_tier": "official",
+            "is_primary_authority": True,
+            "issue": None,
+        }
+    )
+    citation_item = citation_verify_pack_to_evidence_items(citecheck)[0].model_copy(
+        update={
+            "url": "https://flcourts.gov/case/123",
+            "badge": "official",
+            "source_reason": "official source",
+            "source_class": "court_opinion",
+            "source_tier": "official",
+            "is_primary_authority": True,
+        }
+    )
+
+    result = _dedupe_evidence_items_for_audit_snapshot([case_item, citation_item])
+
+    assert [item.evidence_id for item in result.retained_items] == [
+        case_item.evidence_id,
+        citation_item.evidence_id,
+    ]
+    assert result.removed_duplicate_ids == []
+    assert result.old_id_to_retained_id == {
+        case_item.evidence_id: case_item.evidence_id,
+        citation_item.evidence_id: citation_item.evidence_id,
+    }
+
+
+def test_run_audit_snapshot_rewrites_same_module_duplicate_references_across_surfaces():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    _add_duplicate_weather_source(weather)
+    weather["warnings"] = ["County-specific weather corroboration is limited."]
+    raw_weather_items = weather_brief_to_evidence_items(weather)
+    retained_weather_id = raw_weather_items[0].evidence_id
+    removed_weather_id = raw_weather_items[1].evidence_id
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+    markdown = render_markdown_memo(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    evidence_ids = {item.evidence_id for item in snapshot.evidence_items}
+    weather_claim = next(
+        claim for claim in snapshot.memo_claims if claim.claim_id == "weather-corroboration"
+    )
+    weather_event = next(
+        event for event in snapshot.review_events if event.event_id == "weather-warning-1"
+    )
+
+    assert retained_weather_id in evidence_ids
+    assert removed_weather_id not in evidence_ids
+    assert weather_claim.evidence_ids == [retained_weather_id]
+    assert weather_event.related_evidence_ids == [retained_weather_id]
+    assert snapshot.quality_snapshot.raw_evidence_count == 5
+    assert snapshot.quality_snapshot.evidence_item_count == 4
+    assert removed_weather_id not in markdown
+    assert_all_current_provenance_surfaces(snapshot, markdown)
+
+
+def test_run_audit_snapshot_keeps_caselaw_and_citation_rows_distinct_when_checks_dedupe():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    citecheck["checks"][0]["status"] = "uncertain"
+    citecheck["checks"][0]["badge"] = "warning"
+    citecheck["checks"][0]["note"] = "Found on reviewable source."
+    citecheck["checks"].append(dict(citecheck["checks"][0]))
+    citecheck["summary"] = {"total": 2, "verified": 0, "uncertain": 2, "not_found": 0}
+    caselaw_evidence_id = caselaw_pack_to_evidence_items(caselaw)[0].evidence_id
+    raw_citation_items = citation_verify_pack_to_evidence_items(citecheck)
+    retained_citation_id = raw_citation_items[0].evidence_id
+    removed_citation_id = raw_citation_items[1].evidence_id
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    evidence_ids = {item.evidence_id for item in snapshot.evidence_items}
+    assert caselaw_evidence_id in evidence_ids
+    assert retained_citation_id in evidence_ids
+    assert removed_citation_id not in evidence_ids
+    shared_cluster = next(
+        cluster
+        for cluster in snapshot.evidence_clusters
+        if caselaw_evidence_id in cluster.evidence_ids
+        and retained_citation_id in cluster.evidence_ids
+    )
+    citation_event = next(
+        event for event in snapshot.review_events if event.event_id == "citation-uncertain"
+    )
+    assert shared_cluster.modules == ["caselaw", "citation_verify"]
+    assert citation_event.related_evidence_ids == [retained_citation_id]
+    assert citation_event.related_cluster_ids == [shared_cluster.cluster_id]
+    assert citation_event.detail == "2 citation checks are uncertain."
+    assert snapshot.quality_snapshot.raw_evidence_count == 5
+    assert snapshot.quality_snapshot.evidence_item_count == 4
+    assert_audit_snapshot_provenance_integrity(snapshot)
 
 
 def test_citation_verify_summary_validation_rejects_bad_totals():
