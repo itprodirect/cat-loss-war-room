@@ -1785,6 +1785,7 @@ def _case_is_primary_authority(
     case: CaseEntry,
     source_profile: Mapping[str, Any],
 ) -> bool:
+    # model_fields_set distinguishes explicit true/false from omission; dump/reload paths may mark defaults as set.
     if "is_primary_authority" in case.model_fields_set:
         return bool(case.is_primary_authority)
     return bool(source_profile.get("is_primary_authority"))

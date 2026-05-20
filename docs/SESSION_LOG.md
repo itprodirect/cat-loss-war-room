@@ -2708,8 +2708,9 @@ Status: Complete
 Date: 2026-05-20
 Status: Complete
 
-- Applied one focused PR `#95` follow-up to preserve previous case-law
-  primary-authority inference in `caselaw_pack_to_evidence_items(...)`.
+- Applied one focused PR `#95` follow-up that makes primary-authority
+  inference effective when `is_primary_authority` is absent, while preserving
+  explicit true/false values in `caselaw_pack_to_evidence_items(...)`.
 - What changed:
   - The adapter now treats an explicit case-row `is_primary_authority` value
     as authoritative and falls back to `score_url(...)` only when the field was
