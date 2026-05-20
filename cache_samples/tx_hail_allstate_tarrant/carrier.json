@@ -18,8 +18,8 @@
       "doc_type": "DOI/Regulatory Complaint",
       "title": "Texas Department of Insurance market conduct action involving Allstate Texas Lloyds",
       "url": "https://www.tdi.texas.gov/orders/documents/allstate-market-conduct-order.pdf",
-      "badge": "official",
-      "why_it_matters": "Regulatory findings may support questions about claims handling discipline."
+      "badge": "unvetted",
+      "why_it_matters": "Illustrative claim-handling context from an unverified demo fixture source; independently verify before reliance."
     },
     {
       "doc_type": "Denial Pattern Analysis",
@@ -48,14 +48,14 @@
     {
       "title": "Texas Department of Insurance market conduct action involving Allstate Texas Lloyds",
       "url": "https://www.tdi.texas.gov/orders/documents/allstate-market-conduct-order.pdf",
-      "badge": "official",
-      "reason": "Official source"
+      "badge": "unvetted",
+      "reason": "Unverified demo fixture source"
     },
     {
       "title": "North Texas hail claim dispute involving Allstate Texas Lloyds",
       "url": "https://www.insurancejournal.com/news/southcentral/2024/06/10/777777.htm",
       "badge": "unvetted",
-      "reason": "Unvetted source"
+      "reason": "Unverified demo fixture source"
     }
   ]
 }
