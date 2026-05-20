@@ -6,7 +6,7 @@ import datetime as dt
 import hashlib
 import re
 from typing import Any, Literal, Mapping, Sequence
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from war_room.orchestration import (
@@ -23,6 +23,7 @@ MemoSectionStatus = Literal["draft", "review_required", "ready"]
 LegalIssueStatus = Literal["open", "review_required", "resolved"]
 RunEventSeverity = Literal["info", "warning", "error"]
 RetrievalTaskStatus = Literal["queued", "running", "completed", "failed", "degraded", "cancelled"]
+_TRACKING_QUERY_PARAMS = {"fbclid", "gclid", "dclid", "mc_cid", "mc_eid", "igshid"}
 
 
 def _validate_schema_version(value: str) -> str:
@@ -1250,6 +1251,32 @@ def citation_verify_pack_to_evidence_items(
     return evidence_items
 
 
+def dedupe_evidence_items(evidence_items: Sequence[EvidenceItem]) -> list[EvidenceItem]:
+    """Return a stable list with only clear duplicate evidence rows collapsed.
+
+    Key precedence is normalized URL, normalized citation/authority key, then a
+    module-scoped title fallback. A candidate row is only collapsed into an
+    earlier retained row when review and provenance fields remain compatible.
+    """
+    retained_by_key: dict[tuple[str, ...], list[EvidenceItem]] = {}
+    deduped: list[EvidenceItem] = []
+
+    for item in evidence_items:
+        key = _dedupe_key_for_evidence_item(item)
+        if key is None:
+            deduped.append(item)
+            continue
+
+        retained_items = retained_by_key.setdefault(key, [])
+        if any(_evidence_items_can_collapse(retained, item) for retained in retained_items):
+            continue
+
+        retained_items.append(item)
+        deduped.append(item)
+
+    return deduped
+
+
 def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditSnapshot:
     """Build a canonical audit snapshot from normalized memo-render input."""
     weather_payload = weather_brief_to_payload(memo_input.weather)
@@ -1963,6 +1990,173 @@ def _case_is_primary_authority(
     if "is_primary_authority" in case.model_fields_set:
         return bool(case.is_primary_authority)
     return bool(source_profile.get("is_primary_authority"))
+
+
+def _dedupe_key_for_evidence_item(item: EvidenceItem) -> tuple[str, ...] | None:
+    url_key = _normalize_evidence_url_key(item.url)
+    if url_key:
+        return ("url", url_key)
+
+    citation_key = _normalize_citation_value(item.citation)
+    if citation_key:
+        return ("citation", citation_key)
+
+    authority_key = _normalize_evidence_authority_key(item.authority_key)
+    if authority_key:
+        if authority_key.startswith("citation:"):
+            return ("citation", authority_key.removeprefix("citation:"))
+        if authority_key.startswith("url:"):
+            return ("url", authority_key.removeprefix("url:"))
+        return ("authority", authority_key)
+
+    title_key = _normalize_authority_name(item.title)
+    if title_key:
+        return ("title", item.module, item.evidence_type, title_key)
+    return None
+
+
+def _evidence_items_can_collapse(retained: EvidenceItem, candidate: EvidenceItem) -> bool:
+    compatible_text_fields = (
+        (
+            _normalize_evidence_url_key(retained.url),
+            _normalize_evidence_url_key(candidate.url),
+        ),
+        (
+            _normalize_citation_value(retained.citation) or "",
+            _normalize_citation_value(candidate.citation) or "",
+        ),
+        (
+            _normalize_evidence_authority_key(retained.authority_key) or "",
+            _normalize_evidence_authority_key(candidate.authority_key) or "",
+        ),
+        (
+            _normalize_optional_evidence_text(retained.badge),
+            _normalize_optional_evidence_text(candidate.badge),
+        ),
+        (
+            _normalize_optional_evidence_text(retained.source_reason),
+            _normalize_optional_evidence_text(candidate.source_reason),
+        ),
+        (
+            _normalize_optional_evidence_text(retained.source_class),
+            _normalize_optional_evidence_text(candidate.source_class),
+        ),
+        (
+            _normalize_optional_evidence_text(retained.source_tier),
+            _normalize_optional_evidence_text(candidate.source_tier),
+        ),
+        (
+            _normalize_optional_evidence_text(retained.issue),
+            _normalize_optional_evidence_text(candidate.issue),
+        ),
+    )
+    if not all(
+        _candidate_provenance_is_preserved(retained_value, candidate_value)
+        for retained_value, candidate_value in compatible_text_fields
+    ):
+        return False
+
+    return (
+        retained.is_primary_authority == candidate.is_primary_authority
+        and retained.review_required == candidate.review_required
+    )
+
+
+def _candidate_provenance_is_preserved(
+    retained_value: str,
+    candidate_value: str,
+) -> bool:
+    if not candidate_value:
+        return True
+    if not retained_value:
+        return False
+    return retained_value == candidate_value
+
+
+def _normalize_optional_evidence_text(value: str | None) -> str:
+    if not value:
+        return ""
+    normalized = re.sub(r"\s+", " ", value.strip().lower())
+    return normalized
+
+
+def _normalize_evidence_authority_key(value: str | None) -> str | None:
+    if not value:
+        return None
+
+    prefix, separator, raw_value = value.strip().partition(":")
+    if not separator:
+        normalized = _normalize_authority_name(value)
+        return normalized or None
+
+    normalized_prefix = _normalize_authority_name(prefix)
+    if normalized_prefix == "citation":
+        normalized_value = _normalize_citation_value(raw_value) or ""
+    elif normalized_prefix == "url":
+        normalized_value = _normalize_evidence_url_key(raw_value) or ""
+    elif normalized_prefix == "authority":
+        normalized_parts = [
+            _normalize_authority_name(part)
+            for part in raw_value.split("|")
+        ]
+        normalized_value = "|".join(part for part in normalized_parts if part)
+    else:
+        normalized_value = _normalize_authority_name(raw_value)
+
+    if not normalized_prefix or not normalized_value:
+        return None
+    return f"{normalized_prefix}:{normalized_value}"
+
+
+def _normalize_evidence_url_key(value: str | None) -> str:
+    if not value:
+        return ""
+
+    raw_url = value.strip()
+    if not raw_url:
+        return ""
+
+    parse_target = raw_url
+    if "://" not in parse_target and not parse_target.startswith("//"):
+        parse_target = f"//{parse_target}"
+
+    try:
+        parsed = urlparse(parse_target)
+    except Exception:
+        return raw_url.rstrip("/")
+
+    hostname = (parsed.hostname or "").lower().removeprefix("www.")
+    if not hostname:
+        return raw_url.rstrip("/")
+
+    netloc = hostname
+    try:
+        port = parsed.port
+    except ValueError:
+        port = None
+    if port and not (
+        (parsed.scheme == "http" and port == 80)
+        or (parsed.scheme == "https" and port == 443)
+    ):
+        netloc = f"{hostname}:{port}"
+
+    path = re.sub(r"/+", "/", (parsed.path or "").rstrip("/"))
+    normalized = f"{netloc}{path}".strip("/")
+
+    query_pairs = [
+        (name, query_value)
+        for name, query_value in parse_qsl(parsed.query, keep_blank_values=True)
+        if not name.lower().startswith("utm_")
+        and name.lower() not in _TRACKING_QUERY_PARAMS
+    ]
+    if query_pairs:
+        sorted_query_pairs = sorted(
+            query_pairs,
+            key=lambda pair: (pair[0].lower(), pair[1]),
+        )
+        normalized = f"{normalized}?{urlencode(sorted_query_pairs)}"
+
+    return normalized
 
 
 def _cluster_key_for_item(item: EvidenceItem) -> tuple[str, str]:

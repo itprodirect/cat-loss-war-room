@@ -14,6 +14,7 @@ from war_room.models import (
     caselaw_pack_to_evidence_items,
     citation_verify_pack_to_evidence_items,
     citation_verify_pack_to_payload,
+    dedupe_evidence_items,
     memo_render_input_from_parts,
     run_audit_snapshot_from_parts,
     run_audit_snapshot_to_payload,
@@ -538,6 +539,189 @@ def test_citation_verify_evidence_adapter_handles_sparse_metadata_safely():
     assert item.authority_key is None
     assert item.citation is None
     assert item.review_required is True
+
+
+def test_dedupe_evidence_items_collapses_normalized_url_duplicates():
+    _, weather, _, _, _, _ = _sample_payloads()
+    weather["sources"][0]["url"] = "https://www.weather.gov/r/?utm_source=newsletter"
+    weather["sources"].append(
+        {
+            **weather["sources"][0],
+            "url": "https://weather.gov/r",
+        }
+    )
+    weather["key_observations"].append(weather["key_observations"][0])
+
+    items = weather_brief_to_evidence_items(weather)
+    deduped = dedupe_evidence_items(items)
+
+    assert len(items) == 2
+    assert [item.evidence_id for item in deduped] == [items[0].evidence_id]
+    assert deduped[0].url == "https://www.weather.gov/r/?utm_source=newsletter"
+    assert deduped[0].badge == items[0].badge
+    assert deduped[0].review_required is items[0].review_required
+
+
+def test_dedupe_evidence_items_uses_citation_key_when_url_is_absent():
+    _, _, _, _, citecheck, _ = _sample_payloads()
+    citecheck["checks"][0].pop("source_url", None)
+    citecheck["checks"][0]["status"] = "uncertain"
+    citecheck["checks"][0]["badge"] = "warning"
+    citecheck["checks"][0]["note"] = "Citation text needs manual review."
+    citecheck["checks"].append(dict(citecheck["checks"][0]))
+    citecheck["summary"] = {"total": 2, "verified": 0, "uncertain": 2, "not_found": 0}
+
+    items = citation_verify_pack_to_evidence_items(citecheck)
+    deduped = dedupe_evidence_items(items)
+
+    assert len(items) == 2
+    assert [item.evidence_id for item in deduped] == [items[0].evidence_id]
+    assert deduped[0].citation == "123 so. 3d 456"
+    assert deduped[0].source_reason == "uncertain"
+    assert deduped[0].review_required is True
+
+
+def test_dedupe_evidence_items_uses_module_scoped_title_fallback():
+    _, weather, _, _, _, _ = _sample_payloads()
+    item = weather_brief_to_evidence_items(weather)[0].model_copy(
+        update={
+            "evidence_id": "weather-title-fallback-1",
+            "url": None,
+            "authority_key": None,
+            "citation": None,
+        }
+    )
+    duplicate = item.model_copy(
+        update={
+            "evidence_id": "weather-title-fallback-2",
+            "summary": "Same title from a later row.",
+        }
+    )
+
+    deduped = dedupe_evidence_items([item, duplicate])
+
+    assert [row.evidence_id for row in deduped] == ["weather-title-fallback-1"]
+    assert deduped[0].summary == item.summary
+
+
+def test_dedupe_evidence_items_keeps_sparse_rows_without_clear_key():
+    _, _, _, _, citecheck, _ = _sample_payloads()
+    citecheck["checks"] = [
+        {
+            "badge": "not_found",
+            "status": "not_found",
+            "note": "No results found.",
+        }
+    ]
+    citecheck["summary"] = {"total": 1, "verified": 0, "uncertain": 0, "not_found": 1}
+    item = citation_verify_pack_to_evidence_items(citecheck)[0].model_copy(
+        update={
+            "evidence_id": "sparse-citation-row-1",
+            "title": "",
+            "url": None,
+            "authority_key": None,
+            "citation": None,
+        }
+    )
+    duplicate = item.model_copy(update={"evidence_id": "sparse-citation-row-2"})
+
+    deduped = dedupe_evidence_items([item, duplicate])
+
+    assert [row.evidence_id for row in deduped] == [
+        "sparse-citation-row-1",
+        "sparse-citation-row-2",
+    ]
+
+
+def test_dedupe_evidence_items_allows_conservative_cross_module_url_dedupe():
+    _, _, _, caselaw, citecheck, _ = _sample_payloads()
+    case_item = caselaw_pack_to_evidence_items(caselaw)[0].model_copy(
+        update={
+            "url": "https://www.flcourts.gov/case/123?utm_source=alert",
+            "badge": "official",
+            "source_reason": "official source",
+            "source_class": "court_opinion",
+            "source_tier": "official",
+            "is_primary_authority": True,
+            "issue": None,
+        }
+    )
+    citation_item = citation_verify_pack_to_evidence_items(citecheck)[0].model_copy(
+        update={
+            "url": "https://flcourts.gov/case/123",
+            "badge": "official",
+            "source_reason": "official source",
+            "source_class": "court_opinion",
+            "source_tier": "official",
+            "is_primary_authority": True,
+        }
+    )
+
+    deduped = dedupe_evidence_items([case_item, citation_item])
+
+    assert [row.evidence_id for row in deduped] == [case_item.evidence_id]
+
+
+def test_dedupe_evidence_items_does_not_cross_module_dedupe_title_fallback():
+    _, weather, carrier, _, _, _ = _sample_payloads()
+    weather_item = weather_brief_to_evidence_items(weather)[0].model_copy(
+        update={
+            "evidence_id": "weather-shared-title",
+            "title": "Shared evidence title",
+            "url": None,
+            "authority_key": None,
+            "citation": None,
+        }
+    )
+    carrier_item = carrier_doc_pack_to_evidence_items(carrier)[0].model_copy(
+        update={
+            "evidence_id": "carrier-shared-title",
+            "title": "Shared evidence title",
+            "url": None,
+            "authority_key": None,
+            "citation": None,
+        }
+    )
+
+    deduped = dedupe_evidence_items([weather_item, carrier_item])
+
+    assert [row.evidence_id for row in deduped] == [
+        "weather-shared-title",
+        "carrier-shared-title",
+    ]
+
+
+def test_dedupe_evidence_items_keeps_distinct_urls_and_review_conflicts():
+    _, _, carrier, _, _, _ = _sample_payloads()
+    base_item = carrier_doc_pack_to_evidence_items(carrier)[0]
+    first_url = base_item.model_copy(
+        update={
+            "evidence_id": "carrier-doc-id-1",
+            "url": "https://example.com/doc?id=1",
+        }
+    )
+    second_url = base_item.model_copy(
+        update={
+            "evidence_id": "carrier-doc-id-2",
+            "url": "https://example.com/doc?id=2",
+        }
+    )
+    review_required_duplicate = first_url.model_copy(
+        update={
+            "evidence_id": "carrier-doc-review-required",
+            "review_required": True,
+        }
+    )
+
+    deduped = dedupe_evidence_items(
+        [first_url, second_url, review_required_duplicate]
+    )
+
+    assert [row.evidence_id for row in deduped] == [
+        "carrier-doc-id-1",
+        "carrier-doc-id-2",
+        "carrier-doc-review-required",
+    ]
 
 
 def test_citation_verify_summary_validation_rejects_bad_totals():
