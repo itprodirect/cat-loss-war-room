@@ -43,7 +43,7 @@ This is research acceleration, not legal advice.
 - Exa client now supports both older and newer `exa-py` contents APIs.
 - Dependency versions are pinned for reproducible installs.
 - CI now blocks merges if fresh-env tests fail.
-- CI also runs an `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`).
+- CI also runs an `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py==1.14.0`).
 - Adapter smoke tests were added for kwargs forwarding contracts.
 - Intake JSON now has strict schema validation and file-loading helpers.
 - Typed domain contracts now cover intake/query, weather/carrier/caselaw packs, and citation/export memo contracts.

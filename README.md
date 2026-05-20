@@ -136,7 +136,7 @@ Milton, Ida, Ian, and both Texas hail benchmarks now map from the curated notebo
 - Fresh environment install + full test run with categorized unit-test gate artifacts
 - Editable package bootstrap validation
 - Offline fixture smoke validation plus the committed golden fixture snapshot check across committed scenarios, with separate offline-fixture and golden-snapshot gate artifacts
-- `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py<2`) with categorized compatibility artifacts
+- `exa-py` compatibility matrix (`exa-py==2.0.2` and `exa-py==1.14.0`) with categorized compatibility artifacts
 - Release-scorecard artifact emission plus ship-threshold validation from the calibrated `#27` workflow, with separate generation and validation gate artifacts
 - Offline security hygiene validation for committed env files, obvious API key patterns, `.env.example` expectations, runtime artifact commits, and documented secrets policy drift, with categorized security artifacts
 - Offline dependency hygiene validation for pinned requirements, disallowed editable/local/direct-URL dependencies, duplicate/conflicting entries, `requirements.txt` / `pyproject.toml` drift, unsupported dependency files, and documented dependency policy drift
