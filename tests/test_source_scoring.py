@@ -107,3 +107,13 @@ def test_commentary_title_classifies_as_commentary():
     )
     assert result["source_class"] == "commentary"
     assert result["is_primary_authority"] is False
+
+
+def test_sibling_domain_does_not_match_official_domain():
+    result = score_url("https://evilcourtlistener.com/opinion/12345/")
+    assert result["tier"] == "unvetted"
+
+
+def test_subdomain_still_matches_official_domain():
+    result = score_url("https://api.courtlistener.com/opinion/12345/")
+    assert result["tier"] == "official"
