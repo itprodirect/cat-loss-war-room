@@ -129,13 +129,18 @@ _SOURCE_CLASS_LABELS = {
 _PRIMARY_SOURCE_CLASSES = {"court_opinion", "statute_regulation"}
 
 
+def _host_matches_domain(hostname: str, domain: str) -> bool:
+    """Return True when hostname is exactly domain or a dot-delimited subdomain."""
+    return hostname == domain or hostname.endswith("." + domain)
+
+
 def _classify_domain(hostname: str) -> str:
     """Classify a hostname into a scoring tier."""
     hostname = hostname.lower().removeprefix("www.")
 
     # Check paywalled first (takes priority)
     for domain in PAYWALLED_DOMAINS:
-        if hostname == domain or hostname.endswith("." + domain):
+        if _host_matches_domain(hostname, domain):
             return "paywalled"
 
     # Check official
@@ -144,12 +149,13 @@ def _classify_domain(hostname: str) -> str:
             if hostname.endswith(domain):
                 return "official"
             continue
-        if hostname == domain or hostname.endswith("." + domain):
+
+        if _host_matches_domain(hostname, domain):
             return "official"
 
     # Check professional
     for domain in PROFESSIONAL_DOMAINS:
-        if hostname == domain or hostname.endswith("." + domain):
+        if _host_matches_domain(hostname, domain):
             return "professional"
 
     return "unvetted"

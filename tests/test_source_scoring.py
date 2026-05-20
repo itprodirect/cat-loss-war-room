@@ -122,3 +122,13 @@ def test_lookalike_courtlistener_is_not_official():
 def test_subdomain_of_official_domain_is_still_official():
     result = score_url("https://api.floir.com/orders/123")
     assert result["tier"] == "official"
+
+
+def test_spoofed_wwwfloir_domain_is_not_official():
+    result = score_url("https://wwwfloir.com/fake-bulletin")
+    assert result["tier"] == "unvetted"
+
+
+def test_subdomain_of_courtlistener_is_still_official():
+    result = score_url("https://api.courtlistener.com/opinion/12345/")
+    assert result["tier"] == "official"
