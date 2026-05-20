@@ -10,6 +10,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping
+from urllib.parse import urlparse
 
 from war_room.models import (
     CaseIntake,
@@ -413,10 +414,11 @@ def _append_evidence_index(lines: list[str], evidence_items: list[Any]) -> None:
     lines.append("|----|--------|------|-------|-------|-----|")
     for item in evidence_items:
         title = item.title or item.summary or item.evidence_type
-        url = item.url or ""
+        url = _safe_markdown_url(item.url or "")
         lines.append(
             f"| {item.evidence_id} | {item.module} | {item.evidence_type} | "
-            f"{_clean_inline_text(title, limit=50, table_safe=True)} | {item.badge} | {url} |"
+            f"{_markdown_safe_text(title, limit=50, table_safe=True)} | "
+            f"{_markdown_safe_text(item.badge, limit=24, table_safe=True)} | {url} |"
         )
     lines.append("")
 
@@ -426,7 +428,8 @@ def _append_review_log(lines: list[str], review_events: list[Any]) -> None:
     for event in review_events:
         cluster_ids = ", ".join(event.related_cluster_ids) if event.related_cluster_ids else "none"
         lines.append(
-            f"- **{_clean_inline_text(event.label, limit=80)}:** {_clean_inline_text(event.detail, limit=180)} "
+            f"- **{_markdown_safe_text(event.label, limit=80)}:** "
+            f"{_markdown_safe_text(event.detail, limit=180)} "
             f"| Evidence clusters: {cluster_ids}"
         )
     lines.append("")
@@ -596,14 +599,30 @@ def _clean_inline_text(
     return text
 
 
-def _markdown_safe_text(value: Any, *, limit: int | None = None) -> str:
-    """Normalize and neutralize markdown/HTML control characters for inline prose."""
-    text = _clean_inline_text(value, limit=limit)
+def _markdown_safe_text(
+    value: Any,
+    *,
+    limit: int | None = None,
+    table_safe: bool = False,
+) -> str:
+    """Normalize inline text and neutralize Markdown control characters."""
+    text = _clean_inline_text(value, limit=limit, table_safe=table_safe)
     text = text.replace("\\", "\\\\")
     text = text.replace("<", "\\<").replace(">", "\\>")
     for token in ("#", "*", "_", "`", "[", "]", "(", ")", "!", "|"):
         text = text.replace(token, f"\\{token}")
     return text
+
+
+def _safe_markdown_url(value: Any) -> str:
+    """Return only http(s) URLs for markdown evidence appendix output."""
+    url = _clean_inline_text(value, table_safe=True)
+    if not url:
+        return ""
+    parsed = urlparse(url)
+    if parsed.scheme.lower() not in {"http", "https"}:
+        return ""
+    return url
 
 
 def _humanize_token(value: str) -> str:
