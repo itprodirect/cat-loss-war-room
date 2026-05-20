@@ -259,6 +259,7 @@ def test_carrier_evidence_adapter_uses_scored_source_profile_over_document_metad
         }
     )
     carrier["sources"][0]["url"] = document["url"]
+    carrier["sources"][0]["source_class"] = "professional"
 
     item = carrier_doc_pack_to_evidence_items(carrier)[0]
 
@@ -287,13 +288,15 @@ def test_carrier_evidence_adapter_ignores_explicit_primary_authority_override():
         }
     )
 
+    # The spoofed false flag must not demote deterministic primary authority
+    # from a CourtListener opinion URL.
     document["is_primary_authority"] = False
 
     explicit_item = carrier_doc_pack_to_evidence_items(carrier)[0]
 
     assert explicit_item.source_class == "court_opinion"
     assert explicit_item.source_tier == "official"
-    assert explicit_item.is_primary_authority is False
+    assert explicit_item.is_primary_authority is True
 
 
 def test_caselaw_evidence_adapter_returns_stable_ids_for_repeated_payloads():
