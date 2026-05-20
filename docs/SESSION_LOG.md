@@ -2913,3 +2913,41 @@ Status: Complete
 - Validation:
   - `git diff --check` -> passed.
   - `python -m pytest -q` -> `449 passed in 32.05s`.
+
+## Session 133 - Issue 103 Citation-Verify Evidence Adapter
+Date: 2026-05-20
+Status: Complete
+
+- Implemented issue `#103` as the next narrow issue `#12` evidence-adapter
+  slice over current `CitationVerifyPack` output.
+- What changed:
+  - Added `citation_verify_pack_to_evidence_items(...)` in
+    `src/war_room/models.py`.
+  - Routed `run_audit_snapshot_from_memo_input(...)` through the named
+    citation-verify adapter instead of building citation evidence rows inline.
+  - Replaced positional citation evidence IDs such as `citation-check-1` with
+    deterministic provenance-oriented IDs based on citation, authority,
+    source URL, status, badge, trust metadata, primary-authority signal, and a
+    short digest, with deterministic suffixing for duplicate check rows.
+  - Added focused tests for stable IDs, duplicate suffixing, distinct rows,
+    existing-field metadata preservation, sparse metadata, audit-snapshot
+    inclusion, Evidence Board rendering, and export evidence-index output.
+- Decisions added:
+  - Citation evidence rows now use the same named-adapter pattern as the
+    landed weather, carrier, and caselaw evidence adapters.
+- Decisions not added:
+  - no `EvidenceItem` schema fields, citation-search behavior, live retrieval,
+    citation-verification hardening, status vocabulary, badge/display
+    semantics, dedupe engine, database, persistence, full V2 evidence graph,
+    API framework, frontend, dashboard, app shell, auth, queues, workers, AI
+    scoring, generative behavior, readiness-level change, Beta-ready claim,
+    Pilot-ready claim, production-ready claim, or legal-product claim was
+    added.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest tests/test_memo_contracts.py tests/test_evidence_board.py tests/test_export.py tests/test_issue_workspace.py -q`
+    -> `55 passed in 9.84s`.
+  - `python -m pytest -q` -> `454 passed in 32.12s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `454 passed in 32.16s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-issue-103-citation-verify-evidence-adapter_20260520t131837z.json`.

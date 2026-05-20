@@ -7,7 +7,7 @@ from war_room.carrier_module import build_carrier_doc_pack
 from war_room.caselaw_module import build_caselaw_pack
 from war_room.citation_verify import spot_check_citations
 from war_room.export_md import render_markdown_memo, write_markdown
-from war_room.models import CaseIntake, QuerySpec
+from war_room.models import CaseIntake, QuerySpec, citation_verify_pack_to_evidence_items
 from war_room.query_plan import generate_query_plan
 from war_room.weather_module import build_weather_brief
 
@@ -334,12 +334,17 @@ def test_render_surfaces_claim_cluster_references():
 
 
 def test_render_includes_canonical_evidence_index_rows():
-    md = render_markdown_memo(*_sample_data())
+    sample_data = _sample_data()
+    citation_evidence_id = (
+        citation_verify_pack_to_evidence_items(sample_data[4])[0].evidence_id
+    )
+    md = render_markdown_memo(*sample_data)
 
     assert "weather-source-nws-report-" in md
     assert "carrier-document-denial-" in md
     assert "caselaw-case-123-so-3d-456-" in md
-    assert "citation-check-1" in md
+    assert citation_evidence_id in md
+    assert "| citation-check-1 |" not in md
 
 
 def test_render_accepts_dict_intake_and_query_specs():

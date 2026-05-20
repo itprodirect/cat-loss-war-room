@@ -18,6 +18,7 @@ from war_room.models import (
     adapt_evidence_board,
     carrier_doc_pack_to_evidence_items,
     caselaw_pack_to_evidence_items,
+    citation_verify_pack_to_evidence_items,
     evidence_board_to_payload,
     run_audit_snapshot_from_parts,
     weather_brief_to_evidence_items,
@@ -196,6 +197,9 @@ def test_evidence_board_payload_round_trips_with_schema_version():
     weather_evidence_id = weather_brief_to_evidence_items(parts[1])[0].evidence_id
     carrier_evidence_id = carrier_doc_pack_to_evidence_items(parts[2])[0].evidence_id
     caselaw_evidence_id = caselaw_pack_to_evidence_items(parts[3])[0].evidence_id
+    citation_evidence_id = (
+        citation_verify_pack_to_evidence_items(parts[4])[0].evidence_id
+    )
     board = build_evidence_board_from_parts(*parts)
 
     payload = evidence_board_to_payload(board)
@@ -209,6 +213,7 @@ def test_evidence_board_payload_round_trips_with_schema_version():
     assert weather_evidence_id in rendered
     assert carrier_evidence_id in rendered
     assert caselaw_evidence_id in rendered
+    assert citation_evidence_id in rendered
 
 
 def test_evidence_board_contract_rejects_unexpected_nested_fields():

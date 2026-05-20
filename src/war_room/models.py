@@ -1208,6 +1208,48 @@ def caselaw_pack_to_evidence_items(
     return evidence_items
 
 
+def citation_verify_pack_to_evidence_items(
+    payload: Mapping[str, Any] | CitationVerifyPack,
+) -> list[EvidenceItem]:
+    """Adapt current citation-verify output into canonical evidence items."""
+    citecheck = adapt_citation_verify_pack(payload)
+    evidence_items: list[EvidenceItem] = []
+    used_evidence_ids: dict[str, int] = {}
+
+    for index, check in enumerate(citecheck.checks, 1):
+        normalized_citation = _normalize_citation_value(check.citation)
+        authority_key = _authority_key_from_parts(
+            citation=normalized_citation,
+            title=check.case_name,
+            url=check.source_url,
+        )
+        evidence_items.append(
+            EvidenceItem(
+                evidence_id=_citation_check_evidence_id(
+                    check=check,
+                    normalized_citation=normalized_citation,
+                    authority_key=authority_key,
+                    used_evidence_ids=used_evidence_ids,
+                ),
+                module="citation_verify",
+                evidence_type="citation_check",
+                title=check.case_name or check.citation or f"Citation Check {index}",
+                summary=check.note,
+                url=check.source_url,
+                badge=check.badge,
+                source_reason=check.status,
+                source_class=check.source_class,
+                source_tier=check.source_tier,
+                is_primary_authority=check.is_primary_authority,
+                authority_key=authority_key,
+                citation=normalized_citation,
+                review_required=check.status != "verified",
+            )
+        )
+
+    return evidence_items
+
+
 def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditSnapshot:
     """Build a canonical audit snapshot from normalized memo-render input."""
     weather_payload = weather_brief_to_payload(memo_input.weather)
@@ -1247,39 +1289,11 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         item.evidence_id for item in caselaw_evidence_items
     )
 
-    for index, check in enumerate(citecheck_payload.get("checks", []), 1):
-        evidence_id = f"citation-check-{index}"
-        has_source_url = bool(check.get("source_url"))
-        normalized_citation = _normalize_citation_value(check.get("citation"))
-        source_profile = score_url(
-            check.get("source_url") or "",
-            check.get("case_name") or check.get("citation") or f"Citation Check {index}",
-        )
-        evidence_items.append(
-            EvidenceItem(
-                evidence_id=evidence_id,
-                module="citation_verify",
-                evidence_type="citation_check",
-                title=check.get("case_name") or check.get("citation") or f"Citation Check {index}",
-                summary=check.get("note", ""),
-                url=check.get("source_url"),
-                badge=check.get("badge", ""),
-                source_reason=check.get("status"),
-                source_class=check.get("source_class") or (source_profile.get("source_class") if has_source_url else None),
-                source_tier=check.get("source_tier") or (source_profile.get("tier") if has_source_url else None),
-                is_primary_authority=bool(
-                    check.get("is_primary_authority", source_profile.get("is_primary_authority")) if has_source_url else False
-                ),
-                authority_key=_authority_key_from_parts(
-                    citation=normalized_citation,
-                    title=check.get("case_name"),
-                    url=check.get("source_url"),
-                ),
-                citation=normalized_citation,
-                review_required=check.get("status") != "verified",
-            )
-        )
-        evidence_ids_by_module["citation_verify"].append(evidence_id)
+    citation_evidence_items = citation_verify_pack_to_evidence_items(memo_input.citecheck)
+    evidence_items.extend(citation_evidence_items)
+    evidence_ids_by_module["citation_verify"].extend(
+        item.evidence_id for item in citation_evidence_items
+    )
 
     evidence_clusters = _build_evidence_clusters(evidence_items)
     quality_snapshot = _build_quality_snapshot(evidence_items, evidence_clusters, citecheck_payload)
@@ -1897,6 +1911,44 @@ def _caselaw_evidence_id(
     display_token = _stable_token(normalized_citation or case.name or authority_key or case.url)
     display_token = display_token[:48].rstrip("-") or "case"
     base_id = f"caselaw-case-{display_token}-{digest}"
+    collision_count = used_evidence_ids.get(base_id, 0) + 1
+    used_evidence_ids[base_id] = collision_count
+    if collision_count == 1:
+        return base_id
+    return f"{base_id}-{collision_count}"
+
+
+def _citation_check_evidence_id(
+    *,
+    check: CitationCheck,
+    normalized_citation: str | None,
+    authority_key: str | None,
+    used_evidence_ids: dict[str, int],
+) -> str:
+    identity_parts = [
+        authority_key or "",
+        normalized_citation or "",
+        _normalize_authority_name(check.case_name),
+        _normalize_cluster_url(check.source_url or ""),
+        _normalize_authority_name(check.status),
+        _normalize_authority_name(check.badge),
+        _normalize_authority_name(check.source_class),
+        _normalize_authority_name(check.source_tier),
+        "primary" if check.is_primary_authority else "secondary",
+        _normalize_authority_name(check.note),
+    ]
+    digest = hashlib.sha256("\x1f".join(identity_parts).encode("utf-8")).hexdigest()[
+        :10
+    ]
+    display_token = _stable_token(
+        normalized_citation
+        or check.case_name
+        or check.source_url
+        or check.status
+        or check.badge
+    )
+    display_token = display_token[:48].rstrip("-") or "citation"
+    base_id = f"citation-check-{display_token}-{digest}"
     collision_count = used_evidence_ids.get(base_id, 0) + 1
     used_evidence_ids[base_id] = collision_count
     if collision_count == 1:
