@@ -550,14 +550,18 @@ def test_dedupe_evidence_items_collapses_normalized_url_duplicates():
             "url": "https://weather.gov/r",
         }
     )
-    weather["key_observations"].append(weather["key_observations"][0])
+    weather["key_observations"].append(
+        "Candidate-only summary should not be merged into the retained row."
+    )
 
     items = weather_brief_to_evidence_items(weather)
     deduped = dedupe_evidence_items(items)
 
     assert len(items) == 2
+    assert items[0].summary != items[1].summary
     assert [item.evidence_id for item in deduped] == [items[0].evidence_id]
     assert deduped[0].url == "https://www.weather.gov/r/?utm_source=newsletter"
+    assert deduped[0].summary == "Winds of 120 mph"
     assert deduped[0].badge == items[0].badge
     assert deduped[0].review_required is items[0].review_required
 

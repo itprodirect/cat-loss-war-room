@@ -1256,7 +1256,8 @@ def dedupe_evidence_items(evidence_items: Sequence[EvidenceItem]) -> list[Eviden
 
     Key precedence is normalized URL, normalized citation/authority key, then a
     module-scoped title fallback. A candidate row is only collapsed into an
-    earlier retained row when review and provenance fields remain compatible.
+    earlier retained row when the selected review/provenance compatibility
+    fields checked by this helper remain compatible.
     """
     retained_by_key: dict[tuple[str, ...], list[EvidenceItem]] = {}
     deduped: list[EvidenceItem] = []
@@ -2016,7 +2017,7 @@ def _dedupe_key_for_evidence_item(item: EvidenceItem) -> tuple[str, ...] | None:
 
 
 def _evidence_items_can_collapse(retained: EvidenceItem, candidate: EvidenceItem) -> bool:
-    compatible_text_fields = (
+    selected_compatibility_fields = (
         (
             _normalize_evidence_url_key(retained.url),
             _normalize_evidence_url_key(candidate.url),
@@ -2051,8 +2052,8 @@ def _evidence_items_can_collapse(retained: EvidenceItem, candidate: EvidenceItem
         ),
     )
     if not all(
-        _candidate_provenance_is_preserved(retained_value, candidate_value)
-        for retained_value, candidate_value in compatible_text_fields
+        _candidate_compatibility_field_is_preserved(retained_value, candidate_value)
+        for retained_value, candidate_value in selected_compatibility_fields
     ):
         return False
 
@@ -2062,7 +2063,7 @@ def _evidence_items_can_collapse(retained: EvidenceItem, candidate: EvidenceItem
     )
 
 
-def _candidate_provenance_is_preserved(
+def _candidate_compatibility_field_is_preserved(
     retained_value: str,
     candidate_value: str,
 ) -> bool:
