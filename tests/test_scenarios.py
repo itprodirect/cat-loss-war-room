@@ -158,6 +158,7 @@ def test_notebook_default_scenario_exists_in_registry():
 def test_notebook_uses_helper_driven_scenario_prep_and_has_no_stale_hardcoded_intake():
     notebook = json.loads(NOTEBOOK_PATH.read_text(encoding="utf-8"))
     code_cells = ["".join(cell.get("source", [])) for cell in notebook["cells"] if cell.get("cell_type") == "code"]
+    joined_code = "".join(code_cells)
     scenario_cells = [source for source in code_cells if "SCENARIO_ID" in source]
     query_cells = [source for source in code_cells if "Query Plan Generation" in source]
 
@@ -167,16 +168,19 @@ def test_notebook_uses_helper_driven_scenario_prep_and_has_no_stale_hardcoded_in
     assert "SETTINGS.live_retrieval_enabled" not in scenario_cells[0]
     assert "build_research_plan" in query_cells[0]
     assert "format_research_plan_preview" in query_cells[0]
-    assert "build_evidence_board_from_parts" in "".join(code_cells)
-    assert "format_evidence_board" in "".join(code_cells)
-    assert "build_issue_workspace_from_parts" in "".join(code_cells)
-    assert "format_issue_workspace" in "".join(code_cells)
-    assert "build_memo_composer_from_parts" in "".join(code_cells)
-    assert "format_memo_composer" in "".join(code_cells)
-    assert "build_export_history_from_parts" in "".join(code_cells)
-    assert "format_export_history" in "".join(code_cells)
-    assert "build_run_timeline" in "".join(code_cells)
-    assert "format_run_timeline" in "".join(code_cells)
-    assert 'query_plan=queries' in "".join(code_cells)
+    assert "build_weather_brief(" in joined_code
+    assert "build_carrier_doc_pack(" in joined_code
+    assert "build_caselaw_pack(" in joined_code
+    assert "build_evidence_board_from_parts" in joined_code
+    assert "format_evidence_board" in joined_code
+    assert "build_issue_workspace_from_parts" in joined_code
+    assert "format_issue_workspace" in joined_code
+    assert "build_memo_composer_from_parts" in joined_code
+    assert "format_memo_composer" in joined_code
+    assert "build_export_history_from_parts" in joined_code
+    assert "format_export_history" in joined_code
+    assert "build_run_timeline" in joined_code
+    assert "format_run_timeline" in joined_code
+    assert "query_plan=queries" not in joined_code
     assert sum("CaseIntake(" in source for source in code_cells) == 0
     assert sum("write_markdown(" in source for source in code_cells) == 1
