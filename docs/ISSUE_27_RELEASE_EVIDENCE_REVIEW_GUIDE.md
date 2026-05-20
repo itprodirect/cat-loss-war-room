@@ -172,6 +172,7 @@ for exact fields.
 In the Markdown, inspect:
 
 - `Evidence bundle`
+- `CI Reporting Summary`
 - `Reviewer Summary`
 - `Dashboard Readiness Summary`
 - `Offline Preflight`
@@ -191,6 +192,10 @@ In the JSON, inspect:
   the live preflight artifact.
 - `fixture_coverage` and `scenario_registry`: show current committed fixture
   and curated scenario coverage.
+- `ci_reporting_summary`: CI/reporting field inventory for the existing verify
+  bundle and scorecard artifacts. It maps artifact roles, run identity fields,
+  reviewer-summary fields, and blocking/advisory readiness fields without
+  adding a second readiness model.
 - `reviewer_summary`: top-level reviewer convenience summary derived from the
   existing `readiness_posture`, blocking/advisory counts, and advisory gaps.
 - `readiness_posture`: dashboard-oriented summary of blocking and advisory
@@ -205,6 +210,46 @@ In the JSON, inspect:
 The Markdown and JSON should tell the same story. If they diverge, use the JSON
 as the machine-readable artifact and treat the divergence as a documentation or
 rendering issue to fix before relying on the bundle.
+
+## CI/Reporting Consumption Map
+
+The scorecard JSON and Markdown now include `ci_reporting_summary`, a compact
+inventory for CI/reporting consumers. It is a map of the existing bundle, not a
+new readiness framework.
+
+The expected artifact chain is:
+
+| Consumer question | Artifact or field to read | Purpose |
+|---|---|---|
+| What is the newest successful verify run? | `runs/verify/latest.json` | Stable discovery pointer. |
+| What artifacts belong to this run? | `verify_manifest_path` | Run-specific hub with the shared `run_id`, candidate, verification summary, preflight path, scorecard JSON path, and scorecard Markdown path. |
+| Did the offline demo preflight pass? | `preflight_artifact_path` | Machine-readable preflight payload for the same run. |
+| What machine-readable release posture should CI/reporting consume? | `release_scorecard_json_path` | Structured scorecard with `ci_reporting_summary`, `reviewer_summary`, `readiness_posture`, blocking gates, advisory dimensions, thresholds, and gaps. |
+| What human-readable release posture should a reviewer read first? | `release_scorecard_markdown_path` | Markdown rendering of the same scorecard. |
+| What concise human-review status should be surfaced? | `release_scorecard_json_path#reviewer_summary` | Convenience summary derived from `readiness_posture`. |
+
+For blocking readiness, consume:
+
+- `readiness_posture.blocking_metric_count`
+- `readiness_posture.blocking_metric_failed_count`
+- `readiness_posture.blocking_failures`
+- `must_pass_gates[].readiness_category`
+- `calibration_thresholds[].readiness_category`
+- `blocking_gaps`
+
+For advisory readiness, consume:
+
+- `readiness_posture.advisory_metric_count`
+- `readiness_posture.advisory_attention_count`
+- `readiness_posture.advisory_gaps`
+- `readiness_posture.pilot_readiness_gaps`
+- `dimensions[].readiness_category`
+
+These fields preserve the rubric's existing distinction between failed
+blocking metrics and advisory gaps. They do not upgrade the repo beyond the
+current guided/narrated `Demo-ready` target and should not be used to claim
+Beta-ready, Pilot-ready, production-ready, self-serve UI readiness, or
+client-facing legal-product readiness.
 
 ## How To Interpret `reviewer_summary`
 
