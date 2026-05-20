@@ -1055,6 +1055,52 @@ def adapt_run_timeline(
     return RunTimelineReadModel.model_validate(payload)
 
 
+def weather_brief_to_evidence_items(
+    payload: Mapping[str, Any] | WeatherBrief,
+) -> list[EvidenceItem]:
+    """Adapt current weather module output into canonical evidence items."""
+    weather = adapt_weather_brief(payload)
+    evidence_items: list[EvidenceItem] = []
+    used_evidence_ids: dict[str, int] = {}
+
+    for index, source in enumerate(weather.sources, 1):
+        source_profile = score_url(source.url, source.title)
+        summary = (
+            weather.key_observations[index - 1]
+            if index <= len(weather.key_observations)
+            else weather.event_summary
+        )
+        authority_key = _authority_key_from_parts(
+            url=source.url,
+            title=source.title,
+        )
+        evidence_items.append(
+            EvidenceItem(
+                evidence_id=_weather_evidence_id(
+                    source=source,
+                    authority_key=authority_key,
+                    used_evidence_ids=used_evidence_ids,
+                ),
+                module="weather",
+                evidence_type="weather_source",
+                title=source.title,
+                summary=summary,
+                url=source.url,
+                badge=source.badge,
+                source_reason=source.reason,
+                source_class=source.source_class or source_profile.get("source_class"),
+                source_tier=source_profile.get("tier"),
+                is_primary_authority=_weather_source_is_primary_authority(
+                    source,
+                    source_profile,
+                ),
+                authority_key=authority_key,
+            )
+        )
+
+    return evidence_items
+
+
 def carrier_doc_pack_to_evidence_items(
     payload: Mapping[str, Any] | CarrierDocPack,
 ) -> list[EvidenceItem]:
@@ -1185,37 +1231,11 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         "citation_verify": [],
     }
 
-    weather_observations = weather_payload.get("key_observations", [])
-    for index, source in enumerate(weather_payload.get("sources", []), 1):
-        evidence_id = f"weather-source-{index}"
-        source_profile = score_url(source.get("url", ""), source.get("title", ""))
-        summary = (
-            weather_observations[index - 1]
-            if index <= len(weather_observations)
-            else weather_payload.get("event_summary", "")
-        )
-        evidence_items.append(
-            EvidenceItem(
-                evidence_id=evidence_id,
-                module="weather",
-                evidence_type="weather_source",
-                title=source.get("title", ""),
-                summary=summary,
-                url=source.get("url"),
-                badge=source.get("badge", ""),
-                source_reason=source.get("reason"),
-                source_class=source.get("source_class") or source_profile.get("source_class"),
-                source_tier=source_profile.get("tier"),
-                is_primary_authority=bool(
-                    source.get("is_primary_authority", source_profile.get("is_primary_authority"))
-                ),
-                authority_key=_authority_key_from_parts(
-                    url=source.get("url"),
-                    title=source.get("title"),
-                ),
-            )
-        )
-        evidence_ids_by_module["weather"].append(evidence_id)
+    weather_evidence_items = weather_brief_to_evidence_items(memo_input.weather)
+    evidence_items.extend(weather_evidence_items)
+    evidence_ids_by_module["weather"].extend(
+        item.evidence_id for item in weather_evidence_items
+    )
 
     carrier_evidence_items = carrier_doc_pack_to_evidence_items(memo_input.carrier)
     evidence_items.extend(carrier_evidence_items)
@@ -1785,6 +1805,41 @@ def _normalize_authority_name(value: str | None) -> str:
         return ""
     normalized = re.sub(r"[^a-z0-9]+", " ", value.lower())
     return re.sub(r"\s+", " ", normalized).strip()
+
+
+def _weather_evidence_id(
+    *,
+    source: SourceReference,
+    authority_key: str | None,
+    used_evidence_ids: dict[str, int],
+) -> str:
+    identity_parts = [
+        authority_key or "",
+        _normalize_cluster_url(source.url),
+        _normalize_authority_name(source.title),
+        _normalize_authority_name(source.badge),
+        _normalize_authority_name(source.source_class),
+    ]
+    digest = hashlib.sha256("\x1f".join(identity_parts).encode("utf-8")).hexdigest()[:10]
+    display_token = _stable_token(source.title or source.badge or authority_key or source.url)
+    display_token = display_token[:48].rstrip("-") or "source"
+    base_id = f"weather-source-{display_token}-{digest}"
+    collision_count = used_evidence_ids.get(base_id, 0) + 1
+    used_evidence_ids[base_id] = collision_count
+    if collision_count == 1:
+        return base_id
+    return f"{base_id}-{collision_count}"
+
+
+def _weather_source_is_primary_authority(
+    source: SourceReference,
+    source_profile: Mapping[str, Any],
+) -> bool:
+    # model_fields_set distinguishes explicit true/false from omitted fields,
+    # though dump/reload paths may mark default values as set.
+    if "is_primary_authority" in source.model_fields_set:
+        return bool(source.is_primary_authority)
+    return bool(source_profile.get("is_primary_authority"))
 
 
 def _carrier_evidence_id(

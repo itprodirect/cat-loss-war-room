@@ -14,6 +14,7 @@ from war_room.models import (
     memo_render_input_from_parts,
     run_audit_snapshot_from_parts,
     run_audit_snapshot_to_payload,
+    weather_brief_to_evidence_items,
 )
 
 
@@ -120,6 +121,101 @@ def _sample_payloads():
     query_plan = [QuerySpec(module="weather", query="test query", category="test")]
 
     return intake, weather, carrier, caselaw, citecheck, query_plan
+
+
+def test_weather_evidence_adapter_returns_stable_ids_for_repeated_payloads():
+    _, weather, _, _, _, _ = _sample_payloads()
+
+    first_ids = [item.evidence_id for item in weather_brief_to_evidence_items(weather)]
+    second_ids = [item.evidence_id for item in weather_brief_to_evidence_items(weather)]
+
+    assert first_ids == second_ids
+    assert first_ids[0].startswith("weather-source-nws-report-")
+    assert first_ids[0] != "weather-source-1"
+
+
+def test_weather_evidence_adapter_does_not_collapse_distinct_source_rows():
+    _, weather, _, _, _, _ = _sample_payloads()
+    weather["key_observations"].append("Storm surge was reported near the county shoreline.")
+    weather["sources"].append(
+        {
+            "title": "NWS follow-up report",
+            "url": "https://weather.gov/r",
+            "badge": "official",
+            "reason": "Second county-specific weather source row.",
+        }
+    )
+
+    evidence_ids = [item.evidence_id for item in weather_brief_to_evidence_items(weather)]
+
+    assert len(evidence_ids) == 2
+    assert len(set(evidence_ids)) == 2
+
+
+def test_weather_evidence_adapter_suffixes_duplicate_source_rows():
+    _, weather, _, _, _, _ = _sample_payloads()
+    weather["key_observations"].append("Winds of 120 mph")
+    weather["sources"].append(dict(weather["sources"][0]))
+
+    evidence_ids = [item.evidence_id for item in weather_brief_to_evidence_items(weather)]
+    base_id = evidence_ids[0]
+
+    assert evidence_ids == [base_id, f"{base_id}-2"]
+
+
+def test_weather_evidence_adapter_preserves_source_metadata():
+    _, weather, _, _, _, _ = _sample_payloads()
+    weather["key_observations"][0] = "Observed 120 mph gusts in Pinellas County."
+    weather["sources"][0].update(
+        {
+            "title": "NWS Local Storm Report",
+            "url": "https://weather.gov/milton/local",
+            "badge": "official",
+            "reason": "County-specific official weather corroboration.",
+            "source_class": "government_guidance",
+            "is_primary_authority": True,
+        }
+    )
+
+    item = weather_brief_to_evidence_items(weather)[0]
+
+    assert item.module == "weather"
+    assert item.evidence_type == "weather_source"
+    assert item.title == "NWS Local Storm Report"
+    assert item.summary == "Observed 120 mph gusts in Pinellas County."
+    assert item.url == "https://weather.gov/milton/local"
+    assert item.badge == "official"
+    assert item.source_reason == "County-specific official weather corroboration."
+    assert item.source_class == "government_guidance"
+    assert item.source_tier == "official"
+    assert item.is_primary_authority is True
+    assert item.authority_key == "authority:nws local storm report"
+
+
+def test_weather_evidence_adapter_infers_primary_authority_when_field_missing():
+    _, weather, _, _, _, _ = _sample_payloads()
+    source = weather["sources"][0]
+    source.update(
+        {
+            "title": "Sebo v. American Home Assurance Co.",
+            "url": "https://www.courtlistener.com/opinion/12345/sebo-v-american-home/",
+            "badge": "official",
+        }
+    )
+
+    assert "is_primary_authority" not in source
+
+    item = weather_brief_to_evidence_items(weather)[0]
+
+    assert item.source_class == "court_opinion"
+    assert item.source_tier == "official"
+    assert item.is_primary_authority is True
+
+    source["is_primary_authority"] = False
+
+    explicit_item = weather_brief_to_evidence_items(weather)[0]
+
+    assert explicit_item.is_primary_authority is False
 
 
 def test_carrier_evidence_adapter_returns_stable_ids_for_repeated_payloads():
@@ -348,6 +444,7 @@ def test_memo_render_input_from_parts_accepts_mixed_shapes():
 
 def test_run_audit_snapshot_builds_canonical_entities():
     intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    weather_evidence_id = weather_brief_to_evidence_items(weather)[0].evidence_id
     carrier_evidence_id = carrier_doc_pack_to_evidence_items(carrier)[0].evidence_id
     caselaw_evidence_id = caselaw_pack_to_evidence_items(caselaw)[0].evidence_id
 
@@ -379,7 +476,11 @@ def test_run_audit_snapshot_builds_canonical_entities():
     assert "Appendix: Evidence Index" in snapshot.export_artifact.section_titles
     assert snapshot.export_artifact.section_ids[:3] == ["trust-snapshot", "case-intake", "weather-corroboration"]
     assert payload["schema_version"] == "v2alpha1"
-    assert payload["evidence_items"][0]["evidence_id"] == "weather-source-1"
+    assert payload["evidence_items"][0]["evidence_id"] == weather_evidence_id
+    assert any(
+        item.evidence_id == weather_evidence_id and item.module == "weather"
+        for item in snapshot.evidence_items
+    )
     assert any(
         item.evidence_id == carrier_evidence_id and item.module == "carrier"
         for item in snapshot.evidence_items
@@ -391,6 +492,7 @@ def test_run_audit_snapshot_builds_canonical_entities():
     assert payload["evidence_clusters"][0]["cluster_id"] == "cluster-1"
     assert payload["evidence_clusters"][2]["cluster_type"] == "citation"
     assert snapshot.memo_claims[0].cluster_ids == ["cluster-1"]
+    assert weather_evidence_id in snapshot.memo_claims[0].evidence_ids
     assert carrier_evidence_id in snapshot.memo_claims[1].evidence_ids
     assert caselaw_evidence_id in snapshot.memo_claims[2].evidence_ids
     assert snapshot.memo_claims[2].cluster_ids == ["cluster-3"]
