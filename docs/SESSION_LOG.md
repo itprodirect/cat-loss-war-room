@@ -3091,3 +3091,34 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `462 passed in 30.77s`; verify manifest written under
     `runs/verify/2026-05-20_docs-final-post-dedupe-helper-sync_20260520t151849z.json`.
+
+## Session 138 - PR 110 Oversized HTTP Request Test Hardening
+Date: 2026-05-20
+Status: Complete
+
+- Rebased PR `#110` onto latest `origin/main` and applied a narrow fix for
+  the CI-only oversized request upload failure.
+- What changed:
+  - Replaced the `urllib` oversized-body regression with a raw socket request
+    that declares `Content-Length > MAX_REQUEST_BODY_BYTES` without uploading a
+    large body.
+  - Kept the dev HTTP adapter's security behavior intact: oversized
+    `Content-Length` is rejected before `rfile.read(...)`.
+  - Normalized the loopback host helper for common local forms such as
+    uppercase `LOCALHOST`, trailing-dot `localhost.`, IPv6 loopback, and IPv4
+    shorthand loopback.
+- Decisions added:
+  - Oversized-body tests should exercise the pre-read `Content-Length` guard
+    without relying on high-level clients to complete a rejected upload.
+- Decisions not added:
+  - no production API framework, auth, rate limiting, request streaming layer,
+    dependency, persistence, queues, workers, dashboard, UI, or broader
+    orchestration behavior was added.
+- Validation:
+  - `python -m pytest tests/test_orchestration_http.py::test_request_body_too_large_returns_clear_json_error tests/test_orchestration_http.py::test_loopback_host_policy_accepts_common_loopback_forms -q`
+    -> `2 passed in 9.50s`.
+  - `python -m pytest tests/test_orchestration_http.py tests/test_orchestration_transport.py tests/test_orchestration_service.py -q`
+    -> `22 passed in 7.49s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `473 passed in 29.06s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-fix-unauthenticated-access-in-dev-http-adapter_20260520t165135z.json`.

@@ -9,7 +9,9 @@ turning the repo into a production API service.
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
+import socket
 from collections.abc import Mapping
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -48,6 +50,9 @@ class OrchestrationDevHTTPServer(ThreadingHTTPServer):
             OrchestrationDevHTTPRequestHandler,
             bind_and_activate=bind_and_activate,
         )
+
+
+MAX_REQUEST_BODY_BYTES = 1_048_576
 
 
 class OrchestrationDevHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -186,6 +191,16 @@ class OrchestrationDevHTTPRequestHandler(BaseHTTPRequestHandler):
                 message="Request body must contain a JSON object.",
             )
 
+        if content_length > MAX_REQUEST_BODY_BYTES:
+            return None, _http_error_payload(
+                operation=operation,
+                code="request_too_large",
+                message=(
+                    "Request body exceeds dev adapter limit of "
+                    f"{MAX_REQUEST_BODY_BYTES} bytes."
+                ),
+            )
+
         raw_body = self.rfile.read(content_length)
         try:
             decoded = raw_body.decode("utf-8")
@@ -224,8 +239,16 @@ def create_dev_http_server(
     *,
     service: InMemoryOrchestrationService | None = None,
     scenario_id: str | None = None,
+    allow_non_loopback: bool = False,
 ) -> OrchestrationDevHTTPServer:
     """Create a process-local dev server around the existing transport layer."""
+
+    host, _ = server_address
+    if not allow_non_loopback and not _is_loopback_host(host):
+        raise ValueError(
+            "Dev HTTP adapter only allows loopback hosts by default; "
+            "pass allow_non_loopback=True to override intentionally."
+        )
 
     return OrchestrationDevHTTPServer(
         server_address,
@@ -241,6 +264,11 @@ def main(argv: list[str] | None = None) -> int:
         description="Dev-only HTTP adapter for offline orchestration transport."
     )
     parser.add_argument("--host", default="127.0.0.1", help="Bind host for local dev use.")
+    parser.add_argument(
+        "--allow-non-loopback",
+        action="store_true",
+        help="Allow binding to non-loopback hosts (unsafe; dev-only).",
+    )
     parser.add_argument("--port", type=int, default=8765, help="Bind port for local dev use.")
     parser.add_argument(
         "--scenario-id",
@@ -252,6 +280,7 @@ def main(argv: list[str] | None = None) -> int:
     server = create_dev_http_server(
         (args.host, args.port),
         scenario_id=args.scenario_id,
+        allow_non_loopback=args.allow_non_loopback,
     )
     host, port = server.server_address
     print(
@@ -283,6 +312,20 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         server.server_close()
     return 0
+
+
+def _is_loopback_host(host: str) -> bool:
+    normalized = host.strip().lower().rstrip(".")
+    if normalized == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(normalized).is_loopback
+    except ValueError:
+        pass
+    try:
+        return ipaddress.ip_address(socket.inet_aton(normalized)).is_loopback
+    except OSError:
+        return False
 
 
 def _path_segments(path: str) -> list[str]:
