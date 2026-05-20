@@ -1077,9 +1077,7 @@ def weather_brief_to_evidence_items(
         evidence_items.append(
             EvidenceItem(
                 evidence_id=_weather_evidence_id(
-                    weather=weather,
                     source=source,
-                    summary=summary,
                     authority_key=authority_key,
                     used_evidence_ids=used_evidence_ids,
                 ),
@@ -1811,27 +1809,16 @@ def _normalize_authority_name(value: str | None) -> str:
 
 def _weather_evidence_id(
     *,
-    weather: WeatherBrief,
     source: SourceReference,
-    summary: str,
     authority_key: str | None,
     used_evidence_ids: dict[str, int],
 ) -> str:
-    explicit_primary_authority = (
-        str(source.is_primary_authority).lower()
-        if "is_primary_authority" in source.model_fields_set
-        else ""
-    )
     identity_parts = [
         authority_key or "",
         _normalize_cluster_url(source.url),
         _normalize_authority_name(source.title),
         _normalize_authority_name(source.badge),
-        _normalize_authority_name(source.reason),
         _normalize_authority_name(source.source_class),
-        explicit_primary_authority,
-        _normalize_authority_name(summary),
-        _normalize_authority_name(weather.event_summary),
     ]
     digest = hashlib.sha256("\x1f".join(identity_parts).encode("utf-8")).hexdigest()[:10]
     display_token = _stable_token(source.title or source.badge or authority_key or source.url)
@@ -1848,6 +1835,8 @@ def _weather_source_is_primary_authority(
     source: SourceReference,
     source_profile: Mapping[str, Any],
 ) -> bool:
+    # model_fields_set distinguishes explicit true/false from omitted fields,
+    # though dump/reload paths may mark default values as set.
     if "is_primary_authority" in source.model_fields_set:
         return bool(source.is_primary_authority)
     return bool(source_profile.get("is_primary_authority"))

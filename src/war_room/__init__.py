@@ -99,7 +99,6 @@ _EXPORTS = {
     "run_stage_to_payload": "war_room.models",
     "run_timeline_to_payload": "war_room.models",
     "run_to_payload": "war_room.models",
-    "weather_brief_to_evidence_items": "war_room.models",
     "weather_brief_to_payload": "war_room.models",
     "carrier_doc_pack_to_payload": "war_room.models",
     "caselaw_pack_to_payload": "war_room.models",

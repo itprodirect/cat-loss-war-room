@@ -152,6 +152,17 @@ def test_weather_evidence_adapter_does_not_collapse_distinct_source_rows():
     assert len(set(evidence_ids)) == 2
 
 
+def test_weather_evidence_adapter_suffixes_duplicate_source_rows():
+    _, weather, _, _, _, _ = _sample_payloads()
+    weather["key_observations"].append("Winds of 120 mph")
+    weather["sources"].append(dict(weather["sources"][0]))
+
+    evidence_ids = [item.evidence_id for item in weather_brief_to_evidence_items(weather)]
+    base_id = evidence_ids[0]
+
+    assert evidence_ids == [base_id, f"{base_id}-2"]
+
+
 def test_weather_evidence_adapter_preserves_source_metadata():
     _, weather, _, _, _, _ = _sample_payloads()
     weather["key_observations"][0] = "Observed 120 mph gusts in Pinellas County."
