@@ -5,6 +5,7 @@ import copy
 import pytest
 from pydantic import ValidationError
 
+from tests.provenance_integrity import assert_audit_snapshot_provenance_integrity
 from war_room.export_md import render_markdown_memo
 from war_room.models import (
     CaseIntake,
@@ -822,6 +823,7 @@ def test_run_audit_snapshot_builds_canonical_entities():
     assert snapshot.evidence_clusters[2].provenance_urls == ["https://example.com/case"]
     assert payload["memo_claims"][3]["cluster_ids"] == ["cluster-3"]
     assert payload["export_artifact"]["artifact_id"].endswith(":artifact:markdown-memo")
+    assert_audit_snapshot_provenance_integrity(snapshot)
 
 
 def test_run_audit_snapshot_tracks_review_events_and_claim_status():
@@ -1090,3 +1092,44 @@ def test_run_audit_snapshot_tracks_duplicate_authority_counts_when_case_and_chec
     assert snapshot.quality_snapshot.duplicate_authority_count == 1
     assert snapshot.quality_snapshot.provenance_link_count == 4
     assert snapshot.evidence_clusters[2].provenance_urls == ["https://example.com/case", "https://alt.example.com/case"]
+
+
+def test_provenance_harness_preserves_distinct_cross_module_authority_rows():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    citecheck["checks"][0]["status"] = "uncertain"
+    citecheck["checks"][0]["badge"] = "warning"
+    citecheck["checks"][0]["note"] = "Found on reviewable source."
+    citecheck["summary"] = {"total": 1, "verified": 0, "uncertain": 1, "not_found": 0}
+    caselaw_evidence_id = caselaw_pack_to_evidence_items(caselaw)[0].evidence_id
+    citation_evidence_id = citation_verify_pack_to_evidence_items(citecheck)[0].evidence_id
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    assert caselaw_evidence_id != citation_evidence_id
+    shared_cluster = next(
+        cluster
+        for cluster in snapshot.evidence_clusters
+        if caselaw_evidence_id in cluster.evidence_ids
+        and citation_evidence_id in cluster.evidence_ids
+    )
+    assert shared_cluster.modules == ["caselaw", "citation_verify"]
+    assert_audit_snapshot_provenance_integrity(snapshot)
+
+    orphaned_snapshot = snapshot.model_copy(
+        update={
+            "evidence_items": [
+                item
+                for item in snapshot.evidence_items
+                if item.evidence_id != citation_evidence_id
+            ]
+        }
+    )
+    with pytest.raises(AssertionError, match=citation_evidence_id):
+        assert_audit_snapshot_provenance_integrity(orphaned_snapshot)

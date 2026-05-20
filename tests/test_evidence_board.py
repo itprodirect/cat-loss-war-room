@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
+from tests.provenance_integrity import assert_evidence_board_provenance_integrity
 from war_room.evidence_board import (
     build_evidence_board,
     build_evidence_board_from_parts,
@@ -145,6 +146,7 @@ def test_build_evidence_board_links_claims_and_review_events_to_clusters():
     assert first_card.review_event_ids
     assert first_card.claim_ids
     assert first_card.evidence_previews
+    assert_evidence_board_provenance_integrity(board, snapshot)
 
 
 def test_build_evidence_board_from_parts_matches_snapshot_builder():

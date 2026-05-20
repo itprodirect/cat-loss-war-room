@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
+from tests.provenance_integrity import assert_memo_composer_provenance_integrity
 from war_room.memo_composer import (
     build_memo_composer,
     build_memo_composer_from_parts,
@@ -139,6 +140,7 @@ def test_build_memo_composer_links_claims_to_sections_and_export_state():
     assert weather_section.review_required is True
     assert weather_section.claim_links
     assert weather_section.review_event_ids
+    assert_memo_composer_provenance_integrity(composer, snapshot)
 
 
 def test_build_memo_composer_from_parts_matches_snapshot_builder():

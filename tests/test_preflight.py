@@ -5,6 +5,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from tests.provenance_integrity import (
+    assert_all_current_provenance_surfaces,
+    committed_fixture_case_keys,
+    fixture_snapshot_and_markdown,
+)
 from war_room.bootstrap import bootstrap_runtime, main as bootstrap_main
 from war_room.preflight import (
     preflight_run_id,
@@ -65,6 +70,13 @@ def test_demo_preflight_smoke_covers_committed_scenarios():
         assert scenario.memo_length > 0
         assert len(scenario.memo_sections) == 10
     assert all("Registry scenario" in scenario.availability.detail for scenario in report.scenarios)
+
+
+def test_committed_fixture_preflight_surfaces_keep_provenance_integrity():
+    for case_key in committed_fixture_case_keys(ROOT):
+        snapshot, markdown = fixture_snapshot_and_markdown(ROOT, case_key)
+
+        assert_all_current_provenance_surfaces(snapshot, markdown)
 
 
 def test_demo_preflight_rendering_includes_summary():
