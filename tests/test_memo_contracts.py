@@ -1,5 +1,7 @@
 """Tests for typed citation/export contracts (issue #6 slice 3)."""
 
+import copy
+
 import pytest
 from pydantic import ValidationError
 
@@ -10,6 +12,7 @@ from war_room.models import (
     adapt_citation_verify_pack,
     carrier_doc_pack_to_evidence_items,
     caselaw_pack_to_evidence_items,
+    citation_verify_pack_to_evidence_items,
     citation_verify_pack_to_payload,
     memo_render_input_from_parts,
     run_audit_snapshot_from_parts,
@@ -413,6 +416,130 @@ def test_citation_verify_pack_adapter_backfills_sparse_trust_metadata():
     assert check.confidence == "medium"
 
 
+def test_citation_verify_evidence_adapter_returns_stable_provenance_ids():
+    _, _, _, _, citecheck, _ = _sample_payloads()
+
+    first_ids = [
+        item.evidence_id for item in citation_verify_pack_to_evidence_items(citecheck)
+    ]
+    second_ids = [
+        item.evidence_id for item in citation_verify_pack_to_evidence_items(citecheck)
+    ]
+
+    assert first_ids == second_ids
+    assert first_ids[0].startswith("citation-check-123-so-3d-456-")
+    assert first_ids[0] != "citation-check-1"
+
+
+def test_citation_verify_evidence_adapter_ids_ignore_note_copy_edits():
+    _, _, _, _, citecheck, _ = _sample_payloads()
+    edited_citecheck = copy.deepcopy(citecheck)
+    edited_citecheck["checks"][0]["note"] = (
+        "Found on official source; attorney should verify before relying on it."
+    )
+
+    original_id = citation_verify_pack_to_evidence_items(citecheck)[0].evidence_id
+    edited_id = citation_verify_pack_to_evidence_items(edited_citecheck)[0].evidence_id
+
+    assert edited_id == original_id
+
+
+def test_citation_verify_evidence_adapter_does_not_collapse_distinct_check_rows():
+    _, _, _, _, citecheck, _ = _sample_payloads()
+    citecheck["checks"].append(
+        {
+            "badge": "warning",
+            "case_name": "Roe v. Ins",
+            "citation": "123 So.3d 456",
+            "status": "uncertain",
+            "note": "Same citation, distinct citation-check row.",
+            "source_url": "https://example.com/roe-case",
+        }
+    )
+    citecheck["summary"] = {"total": 2, "verified": 1, "uncertain": 1, "not_found": 0}
+
+    evidence_ids = [
+        item.evidence_id for item in citation_verify_pack_to_evidence_items(citecheck)
+    ]
+
+    assert len(evidence_ids) == 2
+    assert len(set(evidence_ids)) == 2
+
+
+def test_citation_verify_evidence_adapter_suffixes_duplicate_check_rows():
+    _, _, _, _, citecheck, _ = _sample_payloads()
+    citecheck["checks"].append(dict(citecheck["checks"][0]))
+    citecheck["summary"] = {"total": 2, "verified": 2, "uncertain": 0, "not_found": 0}
+
+    evidence_ids = [
+        item.evidence_id for item in citation_verify_pack_to_evidence_items(citecheck)
+    ]
+    base_id = evidence_ids[0]
+
+    assert evidence_ids == [base_id, f"{base_id}-2"]
+
+
+def test_citation_verify_evidence_adapter_preserves_existing_metadata_fields():
+    _, _, _, _, citecheck, _ = _sample_payloads()
+    citecheck["checks"][0].update(
+        {
+            "badge": "official",
+            "source_url": "https://www.flcourts.gov/case/123",
+            "source_class": "court_opinion",
+            "source_tier": "official",
+            "is_primary_authority": True,
+            "status_reason": "official_citation_match",
+            "trust_explanation": "Not an EvidenceItem field.",
+            "confidence": "high",
+        }
+    )
+
+    item = citation_verify_pack_to_evidence_items(citecheck)[0]
+
+    assert item.module == "citation_verify"
+    assert item.evidence_type == "citation_check"
+    assert item.title == "Doe v. Ins"
+    assert item.summary == "Found on official source"
+    assert item.url == "https://www.flcourts.gov/case/123"
+    assert item.badge == "official"
+    assert item.source_reason == "verified"
+    assert item.source_class == "court_opinion"
+    assert item.source_tier == "official"
+    assert item.is_primary_authority is True
+    assert item.citation == "123 so. 3d 456"
+    assert item.authority_key == "citation:123 so. 3d 456"
+    assert item.review_required is False
+    assert "status_reason" not in item.model_dump()
+    assert "trust_explanation" not in item.model_dump()
+    assert "confidence" not in item.model_dump()
+
+
+def test_citation_verify_evidence_adapter_handles_sparse_metadata_safely():
+    _, _, _, _, citecheck, _ = _sample_payloads()
+    citecheck["checks"] = [
+        {
+            "badge": "not_found",
+            "status": "not_found",
+            "note": "No results found.",
+        }
+    ]
+    citecheck["summary"] = {"total": 1, "verified": 0, "uncertain": 0, "not_found": 1}
+
+    item = citation_verify_pack_to_evidence_items(citecheck)[0]
+
+    assert item.evidence_id.startswith("citation-check-not-found-")
+    assert item.title == "Citation Check 1"
+    assert item.summary == "No results found."
+    assert item.url is None
+    assert item.source_reason == "not_found"
+    assert item.source_class is None
+    assert item.source_tier is None
+    assert item.is_primary_authority is False
+    assert item.authority_key is None
+    assert item.citation is None
+    assert item.review_required is True
+
+
 def test_citation_verify_summary_validation_rejects_bad_totals():
     _, _, _, _, citecheck, _ = _sample_payloads()
     citecheck["summary"] = {"total": 99, "verified": 1, "uncertain": 0, "not_found": 0}
@@ -444,6 +571,7 @@ def test_run_audit_snapshot_builds_canonical_entities():
     weather_evidence_id = weather_brief_to_evidence_items(weather)[0].evidence_id
     carrier_evidence_id = carrier_doc_pack_to_evidence_items(carrier)[0].evidence_id
     caselaw_evidence_id = caselaw_pack_to_evidence_items(caselaw)[0].evidence_id
+    citation_evidence_id = citation_verify_pack_to_evidence_items(citecheck)[0].evidence_id
 
     snapshot = run_audit_snapshot_from_parts(
         intake,
@@ -486,6 +614,11 @@ def test_run_audit_snapshot_builds_canonical_entities():
         item.evidence_id == caselaw_evidence_id and item.module == "caselaw"
         for item in snapshot.evidence_items
     )
+    assert any(
+        item.evidence_id == citation_evidence_id and item.module == "citation_verify"
+        for item in snapshot.evidence_items
+    )
+    assert citation_evidence_id in snapshot.memo_claims[3].evidence_ids
     assert payload["evidence_clusters"][0]["cluster_id"] == "cluster-1"
     assert payload["evidence_clusters"][2]["cluster_type"] == "citation"
     assert snapshot.memo_claims[0].cluster_ids == ["cluster-1"]
@@ -595,9 +728,14 @@ def test_run_audit_snapshot_scopes_citation_review_events_to_non_verified_checks
         query_plan,
     )
 
-    citation_event = next(event for event in snapshot.review_events if event.event_id == "citation-uncertain")
+    citation_event = next(
+        event
+        for event in snapshot.review_events
+        if event.event_id == "citation-uncertain"
+    )
+    citation_evidence_id = citation_verify_pack_to_evidence_items(citecheck)[1].evidence_id
 
-    assert citation_event.related_evidence_ids == ["citation-check-2"]
+    assert citation_event.related_evidence_ids == [citation_evidence_id]
     assert citation_event.related_cluster_ids == ["cluster-4"]
     verified_cluster = next(cluster for cluster in snapshot.evidence_clusters if cluster.cluster_id == "cluster-3")
     uncertain_cluster = next(cluster for cluster in snapshot.evidence_clusters if cluster.cluster_id == "cluster-4")
