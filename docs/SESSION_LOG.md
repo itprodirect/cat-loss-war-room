@@ -2048,6 +2048,9 @@ Status: Complete
   - no additional Florida fixture seeding was scoped in this docs-only closeout sync.
 - Validation:
   - `git diff --check` -> passed.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `484 passed in 18.45s`; verify manifest written under
+    `runs/verify/2026-05-20_codex-issue-12-dedupe-plan_20260520t204851z.json`.
   - `python -m war_room.fixture_snapshots --check` -> passed; snapshot matched `tests/golden/offline_fixture_snapshots.json`.
   - `python -m war_room --verify --release-candidate issue-8-closed-status-docs-sync` -> passed; embedded `pytest -q` reported `343 passed in 17.15s`; offline preflight passed for 5 committed fixture scenarios; verify manifest written under `runs/verify/2026-05-14_issue-8-closed-status-docs-sync_20260514t042129z.json`.
 
@@ -3164,3 +3167,29 @@ Status: Complete
   - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
   - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed.
   - `git diff --check` -> passed for this docs-only wrap-up branch.
+
+## Session 140 - Issue 12 Dedupe Integration Plan
+Date: 2026-05-20
+Status: Complete
+
+- Created a docs-only issue `#12` dedupe integration plan before runtime
+  wiring.
+- What changed:
+  - Added `docs/ISSUE_12_DEDUPE_INTEGRATION_PLAN.md` to define the current
+    landed state, provenance chain, `old_id -> retained_id` remapping
+    contract, first-runtime cross-module collapse policy, per-surface rewrite
+    rules, provenance-integrity invariants, phased implementation sequence,
+    and recommended next GitHub issues.
+  - Linked the new plan from `docs/ISSUE_12_REMAINING_SCOPE.md`.
+  - Added one operator-orientation pointer in `docs/HANDOFF.md`.
+- Decisions added:
+  - The safest first runtime dedupe integration should be same-module only and
+    forbid cross-module URL/citation collapse, especially citation-verify into
+    caselaw, until remapping and duplicate/source metadata are proven.
+- Decisions not added:
+  - no runtime code, tests, schemas, notebooks, fixtures, dependencies, CI,
+    persistence, API, UI, dashboard, auth, queues, workers, fuzzy/ML
+    clustering, AI scoring, citation behavior change, or full V2 evidence graph
+    claim was added.
+- Validation:
+  - `git diff --check` -> passed.

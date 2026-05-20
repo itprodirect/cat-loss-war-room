@@ -160,6 +160,7 @@ Core implementation lives in `src/war_room/`.
 - [ISSUE_11_RUN_STATUS_UX_SPEC.md](ISSUE_11_RUN_STATUS_UX_SPEC.md): narrow issue `#11` run-status UX/spec slice over the existing `status_presentation` payload
 - [examples/run_status_milton_degraded.md](examples/run_status_milton_degraded.md): deterministic issue `#11` Milton degraded run-status preview derived from the existing transport/status payload
 - [ISSUE_12_REMAINING_SCOPE.md](ISSUE_12_REMAINING_SCOPE.md): docs-only issue `#12` remaining-scope review, now updated after the landed citation-verify adapter and helper-only deterministic dedupe utility
+- [ISSUE_12_DEDUPE_INTEGRATION_PLAN.md](ISSUE_12_DEDUPE_INTEGRATION_PLAN.md): docs-only issue `#12` plan for provenance-safe dedupe integration before runtime wiring
 - [ROADMAP.md](ROADMAP.md): plain-language roadmap and active execution order
 - [V2_WORKFLOW_IA.md](V2_WORKFLOW_IA.md): canonical V2 workflow, IA, and design-system rules
 - [V2_EVIDENCE_SCHEMA.md](V2_EVIDENCE_SCHEMA.md): canonical V2 evidence graph, audit schema, and versioning rules
