@@ -12,12 +12,15 @@ repo into a production API, web app, auth system, persistence layer, queue,
 worker, dashboard, beta, pilot, or production surface.
 
 Post-audit update (May 20, 2026): issue `#92` / PR `#93` landed the
-release-evidence CI reporting summary, and issue `#94` / PR `#95`, issue
+release-evidence CI reporting summary; issue `#94` / PR `#95`, issue
 `#96` / PR `#97`, issue `#98` / PR `#99`, and issue `#103` / PR `#105`
 landed the first caselaw, carrier, weather, and citation-verification evidence
-adapter slices. This audit's broad warnings still apply: those slices do not
-make the repo a full V2 evidence graph, product platform, production API,
-dashboard, beta, pilot, or production surface.
+adapter slices; and issue `#107` / PR `#108` landed the helper-only
+`dedupe_evidence_items(...)` utility over canonical `EvidenceItem` rows. This
+audit's broad warnings still apply: those slices do not make the repo a full V2
+evidence graph, product platform, production API, dashboard, beta, pilot, or
+production surface, and the dedupe helper is not integrated into audit snapshot
+assembly or an `old_id -> retained_id` remapping.
 
 ## Current Repo Truth Used For This Audit
 
@@ -103,10 +106,12 @@ These are the highest-value issue-creation candidates after this audit. They
 are phrased as narrow child issues to avoid umbrella implementation.
 
 1. `#12` child: Decide the next narrow evidence/provenance follow-up after the
-   landed weather, carrier, caselaw, and citation-verification adapter slices.
-   - Purpose: choose between a deterministic dedupe helper, provenance link
-     hardening, citation-quality fixture regression under `#13` / `#14`, or a
-     docs-only issue-12 closeout/status map.
+   landed adapters and helper-only deterministic dedupe utility.
+   - Purpose: choose between a provenance-safe dedupe integration plan with
+     `old_id -> retained_id` mapping, deterministic dedupe integration into
+     audit snapshot assembly, provenance link hardening across memo claims /
+     evidence clusters / review events, or citation-quality fixture regression
+     under `#13` / `#14`.
    - Non-goals: no database, no global schema rewrite, no AI scoring, no live
      retrieval, no full evidence-graph completion claim.
 2. `#10` child: Remaining orchestration scope map after landed
@@ -218,14 +223,19 @@ are phrased as narrow child issues to avoid umbrella implementation.
   confidence annotations, and rationale fields on top of the evidence schema
   from `#24`.
 - Current-state mismatch: the repo already has transitional evidence clusters,
-  evidence-to-claim links, review events, read models, and first narrow
+  evidence-to-claim links, review events, read models, first narrow
   weather/carrier/caselaw/citation-verification adapters into canonical
-  `EvidenceItem` rows, but the full canonical evidence normalization engine
-  from `#12` is not implemented. The issue is directionally valid but still too
-  broad to treat as a single implementation ticket.
+  `EvidenceItem` rows, and the helper-only deterministic
+  `dedupe_evidence_items(...)` utility. The helper is not integrated into
+  audit snapshot assembly and has no `old_id -> retained_id` remapping, so the
+  full canonical evidence normalization engine from `#12` is not implemented.
+  The issue is directionally valid but still too broad to treat as a single
+  implementation ticket.
 - Recommended action: split into child issues.
 - Suggested child issues:
-  - Deterministic dedupe helper across current adapter output.
+  - Provenance-safe dedupe integration plan with `old_id -> retained_id`
+    mapping or an equivalent linkage strategy.
+  - Deterministic dedupe integration into audit snapshot assembly.
   - Docs-only issue-12 closeout/status map for the landed adapter seams.
   - Citation-quality fixture regression under `#13` / `#14`.
   - Durable evidence and cluster ID rules applied consistently across current
@@ -445,9 +455,11 @@ are phrased as narrow child issues to avoid umbrella implementation.
   review.
 - Current-state mismatch: the issue body is mostly closer to current truth than
   older V2 issues, but it should now mention the issue `#88` top-level
-  `reviewer_summary` convenience layer and the post-PR90 truth-sync. Remaining
-  work is broader CI and pilot operationalization, not the first rubric draft,
-  not a new readiness framework, and not a readiness upgrade.
+  `reviewer_summary` convenience layer, the issue `#92`
+  `ci_reporting_summary` inventory, and later current-state truth-sync updates
+  through PR `#108`. Remaining work is broader CI and pilot operationalization,
+  not the first rubric draft, not a new readiness framework, and not a
+  readiness upgrade.
 - Recommended action: keep as umbrella; rewrite body; split into child issues.
 - Suggested child issues:
   - Broader CI reporting from the existing verify bundle and scorecard fields.
@@ -470,8 +482,10 @@ are phrased as narrow child issues to avoid umbrella implementation.
 2. Turn `#10`, `#11`, and `#27` into explicit umbrellas with linked child
    issues and landed-slice notes.
 3. Keep `#12` as the next narrow product-core implementation lane, but choose
-   the next child from dedupe, provenance hardening, citation-quality fixtures,
-   or a status map instead of treating the landed adapters as the full graph.
+   the next child from provenance-safe dedupe integration planning, audit
+   snapshot dedupe integration, provenance hardening, or citation-quality
+   fixtures instead of treating the landed adapters and helper-only utility as
+   the full graph.
 4. Treat `#13`, `#25`, and `#26` as important but dependent on evidence and
    review contracts.
 5. Park `#16`, `#17`, `#18`, and `#19` until the repo has the product/runtime

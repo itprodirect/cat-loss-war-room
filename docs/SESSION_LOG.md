@@ -3053,3 +3053,41 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `462 passed in 23.81s`; verify manifest written under
     `runs/verify/2026-05-20_codex-issue-107-deterministic-evidence-dedupe_20260520t150120z.json`.
+
+## Session 137 - Post PR 108 Current-State Docs Sync
+Date: 2026-05-20
+Status: Complete
+
+- Synced current-state docs after PR `#108` merged the issue `#107`
+  deterministic evidence dedupe helper.
+- What changed:
+  - Updated high-visibility status surfaces to state that
+    `dedupe_evidence_items(...)` has landed as a helper-only utility over
+    canonical `EvidenceItem` rows.
+  - Updated the supported test baseline from `455` to `462`.
+  - Clarified that the helper is not integrated into audit snapshot assembly
+    and that future integration still needs an `old_id -> retained_id`
+    remapping or equivalent provenance-safe plan.
+  - Preserved the distinction between landed adapter seams, landed helper-only
+    dedupe, and future provenance/linkage/integration work.
+- Decisions not added:
+  - no runtime code, tests, dependencies, notebooks, fixtures, CI workflows,
+    audit snapshot assembly changes, `old_id -> retained_id` implementation,
+    `EvidenceItem` schema changes, persistence, live retrieval, provider
+    ranking changes, citation behavior changes, fuzzy/ML clustering,
+    UI/API/dashboard, AI scoring, full evidence graph claim, Beta-ready claim,
+    Pilot-ready claim, production-ready claim, or legal-product claim was
+    added.
+- Recommended next task:
+  - Pause implementation and review the remaining `#12` roadmap. The likely
+    next child should be a provenance-safe dedupe integration plan with
+    `old_id -> retained_id` mapping, deterministic dedupe integration into
+    audit snapshot assembly, provenance link hardening across memo claims /
+    evidence clusters / review events, or citation-quality fixture regression
+    under `#13` / `#14`.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest -q` -> `462 passed in 34.96s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `462 passed in 30.77s`; verify manifest written under
+    `runs/verify/2026-05-20_docs-final-post-dedupe-helper-sync_20260520t151849z.json`.
