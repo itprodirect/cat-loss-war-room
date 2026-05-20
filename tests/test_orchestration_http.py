@@ -13,7 +13,7 @@ import pytest
 
 from war_room.models import CaseIntake
 from war_room.orchestration_api_contracts import StartRunRequest, start_run_request_to_payload
-from war_room.orchestration_http import create_dev_http_server
+from war_room.orchestration_http import MAX_REQUEST_BODY_BYTES, create_dev_http_server
 from war_room.orchestration_service import InMemoryOrchestrationService
 from war_room.scenarios import load_scenario
 
@@ -160,6 +160,27 @@ def test_invalid_json_returns_http_error_with_transport_style_envelope(http_base
     assert body["payload"]["error"]["code"] == "invalid_json"
     assert body["status_presentation"] is None
 
+
+
+
+def test_request_body_too_large_returns_clear_json_error(http_base_url):
+    oversized = b"{" + (b" " * MAX_REQUEST_BODY_BYTES) + b"}"
+    status, body = _request(
+        http_base_url,
+        "POST",
+        "/runs",
+        raw_body=oversized,
+    )
+
+    assert status == 400
+    assert body["ok"] is False
+    assert body["operation"] == "start_run"
+    assert body["payload"]["error"]["code"] == "request_too_large"
+
+
+def test_create_server_rejects_non_loopback_host_by_default():
+    with pytest.raises(ValueError, match="loopback hosts"):
+        create_dev_http_server(("0.0.0.0", 0), service=_service(), scenario_id=MILTON_SCENARIO_ID)
 
 def test_invalid_start_payload_returns_transport_error_over_http(http_base_url):
     status, body = _request(
