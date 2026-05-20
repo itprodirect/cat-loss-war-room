@@ -546,7 +546,10 @@ def _looks_like_python_type_annotation(path: str, line: str, match: re.Match[str
 
 def _looks_like_not_set_status(line: str, match: re.Match[str]) -> bool:
     suffix = line[match.start("value") :].strip().strip("'\"")
-    return bool(re.match(r"not\s+set\b", suffix, flags=re.IGNORECASE))
+    if "`" in line[: match.start("name")] and "`" in suffix:
+        suffix = suffix.split("`", 1)[0].strip().strip("'\"")
+    suffix = re.sub(r"(?:\\[rn])+$", "", suffix).strip()
+    return bool(re.fullmatch(r"not\s+set", suffix, flags=re.IGNORECASE))
 
 
 def _normalize_policy_text(text: str) -> str:
