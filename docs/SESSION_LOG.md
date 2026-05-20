@@ -3122,3 +3122,45 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `473 passed in 29.06s`; verify manifest written under
     `runs/verify/2026-05-20_codex-fix-unauthenticated-access-in-dev-http-adapter_20260520t165135z.json`.
+
+## Session 139 - Post Hardening Batch Stabilization Check
+Date: 2026-05-20
+Status: Complete
+
+- Pulled latest `main` after the merged May 20 hardening batch and confirmed
+  there were zero open pull requests for `itprodirect/cat-loss-war-room`.
+- What changed:
+  - Added this docs-only wrap-up so the high-visibility current-state docs no
+    longer point at the post-PR108 branch or the `462`-test baseline.
+  - Summarized the merged hardening batch through PR `#130` as focused
+    repo/runtime defenses covering dev-HTTP request handling, memo/evidence
+    text escaping and sanitization, official-domain spoofing defenses,
+    environment override behavior, dependency and secret hygiene edge cases,
+    CI token/artifact posture, fixture source confidence, stale query-plan
+    isolation, and issue-workspace readiness checks.
+  - Preserved the explicit boundary that those fixes do not add production
+    auth, retention enforcement, compliance controls, a full product security
+    baseline, a web app, persistence, queues, workers, or a production API.
+- Decisions added:
+  - Treat the post-hardening supported local baseline as `484` passing tests
+    plus green security hygiene, dependency hygiene, and offline e2e checks.
+- Decisions not added:
+  - no runtime code, tests, dependencies, notebooks, fixtures, CI workflows,
+    issue-body edits, production security controls, auth, persistence, queues,
+    workers, dashboard, UI, product API, readiness claim, or legal-product
+    claim was added.
+- Recommended next task:
+  - Keep feature work paused and choose the next narrow issue `#12` child from
+    provenance-safe dedupe integration planning, deterministic dedupe
+    integration into audit snapshot assembly, provenance link hardening, or a
+    citation-quality fixture regression under `#13` / `#14`.
+- Validation:
+  - `git status --short --branch` after pulling `main` -> `## main...origin/main`.
+  - `gh pr list --repo itprodirect/cat-loss-war-room --state open --json number,title,headRefName,url` -> `[]`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `484 passed in 36.85s`; verify manifest written under
+    `runs/verify/2026-05-20_main_20260520t193606z.json`.
+  - `python -m war_room.security_hygiene --check` -> passed; `6/6` checks passed.
+  - `python -m war_room.dependency_hygiene --check` -> passed; `6/6` checks passed.
+  - `python -m war_room.offline_e2e --check` -> passed; `5/5` scenarios passed.
+  - `git diff --check` -> passed for this docs-only wrap-up branch.

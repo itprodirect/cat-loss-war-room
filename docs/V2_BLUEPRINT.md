@@ -25,11 +25,11 @@ Do **not** rebuild this as a distributed microservice maze. The right V2 is a di
 
 ## 2) Current-State Scorecard
 
-Current-state note (May 20, 2026): this blueprint remains the historical V2 planning document. The repo has moved beyond the original March snapshot: the supported test baseline is now `462` passing tests, issues `#6` through `#9`, `#22`, `#23`, and `#24` are complete, the issue `#10` contract/service/status/transport/dev-HTTP slices have landed, issue `#11` has specs/previews only, issue `#27` now includes release-evidence artifacts, the reviewer guide, the issue `#88` `reviewer_summary`, and the issue `#92` `ci_reporting_summary` inventory, and issue `#12` has first weather, carrier, caselaw, and citation-verification evidence adapters plus the issue `#107` / PR `#108` helper-only `dedupe_evidence_items(...)` utility. That helper is not integrated into audit snapshot assembly, and no `old_id -> retained_id` remapping exists yet. The active runtime is still the notebook plus `src/war_room/`; no self-serve web UI, production API, auth, persistence, queues, workers, dashboard, or production app exists.
+Current-state note (May 20, 2026): this blueprint remains the historical V2 planning document. The repo has moved beyond the original March snapshot: the supported test baseline is now `484` passing tests, issues `#6` through `#9`, `#22`, `#23`, and `#24` are complete, the issue `#10` contract/service/status/transport/dev-HTTP slices have landed, issue `#11` has specs/previews only, issue `#27` now includes release-evidence artifacts, the reviewer guide, the issue `#88` `reviewer_summary`, and the issue `#92` `ci_reporting_summary` inventory, issue `#12` has first weather, carrier, caselaw, and citation-verification evidence adapters plus the issue `#107` / PR `#108` helper-only `dedupe_evidence_items(...)` utility, and the May 20 hardening batch through PR `#130` has landed focused repo/runtime defenses. That helper is not integrated into audit snapshot assembly, and no `old_id -> retained_id` remapping exists yet. The hardening batch does not add product auth, retention enforcement, compliance controls, or a production security baseline. The active runtime is still the notebook plus `src/war_room/`; no self-serve web UI, production API, auth, persistence, queues, workers, dashboard, or production app exists.
 
 | Dimension | Verdict | Why |
 |---|---|---|
-| Demo reliability | Strong | Offline cache lane, committed fixtures, release-evidence checks, and `462` passing tests make the narrated demo baseline dependable. |
+| Demo reliability | Strong | Offline cache lane, committed fixtures, release-evidence checks, and `484` passing tests make the narrated demo baseline dependable. |
 | End-user usability | Weak | The primary interface is still Jupyter plus environment setup and kernel selection. |
 | Evidence quality | Mixed | The first weather, carrier, caselaw, and citation-verification evidence adapters reduce positional provenance drift, and the helper-only dedupe utility defines deterministic collapse behavior over canonical `EvidenceItem` rows; audit snapshot integration, provenance-safe ID remapping, review workflow, and product-grade extraction are still pending. |
 | Legal trust posture | Promising | Guardrails and disclaimers are strong; provenance and review workflow are not yet product-grade. |
@@ -49,7 +49,7 @@ Current-state note (May 20, 2026): this blueprint remains the historical V2 plan
 - Module boundaries are understandable.
   - Weather, carrier, case law, citation checks, and export are separated in a way a new engineer can follow.
 - Test coverage is respectable for a prototype.
-  - The current supported baseline is `462` passing tests, enough to trust narrow docs and contract slices more than usual at this stage.
+  - The current supported baseline is `484` passing tests, enough to trust narrow docs and contract slices more than usual at this stage.
 - Documentation is better than the average internal prototype.
   - Handoff, method, safety, demo script, and roadmap docs reduce tribal knowledge.
 

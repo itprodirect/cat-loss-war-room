@@ -21,7 +21,7 @@ This is research acceleration, not legal advice.
 |---|---|
 | Notebook cells 0-7 | Working |
 | Offline demo (`USE_CACHE=true`) | Working |
-| Tests | 462 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
+| Tests | 484 passing under the supported verify path after editable install or `PYTHONPATH=src`; raw-checkout `pytest -q` is not a supported path |
 | CI | Fresh-env test gate + offline fixture smoke plus golden snapshot gate + offline e2e gate + offline security and dependency hygiene gates + exa-py compatibility matrix + release-scorecard artifact job with artifact validation, all using editable package install and categorized quality-gate artifacts |
 | Exa compatibility hardening (`#4`) | Complete and closed |
 | Intake schema alignment (`#5`) | Complete and closed |
@@ -29,6 +29,7 @@ This is research acceleration, not legal advice.
 | Retrieval contracts (#7) | Complete: provider seam, notebook retrieval-state emission, citation-verify tracking, deterministic timing, provider failure-mode normalization, and `None` provider-response malformed-contract handling are landed; the PR #57 audit gap is resolved in `docs/ISSUE_7_CLOSURE_SANITY_AUDIT.md` |
 | Scenario fixtures (#8) | Complete and closed: five committed scenario directories cover Florida, Texas, and Louisiana; all five now map from the curated registry to offline-ready committed fixture lanes, including Ian/Lee/Citizens HO-3 and the Texas hail/Tarrant/Allstate DP-3 matching benchmark; the deterministic golden snapshot gate checks output structure, source mix, case counts, citation summaries, and coverage metadata; `docs/FIXTURE_SEEDING.md`, `docs/ISSUE_8_NEXT_SCENARIO_AUDIT.md`, and `docs/ISSUE_8_READINESS_AUDIT.md` preserve the fixture-promotion evidence |
 | CI quality gates (#9) | Complete with closeout audit in `docs/ISSUE_9_CLOSEOUT_AUDIT.md`: categorized quality-gate artifacts, offline fixture and golden snapshot checks, offline e2e validation, security hygiene, dependency hygiene, Exa compatibility diagnostics, and release-scorecard validation are all wired |
+| May 20 hardening batch | Merged through PR `#130`: focused fixes covered dev-HTTP request handling, memo/evidence text escaping and sanitization, official-domain spoofing defenses, settings env overrides, dependency and secret hygiene edge cases, CI token/artifact posture, fixture source confidence, and issue-workspace readiness checks. This remains repo/runtime hygiene, not production auth, retention, compliance, or a product security baseline |
 | Product foundation (`#22`) | Complete and closed: packaging/bootstrap lane implemented |
 | Workflow IA spec (`#23`) | Complete and closed as the written source of truth in `docs/V2_WORKFLOW_IA.md` |
 | Evidence schema spec (`#24`) | Complete and closed as the written source of truth in `docs/V2_EVIDENCE_SCHEMA.md` |
@@ -74,6 +75,7 @@ This is research acceleration, not legal advice.
 - The issue `#98` weather evidence adapter now maps current weather source output into canonical `EvidenceItem` rows with deterministic provenance-oriented IDs and explicit-vs-inferred primary-authority handling.
 - The issue `#103` / PR `#105` citation-verify evidence adapter now maps current `CitationVerifyPack` output into canonical `EvidenceItem` rows through `citation_verify_pack_to_evidence_items(...)`, replacing positional citation evidence IDs with deterministic provenance-oriented IDs without changing citation verification behavior, status vocabulary, badge semantics, live retrieval, or the `EvidenceItem` schema.
 - The issue `#107` / PR `#108` deterministic evidence dedupe helper now provides `dedupe_evidence_items(...)` over canonical `EvidenceItem` rows. It is helper-only, keeps the first retained same-key row unchanged, does not merge candidate summary text, and is not wired into audit snapshot assembly or an `old_id -> retained_id` remapping.
+- The May 20 hardening batch through PR `#130` landed focused repo/runtime defenses: dev-HTTP request handling, memo/evidence markdown escaping and text sanitization, official-domain spoofing checks, environment override behavior, dependency-hygiene source checks, security-hygiene scanner edge cases, CI token/artifact hardening, fixture source-confidence downgrades, stale query-plan isolation, and issue-workspace citation-coverage readiness checks.
 - The notebook and preflight surfaces now expose a workflow-oriented research-plan preview, evidence-board summary, issue-workspace summary, memo-composer summary, export-history summary, and run timeline, so grouped support, issue-level review, section readiness, export posture, and review-required state are visible before the memo is treated as complete.
 - The Milton benchmark fixture lane now normalizes cached citation trust metadata, carrier/case-law runtime quality, and markdown/export readability without changing the scenario registry or overall notebook-era runtime flow.
 - The Milton rendered-memo path now has an export readability guard that blocks obvious mojibake, scraped navigation text, generic weather pages, Casetext boilerplate, and broken markdown-table rows from reappearing in demo output.
@@ -127,7 +129,7 @@ Core implementation lives in `src/war_room/`.
 ## 7) Roadmap summary
 
 ### Now
-- #12 remaining-roadmap review after named adapters and the helper-only deterministic dedupe utility landed; pause implementation before choosing the next provenance-safe integration or hardening child
+- Post-hardening stabilization is validated; keep feature work paused and review the remaining #12 roadmap before choosing the next provenance-safe integration or hardening child
 
 ### Next
 - #27 broader CI and pilot operationalization of the release scorecard

@@ -15,7 +15,7 @@ This repo is the current execution surface for attorney-demo research accelerati
 
 ## Current milestone
 
-Preserve the stable V0 notebook demo while issue `#12` evidence/provenance work continues after the landed issue `#92` release-evidence reporting slice, the weather/carrier/caselaw/citation-verification adapter seams, and the helper-only deterministic evidence dedupe utility.
+Preserve the stable V0 notebook demo after the merged May 20 hardening batch while issue `#12` evidence/provenance work remains paused for a narrow next-child decision after the landed issue `#92` release-evidence reporting slice, the weather/carrier/caselaw/citation-verification adapter seams, and the helper-only deterministic evidence dedupe utility.
 
 ## Non-goals
 
@@ -46,6 +46,7 @@ Preserve the stable V0 notebook demo while issue `#12` evidence/provenance work 
 - A local helper-only deterministic dedupe utility, `dedupe_evidence_items(...)`, from issue `#107` / PR `#108`; it is not yet integrated into audit snapshot assembly and has no `old_id -> retained_id` remapping.
 - Golden offline fixture snapshots for reviewable scenario/output drift checks.
 - Categorized CI quality-gate artifacts for unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene lanes.
+- Focused repo/runtime hardening for text sanitization, official-domain spoofing defenses, dev-HTTP request handling, dependency and secret hygiene checks, CI token/artifact posture, fixture source confidence, and issue-workspace readiness checks.
 
 ## Quality bar
 
@@ -53,6 +54,7 @@ Preserve the stable V0 notebook demo while issue `#12` evidence/provenance work 
 - Offline cache-backed demo path remains reliable.
 - Outputs keep disclaimers, traceability, and review-required markers.
 - Validation uses the supported path (`python -m war_room --verify`) rather than unsupported raw-checkout shortcuts.
+- The current post-hardening supported baseline is `484` passing tests plus green security hygiene, dependency hygiene, and offline e2e checks.
 - Docs stay aligned with the actual branch state and open milestone.
 
 ## Known risks
@@ -63,6 +65,7 @@ Preserve the stable V0 notebook demo while issue `#12` evidence/provenance work 
 - Issue `#12` now has named adapters for the current weather, carrier, caselaw, and citation-verification evidence-producing source families plus a helper-only deterministic dedupe utility, but the full V2 evidence graph, audit snapshot dedupe integration, `old_id -> retained_id` remapping, persistence layer, product review workflow, provenance-through-edits, API integration, and UI remain unbuilt.
 - Offline readiness is stronger but still demo-scoped: five committed fixture lanes now have a golden snapshot gate and fixture-backed registry scenarios, and issue `#8` is closed as completed after the five-lane baseline validation.
 - Case-law precision and citation confidence still need ongoing hardening in edge cases.
+- The hardening batch improves repo/runtime defenses but does not add product auth, retention enforcement, compliance controls, or a production security baseline.
 - Status can drift quickly because roadmap, handoff, and session history are dense and frequently updated.
 
 ## Next 3 tasks
