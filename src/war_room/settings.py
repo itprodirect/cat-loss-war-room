@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
+import os
 from pathlib import Path
 from typing import Any
 
@@ -114,13 +115,14 @@ def load_settings(*, repo_root: Path, env_file: Path | None = None) -> WarRoomSe
 
 
 def _read_env_values(env_file: Path) -> dict[str, str]:
-    if not env_file.exists():
-        return {}
-
     values: dict[str, str] = {}
-    for key, value in dotenv_values(env_file).items():
-        if value is not None:
-            values[key] = value
+
+    if env_file.exists():
+        for key, value in dotenv_values(env_file).items():
+            if value is not None:
+                values[key] = value
+
+    values.update(os.environ)
     return values
 
 

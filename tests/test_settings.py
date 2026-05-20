@@ -40,3 +40,18 @@ def test_invalid_boolean_rejected(tmp_path: Path):
 
     with pytest.raises(ValueError):
         load_settings(repo_root=tmp_path, env_file=env_file)
+
+
+def test_process_environment_overrides_env_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    env_file = tmp_path / ".env"
+    env_file.write_text("WAR_ROOM_ENV=local\nALLOW_LIVE_RETRIEVAL=true\nEXA_API_KEY=file-key\n", encoding="utf-8")
+
+    monkeypatch.setenv("WAR_ROOM_ENV", "demo")
+    monkeypatch.setenv("ALLOW_LIVE_RETRIEVAL", "false")
+    monkeypatch.setenv("EXA_API_KEY", "")
+
+    settings = load_settings(repo_root=tmp_path, env_file=env_file)
+
+    assert settings.app_env == RuntimeEnvironment.DEMO
+    assert settings.live_retrieval_enabled is False
+    assert settings.exa_api_key_value == ""
