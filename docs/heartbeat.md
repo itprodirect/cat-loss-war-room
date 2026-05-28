@@ -11,6 +11,6 @@
 - Do not touch this sprint: cross-module evidence collapse, API framework, background queue, database, auth, dashboard, UI design, production runtime claims, broad product rewrites, dependency churn without approval, or retained duplicate/source-role schema changes outside a separately scoped follow-up issue.
 - Related repos: None documented in-repo; treat this repo as the working source of truth.
 - Latest session closeout: `docs/SESSION_144_CLOSEOUT.md`
-- Latest session log entries: `docs/SESSION_LOG.md` sessions 142 and 143 for PRs `#136` and `#138`.
+- Latest session log entries: `docs/SESSION_144_CLOSEOUT.md` session 144 and `docs/SESSION_LOG.md` session 145 for PR `#138` and the issue `#139` decision.
 - Next best task: If maintainers want implementation next, pick issue `#142` for same-module `EvidenceDedupeTrace` / `EvidenceAlias` metadata. Keep cross-module relatedness expressed through `EvidenceCluster`.
 - Owner: Not explicitly named in-repo; maintained for the Merlin Law Group demo effort.

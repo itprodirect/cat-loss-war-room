@@ -139,7 +139,7 @@ The safer policy is therefore:
 
 ## Implementation Decision
 
-This issue is closed by docs only.
+This issue is closed by this docs-only decision once the PR merges.
 
 The existing code already has a runtime-local same-module remap for audit
 snapshot assembly, but adding retained duplicate/source-role metadata in code

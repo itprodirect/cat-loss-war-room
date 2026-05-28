@@ -29,7 +29,7 @@ Current-state note (May 28, 2026): this blueprint remains the historical V2 plan
 
 | Dimension | Verdict | Why |
 |---|---|---|
-| Demo reliability | Strong | Offline cache lane, committed fixtures, release-evidence checks, and `484` passing tests make the narrated demo baseline dependable. |
+| Demo reliability | Strong | Offline cache lane, committed fixtures, release-evidence checks, and `493` passing tests make the narrated demo baseline dependable. |
 | End-user usability | Weak | The primary interface is still Jupyter plus environment setup and kernel selection. |
 | Evidence quality | Mixed | The first weather, carrier, caselaw, and citation-verification evidence adapters reduce positional provenance drift, and same-module audit-snapshot dedupe now rewrites removed IDs to retained IDs while keeping cross-module relatedness clustering-only. Retained duplicate/source-role trace metadata, broader provenance hardening, review workflow, and product-grade extraction are still pending. |
 | Legal trust posture | Promising | Guardrails and disclaimers are strong; provenance and review workflow are not yet product-grade. |
@@ -49,7 +49,7 @@ Current-state note (May 28, 2026): this blueprint remains the historical V2 plan
 - Module boundaries are understandable.
   - Weather, carrier, case law, citation checks, and export are separated in a way a new engineer can follow.
 - Test coverage is respectable for a prototype.
-  - The current supported baseline is `484` passing tests, enough to trust narrow docs and contract slices more than usual at this stage.
+  - The current supported baseline is `493` passing tests, enough to trust narrow docs and contract slices more than usual at this stage.
 - Documentation is better than the average internal prototype.
   - Handoff, method, safety, demo script, and roadmap docs reduce tribal knowledge.
 
