@@ -3308,3 +3308,41 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `493 passed in 47.93s`; verify manifest written under
     `runs/verify/2026-05-20_codex-137-not-found-dedupe-visibility_20260520t224832z.json`.
+
+## Session 145 - Issue 139 Retained Duplicate Metadata Decision
+Date: 2026-05-28
+Status: Complete
+
+- Created a docs-only decision record for issue `#139` before any future
+  cross-module dedupe work.
+- What changed:
+  - Added
+    `docs/ISSUE_139_RETAINED_DUPLICATE_SOURCE_ROLE_DECISION.md`.
+  - Added decision `D020` to `docs/DECISION_LOG.md`.
+  - Added issue `#139` status pointers to the issue `#12` dedupe plan,
+    remaining-scope doc, heartbeat, handoff, repo brief, roadmap, and evidence
+    schema.
+  - Opened follow-up issue `#142` for same-module dedupe trace metadata.
+- Decisions added:
+  - Cross-module evidence behavior stops at clustering-only relatedness.
+  - `EvidenceItem` preserves module-specific meaning.
+  - `EvidenceCluster` expresses cross-module relatedness without deleting rows.
+  - Future retained duplicate/source-role metadata should live in a separate
+    audit-snapshot or audit-bundle trace object, initially for same-module
+    dedupe only.
+- Decisions not added:
+  - no runtime code, schema expansion, export field change, markdown behavior
+    change, tests, fixtures, dependencies, persistence, API, UI/dashboard,
+    auth, queues/workers, fuzzy/ML clustering, AI scoring, live retrieval
+    change, citation verification behavior change, broad evidence refactor, or
+    cross-module evidence collapse was added.
+- Recommended next task:
+  - Pick issue `#142` if maintainers want reviewer-visible retained duplicate
+    metadata next.
+- Validation:
+  - `git diff --check` -> passed.
+  - `python -m pytest tests/test_memo_contracts.py tests/test_export.py -q`
+    -> `63 passed in 8.19s`.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `493 passed in 24.74s`; verify manifest written under
+    `runs/verify/2026-05-28_codex-139-dedupe-metadata-decision_20260528t172144z.json`.

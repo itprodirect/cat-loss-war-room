@@ -1,13 +1,13 @@
 # Roadmap (Simple, Current)
 
-Last updated: May 20, 2026
+Last updated: May 28, 2026
 
 This is the short version. Clean, practical, no drama.
 
 ## Where we are now
 
 - Demo pipeline is stable.
-- 484 tests are passing on the supported verify path.
+- 493 tests were last reported passing on the supported verify path after PR `#138`.
 - CI has a fresh-environment gate, editable-package install, an explicit offline fixture smoke job with golden snapshot validation, an offline e2e demo gate, offline security and dependency hygiene gates, and the `exa-py` compatibility matrix.
 - CI now also emits categorized quality-gate artifacts for unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene failures.
 - CI emits and validates a release-scorecard artifact from the calibrated `#27` workflow, including machine-readable blocking/advisory readiness categories for dashboard consumers.
@@ -24,7 +24,7 @@ This is the short version. Clean, practical, no drama.
 - The Export History read model now has the same typed `v2alpha1` contract path for export artifact rows, delivery state, disclaimer state, and audit references.
 - The Run Timeline read model now has a typed `v2alpha1` envelope over canonical `Run` and `RunStage` records.
 - First narrow issue `#12` evidence/provenance adapter slices have landed for current weather, carrier, caselaw, and citation-verification output. They route those module outputs through canonical `EvidenceItem` adapters with deterministic provenance-oriented IDs while preserving the current notebook-era audit snapshot flow.
-- Issue `#107` / PR `#108` added local deterministic `dedupe_evidence_items(...)` over canonical `EvidenceItem` rows as a helper-only utility. It is not integrated into audit snapshot assembly, and no `old_id -> retained_id` remapping exists yet.
+- Issue `#107` / PR `#108` added local deterministic `dedupe_evidence_items(...)` over canonical `EvidenceItem` rows. PR `#136` integrated same-module audit-snapshot dedupe with explicit `old_id -> retained_id` remapping, and PR `#138` added citation `not_found` regression coverage plus markdown raw-vs-retained evidence count visibility.
 - The May 20 hardening batch through PR `#130` landed focused repo/runtime fixes for dev-HTTP request handling, memo/evidence text escaping and sanitization, official-domain spoofing defenses, environment override behavior, dependency and secret hygiene edge cases, CI token/artifact posture, fixture source confidence, stale query-plan isolation, and issue-workspace citation-coverage readiness checks. It does not add production auth, retention enforcement, compliance controls, or a product security baseline.
 - A first narrow `#10` orchestration slice now defines shared run states, stage statuses, transition validation, and stage-to-run rollup helpers in `src/war_room/orchestration.py`; issue `#73` adds typed start-run and get-run-status API boundary contracts in `src/war_room/orchestration_api_contracts.py`; the first in-process offline service slice now lives in `src/war_room/orchestration_service.py`; the operator-facing status presentation layer lives in `src/war_room/orchestration_status_view.py`; issue `#78` adds a dependency-free thin transport/request-handler wrapper in `src/war_room/orchestration_transport.py`; the dev-only standard-library HTTP adapter lives in `src/war_room/orchestration_http.py`; production HTTP/API routing, persistence, queues, auth, dashboards, and UI remain future work.
 - First narrow issue `#11` UX/spec slices now live in `docs/ISSUE_11_RUN_STATUS_UX_SPEC.md` and `docs/ISSUE_11_GUIDED_INTAKE_UX_SPEC.md`; they define how a future guided intake surface should collect and validate pre-run matter facts, then hand off to a run-status screen that consumes the existing `status_presentation` payload without adding a frontend app. Deterministic Milton previews now live in `docs/examples/guided_intake_milton_preview.md` and `docs/examples/run_status_milton_degraded.md`.
@@ -43,14 +43,14 @@ This is the short version. Clean, practical, no drama.
 - Issue [#9](https://github.com/itprodirect/cat-loss-war-room/issues/9) is complete. The closeout audit in [ISSUE_9_CLOSEOUT_AUDIT.md](ISSUE_9_CLOSEOUT_AUDIT.md) maps the expanded CI quality-gate requirements to workflow jobs, gate categories, tests, artifact evidence, and offline validation.
 - Issue [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) has a first run-state contract slice documented in [ISSUE_10_RUN_STATE_CONTRACT.md](ISSUE_10_RUN_STATE_CONTRACT.md), an issue `#73` API boundary contract slice documented in [ISSUE_10_API_CONTRACTS.md](ISSUE_10_API_CONTRACTS.md), a first in-process offline service slice documented in [ISSUE_10_SERVICE_SLICE.md](ISSUE_10_SERVICE_SLICE.md), an operator-facing status presentation layer documented in [ISSUE_10_STATUS_PRESENTATION.md](ISSUE_10_STATUS_PRESENTATION.md), an issue `#78` thin transport wrapper documented in [ISSUE_78_THIN_TRANSPORT_WRAPPER.md](ISSUE_78_THIN_TRANSPORT_WRAPPER.md), and a dev-only standard-library HTTP adapter documented in [ISSUE_10_DEV_HTTP_WRAPPER.md](ISSUE_10_DEV_HTTP_WRAPPER.md). Production HTTP/API routing, persistence, retries, and circuit-breaker behavior are still pending.
 - Issue [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) has first UX/spec slices documented in [ISSUE_11_GUIDED_INTAKE_UX_SPEC.md](ISSUE_11_GUIDED_INTAKE_UX_SPEC.md) and [ISSUE_11_RUN_STATUS_UX_SPEC.md](ISSUE_11_RUN_STATUS_UX_SPEC.md), plus deterministic Milton previews in [examples/guided_intake_milton_preview.md](examples/guided_intake_milton_preview.md) and [examples/run_status_milton_degraded.md](examples/run_status_milton_degraded.md). Frontend implementation, dashboards, auth, persistence, and production API work remain pending.
-- Issue [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) has first adapter slices landed for caselaw issue `#94`, carrier issue `#96`, weather issue `#98`, and citation-verify issue `#103` / PR `#105`, plus the issue `#107` / PR `#108` helper-only deterministic evidence dedupe utility. Broader dedupe integration, `old_id -> retained_id` remapping or equivalent provenance-safe planning, provenance hardening, persistence, dashboards, API integration, review workflow, provenance-through-edits, and any claim that the full V2 evidence graph is complete remain pending.
+- Issue [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) has first adapter slices landed for caselaw issue `#94`, carrier issue `#96`, weather issue `#98`, and citation-verify issue `#103` / PR `#105`, deterministic dedupe from issue `#107` / PR `#108`, same-module audit-snapshot integration from PR `#136`, and reviewer count visibility from PR `#138`. Issue `#139` keeps cross-module relatedness clustering-only. Retained duplicate/source-role trace metadata, provenance hardening, persistence, dashboards, API integration, review workflow, provenance-through-edits, and any claim that the full V2 evidence graph is complete remain pending.
 - Placeholder directories under `apps/`, `packages/`, and `workers/` are planned V2 boundaries only. The active runtime remains the notebook plus `src/war_room/`.
 
 ## Delivery layers
 
 - V0 implemented now: notebook-first demo, cache-backed offline lane, package bootstrap, and current memo pipeline.
 - V2 definition work completed: workflow/IA in `#23`, evidence schema in `#24`, repo/runtime boundary framing in `#22`, and a first-pass release rubric in `#27`.
-- V2 implementation work now has first narrow issue `#12` evidence-adapter slices for weather, carrier, caselaw, and citation-verification output plus a helper-only deterministic evidence dedupe utility; broader dedupe integration, provenance, product workflow, API, UI, persistence, review, and pilot operationalization work remains pending.
+- V2 implementation work now has first narrow issue `#12` evidence-adapter slices for weather, carrier, caselaw, and citation-verification output plus same-module audit-snapshot dedupe and retained-ID remapping; retained duplicate/source-role trace metadata, broader provenance, product workflow, API, UI, persistence, review, and pilot operationalization work remains pending.
 
 ## Active Priority Rank
 
@@ -59,7 +59,7 @@ Issue [#3](https://github.com/itprodirect/cat-loss-war-room/issues/3) remains th
 
 Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#24](https://github.com/itprodirect/cat-loss-war-room/issues/24) are not ranked here because their written source-of-truth docs already landed and those definition issues are closed. Their downstream implementation work lives in `#10`, `#11`, and `#12`.
 
-1. [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Review remaining evidence/provenance follow-ups after the landed adapters and helper-only deterministic dedupe utility
+1. [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Review remaining evidence/provenance follow-ups after the landed adapters, same-module dedupe, and issue `#139` cross-module clustering-only decision; issue `#142` is the narrow same-module trace-metadata follow-up
 2. [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) Broaden CI and pilot operationalization of the calibrated release rubric
 3. [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) Remaining orchestration/API work beyond the landed contracts/service/status/transport/dev-HTTP slices
 4. [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) Future guided-intake/run-status contract seam and UI implementation beyond the landed specs/previews
@@ -81,7 +81,7 @@ Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#2
   - `#6` is complete and should stay scoped to closeout follow-through rather than new runtime work.
   - `#9` is complete for the current CI quality-gate acceptance criteria; future security, pilot, and optional fixture-breadth work belongs in `#18`, `#19`, `#27`, or a newly scoped follow-up rather than reopening `#8`.
   - `#11` now has guided-intake and run-status UX/spec slices plus deterministic Milton guided-intake and degraded run-status previews; future implementation should still follow the workflow defined in `#23`.
-  - `#12` should explicitly implement against the canonical schema defined in `#24`; weather, carrier, caselaw, and citation-verification adapter slices plus the helper-only deterministic dedupe utility have landed, but the full evidence/provenance lane is still open.
+  - `#12` should explicitly implement against the canonical schema defined in `#24`; weather, carrier, caselaw, and citation-verification adapter slices plus same-module audit-snapshot dedupe have landed, but retained duplicate/source-role trace metadata, broader provenance, and the full evidence/provenance lane are still open.
 - `#27` should now focus on broader CI and pilot operationalization of the calibrated rubric rather than inventing the first rubric draft.
   - CI artifact emission, local verify evidence bundles, artifact integrity checks, dashboard-ready blocking/advisory scorecard categories, the top-level `reviewer_summary` convenience summary, the `ci_reporting_summary` inventory, and the human release-evidence review guide already landed; the remaining work is broader gate coverage and pilot evidence.
 
@@ -89,7 +89,7 @@ Issues [#23](https://github.com/itprodirect/cat-loss-war-room/issues/23) and [#2
 
 Goal: continue narrow evidence/provenance work from stable contracts while preserving the notebook demo and current release-evidence posture.
 
-- [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Pause implementation and review the remaining roadmap after the helper-only dedupe slice. The likely next child should be a provenance-safe dedupe integration plan with `old_id -> retained_id` mapping, deterministic dedupe integration into audit snapshot assembly, provenance link hardening across memo claims / evidence clusters / review events, or citation-quality fixture regression under `#13` / `#14`.
+- [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Continue narrow evidence/provenance follow-ups after issue `#139`. The likely next child should be issue `#142` same-module dedupe trace metadata, provenance link hardening across memo claims / evidence clusters / review events, or citation-quality fixture regression under `#13` / `#14`.
 - [#27](https://github.com/itprodirect/cat-loss-war-room/issues/27) Broaden CI and pilot operationalization of the calibrated release scorecard after the landed `ci_reporting_summary` slice.
 
 ## Next (30-60 days)
@@ -98,7 +98,7 @@ Goal: build the first true product workflow around the research engine.
 
 - [#10](https://github.com/itprodirect/cat-loss-war-room/issues/10) Remaining orchestration/API work beyond the landed contracts/service/status/transport/dev-HTTP slices
 - [#11](https://github.com/itprodirect/cat-loss-war-room/issues/11) Future guided-intake/run-status contract seam and UI implementation beyond the landed specs/previews
-- [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Evidence normalization + provenance beyond the landed weather, carrier, caselaw, and citation-verification adapters and helper-only dedupe utility
+- [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) Evidence normalization + provenance beyond the landed weather, carrier, caselaw, and citation-verification adapters plus same-module dedupe/remapping
 - [#13](https://github.com/itprodirect/cat-loss-war-room/issues/13) Caselaw quality v2
 - [#25](https://github.com/itprodirect/cat-loss-war-room/issues/25) AI guardrails + eval harness
 - [#26](https://github.com/itprodirect/cat-loss-war-room/issues/26) Human review workflow

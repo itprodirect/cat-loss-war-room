@@ -2,6 +2,27 @@
 
 Date: 2026-05-20
 
+## Status Note After Issue 139
+
+Issue [#139](https://github.com/itprodirect/cat-loss-war-room/issues/139)
+resolved the retained duplicate/source-role metadata decision in
+[ISSUE_139_RETAINED_DUPLICATE_SOURCE_ROLE_DECISION.md](ISSUE_139_RETAINED_DUPLICATE_SOURCE_ROLE_DECISION.md).
+
+The durable current policy is:
+
+- cross-module evidence behavior stops at clustering-only relatedness;
+- `EvidenceItem` preserves module-specific meaning;
+- `EvidenceCluster` expresses cross-module relatedness without removing rows;
+- same-module dedupe remains the only current collapse behavior;
+- future retained duplicate/source-role metadata should live in a separate
+  audit-snapshot or audit-bundle trace object, not on `EvidenceItem` or
+  `EvidenceCluster`.
+
+The rest of this document is the original pre-runtime integration plan. It
+remains useful as historical rationale and as a checklist for same-module
+dedupe invariants, but current implementation status should be read with the
+later PR `#136`, PR `#138`, and issue `#139` decisions in mind.
+
 ## Purpose
 
 Issue [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) remains the umbrella for evidence normalization, dedupe, provenance, confidence annotations, and canonical evidence behavior.

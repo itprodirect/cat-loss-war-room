@@ -761,13 +761,16 @@ a full V2 evidence graph, storage layer, dashboard, API integration,
 persistence layer, or review workflow.
 
 Issue `#107` / PR `#108` added `dedupe_evidence_items(...)` as a local,
-deterministic helper over canonical `EvidenceItem` rows. The helper is
-helper-only: it is not integrated into audit snapshot assembly, does not add an
-`old_id -> retained_id` remapping, does not expand the `EvidenceItem` schema,
-and does not merge candidate summary text into the first retained same-key row.
-Future integration must preserve provenance links for memo claims, evidence
-clusters, review events, and export references through a remapping or equivalent
-provenance-safe plan.
+deterministic helper over canonical `EvidenceItem` rows. PR `#136` integrated
+same-module audit-snapshot dedupe with explicit `old_id -> retained_id`
+remapping, and PR `#138` added citation `not_found` regression coverage plus
+markdown raw/pre-dedupe versus retained/exported count visibility.
+
+Issue `#139` keeps cross-module behavior clustering-only. Caselaw and
+citation-verification rows can share an `EvidenceCluster`, but cross-module
+rows do not collapse. Future retained duplicate/source-role metadata should
+live in a separate audit-snapshot or audit-bundle trace object, not on
+`EvidenceItem` or `EvidenceCluster`.
 
 ## 10) Mapping From Current Typed Models
 
@@ -781,7 +784,7 @@ This is the intended mapping from today's code to the V2 schema.
 - `ReviewEvent`
 - `ExportArtifact`
 - current module-to-evidence adapters for weather, carrier, caselaw, and citation-verification output
-- helper-only `dedupe_evidence_items(...)`, pending a provenance-safe integration plan before audit snapshot assembly uses it
+- same-module `dedupe_evidence_items(...)` audit-snapshot integration with retained-ID remapping
 
 ### Keep as transitional input shapes
 
@@ -824,9 +827,9 @@ This is the intended mapping from today's code to the V2 schema.
 
 - Build normalization around `EvidenceItem` and `EvidenceCluster` as canonical objects.
 - Use the durable-ID and versioning rules in this document to prevent future provenance drift.
-- Integrate helper-only dedupe only after defining how `old_id -> retained_id`
-  remapping or equivalent provenance-safe linkage preserves downstream claims,
-  clusters, review events, and export references.
+- Keep cross-module relatedness in `EvidenceCluster`; do not collapse
+  cross-module rows without a separately scoped trace-metadata decision and
+  implementation.
 
 ## 12) Explicit Non-Goals
 

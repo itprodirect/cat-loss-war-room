@@ -2,15 +2,25 @@
 
 Date: 2026-05-20
 
+Status note, 2026-05-28: issue `#139` is now resolved by
+[ISSUE_139_RETAINED_DUPLICATE_SOURCE_ROLE_DECISION.md](ISSUE_139_RETAINED_DUPLICATE_SOURCE_ROLE_DECISION.md).
+Same-module audit-snapshot dedupe, retained-ID remapping, provenance-integrity
+coverage, and markdown raw-vs-retained count visibility have landed. Future
+retained duplicate/source-role metadata, if implemented, should be a separate
+same-module audit trace object. Cross-module dedupe/collapse remains out of
+scope; use `EvidenceCluster` for cross-module relatedness.
+
 ## Purpose
 
-Issue [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) is still the umbrella for evidence normalization, dedupe, provenance, confidence annotations, and canonical evidence behavior. This review now reflects the landed issue `#94`, `#96`, `#98`, and `#103` evidence-adapter slices, including PR `#105`, plus the issue `#107` / PR `#108` helper-only deterministic evidence dedupe utility.
+Issue [#12](https://github.com/itprodirect/cat-loss-war-room/issues/12) is still the umbrella for evidence normalization, dedupe, provenance, confidence annotations, and canonical evidence behavior. This review now reflects the landed issue `#94`, `#96`, `#98`, and `#103` evidence-adapter slices, including PR `#105`, the issue `#107` / PR `#108` deterministic evidence dedupe utility, the same-module audit-snapshot dedupe integration from PR `#136`, the raw-vs-retained visibility follow-up from PR `#138`, and the issue `#139` cross-module clustering-only decision.
 
 The current decision is:
 
 - treat weather, carrier, caselaw, and citation verification as the current named adapter seams;
+- keep same-module audit-snapshot dedupe and retained-ID remapping as the only current collapse behavior;
+- keep cross-module caselaw/citation-verification overlap as clustering-only relatedness;
 - do not treat issue `#12` as complete or ready for broad persistence, UI, API, review workflow, or full evidence graph implementation;
-- pause implementation and choose the next issue `#12` child from a provenance-safe dedupe integration plan with `old_id -> retained_id` mapping, deterministic dedupe integration into audit snapshot assembly, provenance link hardening across memo claims / evidence clusters / review events, or citation-quality fixture regression under `#13` / `#14`.
+- choose any next issue `#12` child from issue `#142` same-module dedupe trace metadata, provenance link hardening across memo claims / evidence clusters / review events, or citation-quality fixture regression under `#13` / `#14`.
 
 The provenance-safe dedupe integration plan now lives in [ISSUE_12_DEDUPE_INTEGRATION_PLAN.md](ISSUE_12_DEDUPE_INTEGRATION_PLAN.md). Use that spec before wiring `dedupe_evidence_items(...)` into audit snapshot assembly.
 
@@ -27,14 +37,17 @@ The canonical source family for issue `#12` adapter work is the set of current m
 
 The landed weather, carrier, caselaw, and citation-verification adapters are narrow seams over current notebook-era module output. They preserve `RunAuditSnapshot`, Evidence Board, memo/export behavior, fixture-backed tests, and the current offline validation lane. They are not a full V2 evidence graph, storage layer, dashboard, API integration, persistence layer, or review workflow.
 
-## Dedupe Helper Status
+## Dedupe And Remapping Status
 
 Issue `#107` / PR `#108` added `dedupe_evidence_items(...)` over canonical
-`EvidenceItem` rows.
+`EvidenceItem` rows. PR `#136` then integrated same-module dedupe into
+`RunAuditSnapshot` assembly with explicit retained-ID remapping, and PR `#138`
+added focused citation `not_found` regression coverage plus markdown
+raw-vs-retained count visibility.
 
 What landed:
 
-- The helper is local, deterministic, and helper-only.
+- The helper is local and deterministic.
 - It dedupes conservatively by explainable keys such as normalized URL,
   normalized citation or authority key, and normalized title plus module and
   `evidence_type` fallback.
@@ -42,24 +55,25 @@ What landed:
 - Same-key summary behavior is explicit: the first retained row wins, and the
   candidate summary is not merged into it.
 - Selected review/provenance compatibility conflicts keep rows separate.
+- Audit snapshot assembly applies dedupe same-module only.
+- Removed same-module evidence IDs are rewritten to retained evidence IDs before
+  clusters, memo claims, review events, quality counts, and export-facing
+  surfaces are finalized.
+- Cross-module caselaw and citation-verification rows that share a citation or
+  URL remain distinct evidence items and may share an `EvidenceCluster`.
 
 What did not land:
 
-- No integration into `RunAuditSnapshot` assembly.
-- No `old_id -> retained_id` remapping or equivalent provenance-safe linkage
-  plan.
-- No `EvidenceItem` schema expansion.
+- No retained duplicate/source-role trace metadata.
+- No `EvidenceItem` or `EvidenceCluster` schema expansion for duplicate aliases.
+- No cross-module evidence collapse.
 - No persistence, API, dashboard, UI, live retrieval, provider-ranking change,
   citation behavior change, fuzzy/ML clustering, AI scoring, readiness claim,
   or full V2 evidence graph.
 
-Future integration should not simply drop duplicate IDs from the audit path.
-It needs a remapping or equivalent provenance-safe plan so memo claims,
-evidence clusters, review events, and export references do not point at removed
-rows after dedupe.
-
-The first runtime integration should follow the dedicated dedupe integration
-plan and prove ID remapping before changing audit snapshot behavior.
+Future trace metadata should follow the issue `#139` decision and tracking
+issue `#142`: put removed-row aliases in a separate same-module audit trace
+object, not on `EvidenceItem` or `EvidenceCluster`.
 
 ## Adapter Gap Status
 
@@ -123,7 +137,7 @@ python -m war_room --verify
 
 ## Adapter-Status Map Decision
 
-A separate adapter-status map is no longer needed before the citation-verify adapter because that adapter landed in PR `#105`. A docs-only closeout/status map is also lower priority than the provenance-safe dedupe integration decision now that PR `#108` landed the helper-only utility. A status map may still be useful later if maintainers want a concise issue `#12` view that separates landed adapter seams and helper-only dedupe from the broader open graph, integration, persistence, API, and review-workflow work.
+A separate adapter-status map is no longer needed before the citation-verify adapter because that adapter landed in PR `#105`. A docs-only closeout/status map is also lower priority than the issue `#139` retained duplicate/source-role decision now that same-module dedupe and raw-vs-retained visibility have landed. A status map may still be useful later if maintainers want a concise issue `#12` view that separates landed adapter seams and same-module dedupe from retained duplicate/source-role trace metadata, broader provenance hardening, persistence, API, and review-workflow work.
 
 Add a dedicated adapter-status map later only if maintainers want to coordinate more than one of these broader tracks:
 
@@ -150,4 +164,4 @@ These items remain outside the landed adapter slices and outside this docs-only 
 
 For the next child issue, Codex should start by deciding which narrow follow-up is actually being requested. If the child is dedupe integration, start with a provenance-safe `old_id -> retained_id` remapping plan or equivalent linkage design before changing audit snapshot assembly. If the child is provenance hardening, use the landed adapter output and current audit-snapshot tests as fixtures rather than broadening into storage or UI. If the child is citation-quality regression, keep it under issue `#13` / `#14` and do not change live retrieval or badge semantics without explicit scope.
 
-Do not turn issue `#12` into a broad implementation umbrella. The citation-verify adapter and helper-only dedupe utility are landed; the next useful slice should be a narrow provenance-safe dedupe integration, provenance-link, or citation-quality follow-up.
+Do not turn issue `#12` into a broad implementation umbrella. The citation-verify adapter, deterministic dedupe utility, same-module audit-snapshot integration, and issue `#139` cross-module clustering-only decision are landed; the next useful slice should be issue `#142` same-module dedupe trace metadata, provenance-link hardening, or citation-quality follow-up.
