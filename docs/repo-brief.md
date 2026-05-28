@@ -15,7 +15,7 @@ This repo is the current execution surface for attorney-demo research accelerati
 
 ## Current milestone
 
-Preserve the stable V0 notebook demo after the merged May 20 hardening batch while issue `#12` evidence/provenance work remains paused for a narrow next-child decision after the landed issue `#92` release-evidence reporting slice, the weather/carrier/caselaw/citation-verification adapter seams, and the helper-only deterministic evidence dedupe utility.
+Preserve the stable V0 notebook demo after the merged May 20 hardening batch while issue `#12` evidence/provenance work remains scoped around the landed adapter seams, same-module audit-snapshot dedupe, and issue `#139` decision that cross-module relatedness stays clustering-only.
 
 ## Non-goals
 
@@ -43,7 +43,7 @@ Preserve the stable V0 notebook demo after the merged May 20 hardening batch whi
 - Preflight and verification results for demo readiness.
 - Run-scoped preflight, scorecard, and verify-manifest artifacts for the supported local release-evidence path, including blocking/advisory readiness categories, the top-level `reviewer_summary` convenience layer for reviewer use, and the issue `#92` `ci_reporting_summary` inventory for CI/reporting consumers.
 - Canonical `EvidenceItem` rows from the current weather, carrier, caselaw, and citation-verification outputs through the landed issue `#94`, `#96`, `#98`, and `#103` adapter seams.
-- A local helper-only deterministic dedupe utility, `dedupe_evidence_items(...)`, from issue `#107` / PR `#108`; it is not yet integrated into audit snapshot assembly and has no `old_id -> retained_id` remapping.
+- Same-module audit-snapshot dedupe with explicit `old_id -> retained_id` remapping, plus markdown raw/pre-dedupe versus retained/exported evidence count visibility.
 - Golden offline fixture snapshots for reviewable scenario/output drift checks.
 - Categorized CI quality-gate artifacts for unit, offline fixture, offline e2e, golden snapshot, Exa compatibility, release-scorecard, security-hygiene, and dependency-hygiene lanes.
 - Focused repo/runtime hardening for text sanitization, official-domain spoofing defenses, dev-HTTP request handling, dependency and secret hygiene checks, CI token/artifact posture, fixture source confidence, and issue-workspace readiness checks.
@@ -62,7 +62,7 @@ Preserve the stable V0 notebook demo after the merged May 20 hardening batch whi
 - The primary UX is still notebook-first, which is less approachable for non-technical users.
 - The issue `#10` run-state contract slice, issue `#73` API boundary contract slice, in-process offline service slice, operator-facing status presentation layer, dependency-free thin transport/request-handler wrapper, and dev-only standard-library HTTP adapter exist, but production API routing, persistence, queues, auth, retries, circuit breakers, dashboards, and UI remain unbuilt.
 - Issue `#11` has guided-intake and run-status UX specs plus deterministic previews only; no web UI has shipped.
-- Issue `#12` now has named adapters for the current weather, carrier, caselaw, and citation-verification evidence-producing source families plus a helper-only deterministic dedupe utility, but the full V2 evidence graph, audit snapshot dedupe integration, `old_id -> retained_id` remapping, persistence layer, product review workflow, provenance-through-edits, API integration, and UI remain unbuilt.
+- Issue `#12` now has named adapters for the current weather, carrier, caselaw, and citation-verification evidence-producing source families, deterministic dedupe, same-module audit-snapshot integration, retained-ID remapping, and raw-vs-retained reviewer visibility. The full V2 evidence graph, retained duplicate/source-role trace metadata, persistence layer, product review workflow, provenance-through-edits, API integration, and UI remain unbuilt.
 - Offline readiness is stronger but still demo-scoped: five committed fixture lanes now have a golden snapshot gate and fixture-backed registry scenarios, and issue `#8` is closed as completed after the five-lane baseline validation.
 - Case-law precision and citation confidence still need ongoing hardening in edge cases.
 - The hardening batch improves repo/runtime defenses but does not add product auth, retention enforcement, compliance controls, or a production security baseline.
@@ -70,7 +70,7 @@ Preserve the stable V0 notebook demo after the merged May 20 hardening batch whi
 
 ## Next 3 tasks
 
-1. Pause implementation and review the remaining issue `#12` roadmap after the helper-only dedupe slice; likely next children are a provenance-safe dedupe integration plan with `old_id -> retained_id` mapping, deterministic dedupe integration into audit snapshot assembly, provenance link hardening, or citation-quality fixture regression under `#13` / `#14`.
+1. Keep issue `#12` follow-ups narrow after the issue `#139` decision; likely next children are same-module dedupe trace metadata, provenance link hardening, or citation-quality fixture regression under `#13` / `#14`.
 2. Continue issue `#27` by broadening CI/pilot release evidence beyond the merged local verify bundle without changing the current demo surface.
 3. Map the remaining issue `#10` scope against the landed contracts/service/status/transport/dev-HTTP stack, keeping production routing, persistence, queues, auth, retries, circuit breakers, dashboards, and UI out unless explicitly authorized.
 

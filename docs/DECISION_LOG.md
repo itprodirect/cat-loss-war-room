@@ -103,3 +103,9 @@ Track key architecture and design decisions so future sessions (human or AI) und
 **Decision:** Treat the five registry-backed offline-ready fixture lanes as the completed issue `#8` baseline: Milton/Pinellas/Citizens HO-3, Ida/Orleans/Lloyds HO-3, Texas Hail/Tarrant/Allstate HO-B, Texas Hail/Tarrant/Allstate DP-3, and Ian/Lee/Citizens HO-3.
 **Reason:** Issue `#8` is closed as completed after PR #63 merged and the offline fixture, golden snapshot, e2e, and verify gates validated the five-lane baseline.
 **Impact:** Future fixture breadth should be explicitly scoped as follow-up work and should use `docs/FIXTURE_SEEDING.md`; it should not keep `#8` open or treat live-only registry scenarios as cache-only demo lanes before reviewed fixture bundles are committed.
+
+## D020: Cross-module evidence stays clustering-only
+**Date:** 2026-05-28
+**Decision:** Do not pursue cross-module evidence dedupe/collapse as the next issue `#12` step. Keep `EvidenceItem` rows module-specific and use `EvidenceCluster` to express cross-module relatedness. If retained duplicate/source-role metadata is implemented later, put it in a separate audit-snapshot or audit-bundle trace object, not on `EvidenceItem` or `EvidenceCluster`.
+**Reason:** Caselaw rows and citation-verification rows can point at the same authority while carrying different review meaning. Collapsing them risks hiding citation-check status, badge, note, review-required state, and review-event linkage.
+**Impact:** Issue `#139` can close with a docs-only decision and follow-up issue `#142`. Future implementation should start with same-module `EvidenceDedupeTrace` / `EvidenceAlias` metadata only, preserve old ID, retained ID, source role, dedupe reason, and trace fields, and continue forbidding cross-module collapse.
