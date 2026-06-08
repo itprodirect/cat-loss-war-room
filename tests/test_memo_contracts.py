@@ -762,6 +762,25 @@ def test_audit_snapshot_dedupe_result_maps_same_module_duplicates():
     }
     assert result.removed_duplicate_ids == [duplicate_id]
     assert result.retained_id_to_duplicate_ids == {retained_id: [duplicate_id]}
+    assert len(result.dedupe_traces) == 1
+    trace = result.dedupe_traces[0]
+    assert trace.old_evidence_id == duplicate_id
+    assert trace.retained_evidence_id == retained_id
+    assert trace.module == "weather"
+    assert trace.evidence_type == "weather_source"
+    assert trace.dedupe_key == "url:weather.gov/r"
+    assert trace.dedupe_reason == "same-module normalized URL match"
+    assert trace.old_url == "https://weather.gov/r"
+    assert trace.retained_url == "https://www.weather.gov/r/?utm_source=newsletter"
+    assert trace.old_source_reason == "Official source"
+    assert trace.retained_source_reason == "Official source"
+    assert trace.old_source_tier == trace.retained_source_tier == "official"
+    assert trace.old_issue is None
+    assert trace.retained_issue is None
+    assert trace.old_is_primary_authority is False
+    assert trace.retained_is_primary_authority is False
+    assert trace.old_review_required is False
+    assert trace.retained_review_required is False
 
 
 def test_audit_snapshot_dedupe_result_forbids_cross_module_url_citation_collapse():
@@ -799,6 +818,90 @@ def test_audit_snapshot_dedupe_result_forbids_cross_module_url_citation_collapse
         case_item.evidence_id: case_item.evidence_id,
         citation_item.evidence_id: citation_item.evidence_id,
     }
+    assert result.dedupe_traces == []
+
+
+def test_run_audit_snapshot_emits_same_module_dedupe_trace_metadata():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    _add_duplicate_weather_source(weather)
+    raw_weather_items = weather_brief_to_evidence_items(weather)
+    retained_weather_id = raw_weather_items[0].evidence_id
+    removed_weather_id = raw_weather_items[1].evidence_id
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+    payload = run_audit_snapshot_to_payload(snapshot)
+
+    assert [trace.old_evidence_id for trace in snapshot.dedupe_traces] == [
+        removed_weather_id
+    ]
+    trace = snapshot.dedupe_traces[0]
+    assert trace.retained_evidence_id == retained_weather_id
+    assert trace.module == "weather"
+    assert trace.evidence_type == "weather_source"
+    assert trace.source_role == trace.old_source_class
+    assert trace.dedupe_key == "url:weather.gov/r"
+    assert trace.dedupe_reason == "same-module normalized URL match"
+    assert trace.old_url == "https://weather.gov/r"
+    assert trace.retained_url == "https://www.weather.gov/r/?utm_source=newsletter"
+    assert trace.old_badge == trace.retained_badge == "official"
+    assert trace.old_source_reason == trace.retained_source_reason == "Official source"
+    assert trace.old_source_tier == trace.retained_source_tier == "official"
+    assert trace.old_issue is None
+    assert trace.retained_issue is None
+    assert trace.old_is_primary_authority is False
+    assert trace.retained_is_primary_authority is False
+    assert trace.old_review_required is False
+    assert trace.retained_review_required is False
+    assert payload["dedupe_traces"][0]["old_evidence_id"] == removed_weather_id
+    assert payload["dedupe_traces"][0]["retained_evidence_id"] == retained_weather_id
+    assert_audit_snapshot_provenance_integrity(snapshot)
+
+
+def test_run_audit_snapshot_accepts_payload_without_dedupe_traces_for_compatibility():
+    snapshot = run_audit_snapshot_from_parts(*_sample_payloads())
+    payload = run_audit_snapshot_to_payload(snapshot)
+    payload.pop("dedupe_traces")
+
+    normalized_payload = run_audit_snapshot_to_payload(payload)
+
+    assert normalized_payload["dedupe_traces"] == []
+
+
+def test_run_audit_snapshot_does_not_emit_cross_module_dedupe_traces():
+    intake, weather, carrier, caselaw, citecheck, query_plan = _sample_payloads()
+    caselaw_evidence_id = caselaw_pack_to_evidence_items(caselaw)[0].evidence_id
+    citation_evidence_id = (
+        citation_verify_pack_to_evidence_items(citecheck)[0].evidence_id
+    )
+
+    snapshot = run_audit_snapshot_from_parts(
+        intake,
+        weather,
+        carrier,
+        caselaw,
+        citecheck,
+        query_plan,
+    )
+
+    evidence_ids = {item.evidence_id for item in snapshot.evidence_items}
+    assert caselaw_evidence_id in evidence_ids
+    assert citation_evidence_id in evidence_ids
+    assert snapshot.dedupe_traces == []
+    assert snapshot.quality_snapshot.raw_evidence_count == 4
+    assert snapshot.quality_snapshot.evidence_item_count == 4
+    assert any(
+        caselaw_evidence_id in cluster.evidence_ids
+        and citation_evidence_id in cluster.evidence_ids
+        for cluster in snapshot.evidence_clusters
+    )
+    assert_audit_snapshot_provenance_integrity(snapshot)
 
 
 def test_run_audit_snapshot_rewrites_same_module_duplicate_references_across_surfaces():
