@@ -56,6 +56,7 @@ _EXPORTS = {
     "CaseLawPack": "war_room.models",
     "CitationVerifyPack": "war_room.models",
     "EvidenceCluster": "war_room.models",
+    "EvidenceDedupeTrace": "war_room.models",
     "EvidenceItem": "war_room.models",
     "LegalIssue": "war_room.models",
     "ExportArtifact": "war_room.models",

@@ -3346,3 +3346,41 @@ Status: Complete
   - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
     `493 passed in 24.74s`; verify manifest written under
     `runs/verify/2026-05-28_codex-139-dedupe-metadata-decision_20260528t172144z.json`.
+
+## Session 146 - Issue 142 Same-Module Dedupe Trace Metadata
+Date: 2026-06-08
+Status: Complete
+
+- Added the narrow issue `#142` follow-up for reviewer-visible same-module
+  evidence dedupe trace metadata in audit snapshots.
+- What changed:
+  - Added `EvidenceDedupeTrace` as a separate audit metadata object on
+    `RunAuditSnapshot`.
+  - Emitted one trace for each same-module evidence row removed by audit
+    snapshot dedupe, preserving old ID, retained ID, module, evidence type,
+    source role, dedupe key/reason, URL/citation/authority fields, badge,
+    source class/tier/reason fields, issue fields, primary-authority flags,
+    and review-required flags where available.
+  - Kept retained `EvidenceItem` rows unchanged and kept markdown/export
+    provenance on retained IDs only.
+  - Added focused coverage for same-module trace emission, cross-module
+    no-collapse/no-trace behavior, backward-compatible payload validation, and
+    existing audit/export provenance integrity.
+- Decisions added:
+  - Same-module removed duplicate visibility now lives in
+    `RunAuditSnapshot.dedupe_traces`.
+- Decisions not added:
+  - no cross-module evidence collapse, citation behavior change, retrieval
+    behavior change, source ranking change, markdown appendix change,
+    persistence, API, UI/dashboard, auth, queues/workers, fuzzy/ML clustering,
+    AI scoring, live retrieval, new provider behavior, or broad evidence graph
+    refactor was added.
+- Validation:
+  - `python -m pytest tests/test_memo_contracts.py -q`
+    -> `46 passed in 0.46s`.
+  - `python -m pytest tests/test_memo_contracts.py tests/test_export.py tests/test_evidence_board.py tests/test_issue_workspace.py tests/test_memo_composer.py tests/test_export_history.py tests/test_preflight.py -q`
+    -> `97 passed in 2.80s`.
+  - `git diff --check` -> passed.
+  - `python -m war_room --verify` -> passed; embedded `pytest -q` reported
+    `496 passed in 9.38s`; verify manifest written under
+    `runs/verify/2026-06-08_codex-142-evidence-dedupe-traces_20260608t184600z.json`.

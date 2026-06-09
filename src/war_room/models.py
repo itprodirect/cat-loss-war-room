@@ -523,6 +523,41 @@ class EvidenceCluster(BaseModel):
     review_required: bool = False
 
 
+class EvidenceDedupeTrace(BaseModel):
+    """Audit trace for an evidence row removed by same-module dedupe."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    trace_id: str = Field(min_length=1)
+    old_evidence_id: str = Field(min_length=1)
+    retained_evidence_id: str = Field(min_length=1)
+    module: Literal["weather", "carrier", "caselaw", "citation_verify"]
+    evidence_type: str = Field(min_length=1)
+    source_role: str | None = None
+    dedupe_key: str = Field(min_length=1)
+    dedupe_reason: str = Field(min_length=1)
+    old_url: str | None = None
+    retained_url: str | None = None
+    old_citation: str | None = None
+    retained_citation: str | None = None
+    old_authority_key: str | None = None
+    retained_authority_key: str | None = None
+    old_badge: str | None = None
+    retained_badge: str | None = None
+    old_source_reason: str | None = None
+    retained_source_reason: str | None = None
+    old_source_class: str | None = None
+    retained_source_class: str | None = None
+    old_source_tier: str | None = None
+    retained_source_tier: str | None = None
+    old_issue: str | None = None
+    retained_issue: str | None = None
+    old_is_primary_authority: bool = False
+    retained_is_primary_authority: bool = False
+    old_review_required: bool = False
+    retained_review_required: bool = False
+
+
 class QualitySnapshot(BaseModel):
     """Lightweight structured retrieval-quality telemetry for one memo run."""
 
@@ -623,6 +658,7 @@ class RunAuditSnapshot(BaseModel):
     run_events: list[RunEvent] = Field(default_factory=list)
     evidence_items: list[EvidenceItem] = Field(default_factory=list)
     evidence_clusters: list[EvidenceCluster] = Field(default_factory=list)
+    dedupe_traces: list[EvidenceDedupeTrace] = Field(default_factory=list)
     memo_claims: list[MemoClaim] = Field(default_factory=list)
     review_events: list[ReviewEvent] = Field(default_factory=list)
     quality_snapshot: QualitySnapshot = Field(default_factory=QualitySnapshot)
@@ -640,6 +676,7 @@ class _EvidenceDedupeIntegrationResult:
     old_id_to_retained_id: dict[str, str]
     removed_duplicate_ids: list[str]
     retained_id_to_duplicate_ids: dict[str, list[str]]
+    dedupe_traces: list[EvidenceDedupeTrace]
 
 
 class EvidenceBoardItemPreview(BaseModel):
@@ -1293,6 +1330,7 @@ def _dedupe_evidence_items_with_result(
     old_id_to_retained_id: dict[str, str] = {}
     removed_duplicate_ids: list[str] = []
     retained_id_to_duplicate_ids: dict[str, list[str]] = {}
+    dedupe_traces: list[EvidenceDedupeTrace] = []
 
     for item in evidence_items:
         key = _dedupe_key_for_evidence_item(item)
@@ -1300,6 +1338,7 @@ def _dedupe_evidence_items_with_result(
             retained_result_items.append(item)
             old_id_to_retained_id[item.evidence_id] = item.evidence_id
             continue
+        dedupe_key = key
         if same_module_only:
             key = (item.module, *key)
 
@@ -1319,6 +1358,16 @@ def _dedupe_evidence_items_with_result(
                 retained_match.evidence_id,
                 [],
             ).append(item.evidence_id)
+            if same_module_only:
+                dedupe_traces.append(
+                    _evidence_dedupe_trace(
+                        trace_index=len(dedupe_traces) + 1,
+                        retained=retained_match,
+                        removed=item,
+                        dedupe_key=dedupe_key,
+                        same_module_only=same_module_only,
+                    )
+                )
             continue
 
         key_retained_items.append(item)
@@ -1330,7 +1379,77 @@ def _dedupe_evidence_items_with_result(
         old_id_to_retained_id=old_id_to_retained_id,
         removed_duplicate_ids=removed_duplicate_ids,
         retained_id_to_duplicate_ids=retained_id_to_duplicate_ids,
+        dedupe_traces=dedupe_traces,
     )
+
+
+def _evidence_dedupe_trace(
+    *,
+    trace_index: int,
+    retained: EvidenceItem,
+    removed: EvidenceItem,
+    dedupe_key: tuple[str, ...],
+    same_module_only: bool,
+) -> EvidenceDedupeTrace:
+    return EvidenceDedupeTrace(
+        trace_id=f"dedupe-trace-{trace_index}",
+        old_evidence_id=removed.evidence_id,
+        retained_evidence_id=retained.evidence_id,
+        module=removed.module,
+        evidence_type=removed.evidence_type,
+        source_role=_evidence_source_role(removed),
+        dedupe_key=_dedupe_key_to_trace_token(dedupe_key),
+        dedupe_reason=_dedupe_reason_for_key(
+            dedupe_key,
+            same_module_only=same_module_only,
+        ),
+        old_url=removed.url,
+        retained_url=retained.url,
+        old_citation=removed.citation,
+        retained_citation=retained.citation,
+        old_authority_key=removed.authority_key,
+        retained_authority_key=retained.authority_key,
+        old_badge=removed.badge,
+        retained_badge=retained.badge,
+        old_source_reason=removed.source_reason,
+        retained_source_reason=retained.source_reason,
+        old_source_class=removed.source_class,
+        retained_source_class=retained.source_class,
+        old_source_tier=removed.source_tier,
+        retained_source_tier=retained.source_tier,
+        old_issue=removed.issue,
+        retained_issue=retained.issue,
+        old_is_primary_authority=removed.is_primary_authority,
+        retained_is_primary_authority=retained.is_primary_authority,
+        old_review_required=removed.review_required,
+        retained_review_required=retained.review_required,
+    )
+
+
+def _evidence_source_role(item: EvidenceItem) -> str:
+    return item.source_class or item.source_tier or item.evidence_type
+
+
+def _dedupe_key_to_trace_token(dedupe_key: tuple[str, ...]) -> str:
+    return ":".join(str(part) for part in dedupe_key if str(part))
+
+
+def _dedupe_reason_for_key(
+    dedupe_key: tuple[str, ...],
+    *,
+    same_module_only: bool,
+) -> str:
+    key_type = dedupe_key[0] if dedupe_key else "unknown"
+    scope = "same-module " if same_module_only else ""
+    if key_type == "url":
+        return f"{scope}normalized URL match"
+    if key_type == "citation":
+        return f"{scope}normalized citation match"
+    if key_type == "authority":
+        return f"{scope}normalized authority match"
+    if key_type == "title":
+        return f"{scope}module-scoped title match"
+    return f"{scope}dedupe key match"
 
 
 def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditSnapshot:
@@ -1608,6 +1727,7 @@ def run_audit_snapshot_from_memo_input(memo_input: MemoRenderInput) -> RunAuditS
         run_events=run_events,
         evidence_items=evidence_items,
         evidence_clusters=evidence_clusters,
+        dedupe_traces=dedupe_result.dedupe_traces,
         memo_claims=memo_claims,
         review_events=review_events,
         quality_snapshot=quality_snapshot,
