@@ -1358,15 +1358,16 @@ def _dedupe_evidence_items_with_result(
                 retained_match.evidence_id,
                 [],
             ).append(item.evidence_id)
-            dedupe_traces.append(
-                _evidence_dedupe_trace(
-                    trace_index=len(dedupe_traces) + 1,
-                    retained=retained_match,
-                    removed=item,
-                    dedupe_key=dedupe_key,
-                    same_module_only=same_module_only,
+            if same_module_only:
+                dedupe_traces.append(
+                    _evidence_dedupe_trace(
+                        trace_index=len(dedupe_traces) + 1,
+                        retained=retained_match,
+                        removed=item,
+                        dedupe_key=dedupe_key,
+                        same_module_only=same_module_only,
+                    )
                 )
-            )
             continue
 
         key_retained_items.append(item)
